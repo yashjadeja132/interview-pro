@@ -1,0 +1,134 @@
+{
+  "_id": {
+    "$oid": "68eccfddc33f9c909db47408"
+  },
+  "candidateId": {
+    "$oid": "68dcd6c9bca4847dba7e1ede"
+  },
+  "positionId": {
+    "$oid": "68d2790eefc1df0d30ef0e67"
+  },
+  "__v": 0,
+  "lastSavedAt": {
+    "$date": "2025-10-13T17:25:00.158Z"
+  },
+  "progress": [
+    {
+      "questionId": {
+        "$oid": "68d37e0ce93c99b9bb89fd8a"
+      },
+      "question": "Which lifecycle method is used for fetching data in React class components?",
+      "options": [
+        {
+          "optionText": "componentDidMount",
+          "_id": {
+            "$oid": "68d37e0ce93c99b9bb89fd8b"
+          }
+        },
+        {
+          "optionText": "componentWillUnmount",
+          "_id": {
+            "$oid": "68d37e0ce93c99b9bb89fd8c"
+          }
+        },
+        {
+          "optionText": "render",
+          "_id": {
+            "$oid": "68d37e0ce93c99b9bb89fd8d"
+          }
+        },
+        {
+          "optionText": "shouldComponentUpdate",
+          "_id": {
+            "$oid": "68d37e0ce93c99b9bb89fd8e"
+          }
+        }
+      ],
+      "selectedOption": "68d37e0ce93c99b9bb89fd8b",
+      "selectedOptionText": "componentDidMount",
+      "status": 1,
+      "_id": {
+        "$oid": "68ed35ec06f7d3337c0fe733"
+      }
+    },
+    {
+      "questionId": {
+        "$oid": "68e8ff2d4f1f91e729bc515b"
+      },
+      "question": "In JavaScript, which of the following statements about == and === is true?",
+      "options": [
+        {
+          "optionText": " == and === are exactly the same.",
+          "_id": {
+            "$oid": "68e8ff2d4f1f91e729bc515d"
+          }
+        },
+        {
+          "optionText": "Both == and === perform strict comparison.",
+          "_id": {
+            "$oid": "68e8ff2d4f1f91e729bc515f"
+          }
+        },
+        {
+          "optionText": " == performs type conversion before comparison, while === does not.",
+          "_id": {
+            "$oid": "68e8ff2d4f1f91e729bc515e"
+          }
+        },
+        {
+          "optionText": " == compares both value and type, while === compares only value.",
+          "_id": {
+            "$oid": "68e8ff2d4f1f91e729bc515c"
+          }
+        }
+      ],
+      "selectedOption": "68e8ff2d4f1f91e729bc515d",
+      "selectedOptionText": " == and === are exactly the same.",
+      "status": 1,
+      "_id": {
+        "$oid": "68ed35ec06f7d3337c0fe738"
+      }
+    },
+    {
+      "questionId": {
+        "$oid": "68e75fa80cbe81fffe6bb613"
+      },
+      "question": "Which module is used to create an HTTP server in Node.js?",
+      "options": [
+        {
+          "optionText": "server",
+          "_id": {
+            "$oid": "68e75fa80cbe81fffe6bb617"
+          }
+        },
+        {
+          "optionText": "fs",
+          "_id": {
+            "$oid": "68e75fa80cbe81fffe6bb616"
+          }
+        },
+        {
+          "optionText": "http",
+          "_id": {
+            "$oid": "68e75fa80cbe81fffe6bb615"
+          }
+        },
+        {
+          "optionText": "net",
+          "_id": {
+            "$oid": "68e75fa80cbe81fffe6bb614"
+          }
+        }
+      ],
+      "selectedOption": "68e75fa80cbe81fffe6bb617",
+      "selectedOptionText": "server",
+      "status": 1,
+      "_id": {
+        "$oid": "68ed35ec06f7d3337c0fe73d"
+      }
+    }
+   
+  ],
+  "currentQuestionIndex": 6,
+  "timeLeft": 3338
+}
