@@ -27,8 +27,11 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: 'http://localhost:5173', // your frontend URL
-    credentials: true,               // allow cookies, authorization headers
+    origin: [
+      "http://localhost:5173",
+      "http://192.168.1.27:5173"
+    ],
+    credentials:true              // allow cookies, authorization headers
   })
 );
 
@@ -53,8 +56,10 @@ app.use('/api/admin/retest-requests', adminRetestRequestRoutes)
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
+    origin: [
+      "http://localhost:5173",
+      "http://192.168.1.27:5173"
+    ],
     credentials: true
   }
 });

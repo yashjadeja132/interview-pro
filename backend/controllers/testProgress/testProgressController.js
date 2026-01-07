@@ -3,7 +3,7 @@ const CandidateTestProgress = require('../../models/CandidateTestProgress');
 exports.saveProgress = async (req, res) => {
   try {
     const { candidateId, positionId, progress } = req.body;
-    console.log(' SAVE PROGRESS - Updated progress');
+    // console.log(' SAVE PROGRESS - Updated progress');
 console.log(candidateId, positionId)
     if (!candidateId || !positionId  || !progress) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -35,7 +35,7 @@ console.log(candidateId, positionId)
 
 // ✅ Get saved progress (for resume)
 exports.getProgress = async (req, res) => {
-  console.log("📝 GET PROGRESS - Fetching progress");
+  // console.log("📝 GET PROGRESS - Fetching progress");
   try {
       const { candidateId, positionId } = req.params;
     const savedProgress = await CandidateTestProgress.findOne({

@@ -317,7 +317,7 @@ exports.bulkDeleteCandidates = async (req, res) => {
 
 exports.createCandidate=async(req,res)=>{
    try {
-    console.log('req.body is ',req.body)
+    // console.log('req.body is ',req.body)
           const { email,name, phone, position, experience, questionsAskedToCandidate,technicalQuestions,logicalQuestions} = req.body;
           
           // Check if position is provided
@@ -335,8 +335,8 @@ exports.createCandidate=async(req,res)=>{
             category: {$exists: false}
           });
           
-          console.log('technicalQuestionsCount for position is ',technicalQuestionsCount)
-          console.log('numberOfNonTechnicalQuestions for position is ',numberOfNonTechnicalQuestions)
+          // console.log('technicalQuestionsCount for position is ',technicalQuestionsCount)
+          // console.log('numberOfNonTechnicalQuestions for position is ',numberOfNonTechnicalQuestions)
           
           // Validate logicalQuestions against position-specific non-technical questions
           if (logicalQuestions !== undefined && logicalQuestions !== null) {
@@ -415,8 +415,8 @@ exports.createCandidate=async(req,res)=>{
             if (questionCount > availableQuestions) {
              
               if (availableQuestions === 0) {
-                console.log('availableQuestions is ',availableQuestions)
-                console.log('questionCount is ',questionCount)
+                // console.log('availableQuestions is ',availableQuestions)
+                // console.log('questionCount is ',questionCount)
                 return res.status(400).json({ 
                   message: "No questions available for this position yet. Please add questions first." 
                 });
@@ -429,8 +429,8 @@ exports.createCandidate=async(req,res)=>{
 
               const plainPassword = Math.random().toString(36).slice(-8); // 8-char password
           const hashedPassword = await bcrypt.hash(plainPassword, 10);
-          console.log('email is ',email)
-          console.log('plainPassword is ',plainPassword)
+          // console.log('email is ',email)
+          // console.log('plainPassword is ',plainPassword)
           const candidate = new Candidate({
               name, email, password: hashedPassword,phone ,position, experience, schedule, questionsAskedToCandidate,
               technicalQuestions, logicalQuestions
@@ -443,7 +443,7 @@ exports.createCandidate=async(req,res)=>{
       );        
           await candidate.save()
               await candidate.populate("position");
-          console.log('send mail function calling')
+          // console.log('send mail function calling')
           await sendCandidateMail(candidate,plainPassword) 
           return res.status(201).json({ message: 'you are registered successfully',  candidate: {
           _id: candidate._id,

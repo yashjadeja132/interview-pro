@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import axiosInstance from "@/Api/axiosInstance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,7 +71,7 @@ export default function PositionManagement() {
   const addPosition = async () => {
     if (!newPosition.trim()) return;
     try {
-      const res = await axios.post("http://192.168.1.27:5000/api/position/", {
+      const res = await axiosInstance.post("/position", {
         name: newPosition,
       });
       console.log(res);
@@ -93,8 +94,8 @@ export default function PositionManagement() {
   const updatePosition = async () => {
     if (!editing._id) return;
     try {
-      await axios.patch(
-        `http://192.168.1.27:5000/api/position/${editing._id}`,
+      await axiosInstance.patch(
+        `/position/${editing._id}`,
         {
           name: editing.name,
         }
@@ -113,8 +114,8 @@ export default function PositionManagement() {
   // DELETE request to delete position
   const deletePosition = async (id) => {
     try {
-      const res = await axios.delete(
-        `http://192.168.1.27:5000/api/position/${id}`
+      const res = await axiosInstance.delete(
+        `/position/${id}`
       );
       if (res.status === 200) {
         toast.success("Position deleted successfully");

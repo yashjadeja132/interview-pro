@@ -126,7 +126,10 @@ export default function CreateQuestion({ onQuestionCreated }) {
 
       if (res.status === 201) {
         toast.success("Question created successfully");
-        onQuestionCreated();
+        // Only call onQuestionCreated if it's provided as a prop
+        if (onQuestionCreated) {
+          onQuestionCreated();
+        }
       } else {
         toast.warning("Something went wrong");
       }
@@ -397,14 +400,16 @@ export default function CreateQuestion({ onQuestionCreated }) {
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onQuestionCreated()}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
+            {onQuestionCreated && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onQuestionCreated()}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+            )}
             <Button
               type="button"
               onClick={handleSubmit}

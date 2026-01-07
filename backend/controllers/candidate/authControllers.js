@@ -55,7 +55,7 @@ module.exports.loginCandidate = async (req, res) => {
         const now = new Date();
         if (candidate.schedule) {
             const scheduleTime = new Date(candidate.schedule);
-            const sixtySecondsAfterSchedule = new Date(scheduleTime.getTime() + 60 * 1000); // Add 60 seconds in milliseconds
+            const thirtyMinutesAfterSchedule = new Date(scheduleTime.getTime() + 30 * 60 * 1000); // Add 30 minutes in milliseconds
             
             // Block login if current time is before scheduled time
             if (now < scheduleTime) {
@@ -65,11 +65,11 @@ module.exports.loginCandidate = async (req, res) => {
                 });
             }
             
-            // Block login if current time is more than 60 seconds after scheduled time
-            if (now > sixtySecondsAfterSchedule) {
-                console.log('login after 60 seconds window')
+            // Block login if current time is more than 30 minutes after scheduled time
+            if (now > thirtyMinutesAfterSchedule) {
+                console.log('login after 30 minutes window')
                 return res.status(403).json({
-                    message: "⏰ Your login window has expired. The interview window was only available for 60 seconds after the scheduled time.",
+                    message: "⏰ Your login window has expired. The interview window was only available for 30 minutes after the scheduled time.",
                 });
             }
         }

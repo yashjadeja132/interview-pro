@@ -14,7 +14,7 @@ exports.createQuestion = async (req, res) => {
       const fileName  = req.files['questionImage'][0].filename;
       questionImageUrl=`${process.env.UploadLink}/questions/${fileName}`;
     }
-    console.log(questionImageUrl)
+    console.log('questionImageUrl is ',questionImageUrl)
     // Handle option images
     if (req.files && req.files['optionImages']) {
       req.files['optionImages'].forEach((file, index) => {
