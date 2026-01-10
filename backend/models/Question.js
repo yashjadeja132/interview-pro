@@ -12,6 +12,8 @@ const questionSchema = new mongoose.Schema({
   position: { type: mongoose.Schema.Types.ObjectId, ref: 'Position', required: true },
   category: { type: Number }, // Optional category flag: 1=Quantitative & Aptitude, 2=Verbal & Language Skills, 3=Programming Logic
   questionText: { type: String },
+  // Normalized text used for case-insensitive duplicate detection (trim + lowercased)
+  normalizedQuestionText: { type: String },
   questionImage: { type: String },
   options: {
     type: [optionSchema],
@@ -24,8 +26,18 @@ const questionSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// Ensure unique question per position (based on normalized text)
+questionSchema.index({ position: 1, normalizedQuestionText: 1 }, { unique: true });
+
 // ✅ Custom validation: Require either questionText or questionImage
 questionSchema.pre('validate', function (next) {
+  // set normalized text for case-insensitive duplicate detection when questionText is provided
+  if (this.questionText) {
+    this.normalizedQuestionText = this.questionText.trim().toLowerCase();
+  } else {
+    this.normalizedQuestionText = undefined;
+  }
+
   if (!this.questionText && !this.questionImage) {
     return next(new Error('Question must have either text or image.'));
   }

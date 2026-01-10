@@ -61,6 +61,10 @@ export default function CreateQuestion({ onQuestionCreated }) {
     }
   };
 
+  // Agar box khali (null / empty) ho
+
+  
+
   const validateForm = () => {
     let errors = {};
     if (!form.positionId) errors.positionId = "Position is required";

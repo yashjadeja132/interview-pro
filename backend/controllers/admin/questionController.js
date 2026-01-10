@@ -15,6 +15,9 @@ exports.createQuestion = async (req, res) => {
       questionImageUrl=`${process.env.UploadLink}/questions/${fileName}`;
     }
     console.log('questionImageUrl is ',questionImageUrl)
+
+// Same positionId ke andar same questionText allow hi mat karo. 
+
     // Handle option images
     if (req.files && req.files['optionImages']) {
       req.files['optionImages'].forEach((file, index) => {
@@ -28,6 +31,15 @@ exports.createQuestion = async (req, res) => {
     // Validate position
     const position = await Position.findById(positionId);
     if (!position) return res.status(404).json({ message: "Position not found" });
+
+    // Check for duplicate question with same position using normalized (trimmed & lowercased) text
+    const normalizedText = questionText ? questionText.trim().toLowerCase() : null;
+    if (normalizedText) {
+      const existingQuestion = await Question.findOne({ position: positionId, normalizedQuestionText: normalizedText });
+      if (existingQuestion) {
+        return res.status(400).json({ message: "Question with same position and text already exists" });
+      }
+    }
 
     const question = new Question({
       position: positionId,
@@ -43,9 +55,61 @@ exports.createQuestion = async (req, res) => {
     res.status(201).json({ message: "Question created successfully", question });
   } catch (err) {
     console.log(err.message)
-     if (err.code === 11000 && err.keyPattern && err.keyPattern.questionText) {
+     if (err.code === 11000 && err.keyPattern && (err.keyPattern.normalizedQuestionText || err.keyPattern.questionText)) {
     return res.status(400).json({ message: "Duplicate question text. Please use a different question." });
   }
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Update question
+exports.updateQuestion = async (req, res) => {
+  try {
+    const { questionText, options, positionId, category } = req.body;
+    let parsedOptions = typeof options === "string" ? JSON.parse(options) : options;
+
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.status(404).json({ message: "Question not found" });
+
+    if (positionId) {
+      const position = await Position.findById(positionId);
+      if (!position) return res.status(404).json({ message: "Position not found" });
+      question.position = positionId;
+    }
+
+    if (questionText) {
+      const normalizedText = questionText.trim().toLowerCase();
+      // Check for duplicate within same position excluding current question
+      const duplicate = await Question.findOne({ position: question.position, normalizedQuestionText: normalizedText, _id: { $ne: question._id } });
+      if (duplicate) return res.status(400).json({ message: "Another question with same position and text already exists" });
+      question.questionText = questionText;
+    }
+    if (category !== undefined) {
+      // Parse category as number if provided (FormData sends as string)
+      question.category = category ? Number(category) : undefined; // Allow setting to undefined to clear category
+    }
+
+    // Handle question image update
+    if (req.files && req.files['questionImage']) {
+      const fileName = req.files['questionImage'][0].filename;
+      question.questionImage = `${process.env.UploadLink}/questions/${fileName}`;
+    }
+
+    // Handle option images update
+    if (req.files && req.files['optionImages']) {
+      req.files['optionImages'].forEach((file, index) => {
+        if (parsedOptions[index]) {
+          const fileName = file.filename;
+          parsedOptions[index].optionImage = `${process.env.UploadLink}/questions/${fileName}`;
+        }
+      });
+    }
+
+    if (parsedOptions) question.options = parsedOptions;
+
+    await question.save();
+    res.status(200).json({ message: "Question updated successfully", question });
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };

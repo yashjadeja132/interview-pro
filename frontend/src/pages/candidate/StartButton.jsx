@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+
+
+
 import { 
   Play, 
   Camera, 
@@ -20,22 +24,73 @@ export default function StartButton({ setStreams }) {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+   
+const handleStartTest = async () => {
+  setErrorMessage("");
+   
+  try {
+  const testpage = () => {
+    useEffect(() => {
+      const disabledKeyboard = (e) => {
+        if (e.key === "F12" || e.key === "F5" || e.key === "F11" || (e.ctrlKey && e.key === "r") || (e.ctrlKey && e.shiftKey && e.key === "i")) {
+          e.preventDefault();
+        }
+      };
+      window.addEventListener("keydown", disabledKeyboard);
+      return () => window.removeEventListener("keydown", disabledKeyboard);
+    }, []);
+  };
 
-  const handleStartTest = async () => {
-    try {
-      setIsLoading(true);
-      setErrorMessage("");
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      const camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setStreams({ screenStream, camStream });
-      navigate("/candidate/Quiztest");
-    } catch (error) {
-      console.error("Permission denied:", error.message);
-      setErrorMessage("You must allow Camera, Microphone, and Screen Sharing to start the test!");
-    } finally {
-      setIsLoading(false);
+
+
+  const enter = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
     }
   };
+
+  // initial enter
+  enter();
+
+  // store handlers globally (clean remove ke liye)
+  window.__fsEnter = enter;
+
+  // agar user ESC se bahar nikle → wapas fullscreen
+  window.__fsChange = () => {
+    if (!document.fullscreenElement) {
+      enter();
+    }
+  };
+
+  document.addEventListener("fullscreenchange", window.__fsChange);
+  // /////////////////////////////////
+
+    setIsLoading(true);
+
+    // request screen + camera
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    const camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    setStreams({ screenStream, camStream });
+
+    // Disable keyboard after starting
+    // keyboardAllowed.current = false;
+
+    // Navigate and fullscreen
+    navigate("/candidate/Quiztest");
+    setTimeout(() => {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    }, 300);
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -139,6 +194,7 @@ export default function StartButton({ setStreams }) {
                   
                   <Button 
                     onClick={handleStartTest}
+                   
                     disabled={isLoading}
                     className="w-full bg-white text-blue-600 hover:bg-blue-50 text-lg font-semibold py-6 h-auto"
                     size="lg"

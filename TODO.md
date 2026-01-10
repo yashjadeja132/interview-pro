@@ -1,0 +1,4 @@
+- [x] Modify createQuestion function in backend/controllers/admin/questionController.js to check for duplicate questions based on position and questionText before creating a new question.
+- [x] If duplicate found, return error message.
+- [x] If no duplicate, proceed to create the question.
+- [ ] Test the API to ensure it works correctly.

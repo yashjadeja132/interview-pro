@@ -39,6 +39,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -1429,9 +1430,11 @@ export default function CandidateManagement() {
                                   )}
                                 </div>
                                 <DialogFooter>
-                                  <Button variant="outline" onClick={() => setEditingId(null)}>
-                                    Cancel
-                                  </Button>
+                                  <DialogClose asChild>
+                                    <Button variant="outline" onClick={() => setEditingId(null)}>
+                                      Cancel
+                                    </Button>
+                                  </DialogClose>
                                   <Button onClick={handleUpdate} className="bg-blue-600 hover:bg-blue-700">
                                     Update Candidate
                                   </Button>
