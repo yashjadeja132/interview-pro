@@ -34,6 +34,7 @@ const handleStartTest = async () => {
       const disabledKeyboard = (e) => {
         if (e.key === "F12" || e.key === "F5" || e.key === "F11" || (e.ctrlKey && e.key === "r") || (e.ctrlKey && e.shiftKey && e.key === "i")) {
           e.preventDefault();
+          console.log("Keyboard  blocked");
         }
       };
       window.addEventListener("keydown", disabledKeyboard);

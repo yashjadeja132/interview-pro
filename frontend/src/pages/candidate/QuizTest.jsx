@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import sparrowLogo from "../../assets/sparrowlogo.png";
 
+
 export default function QuizTest({ streams }) {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -50,6 +51,7 @@ export default function QuizTest({ streams }) {
   };
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
+  
   useEffect(() => {
     console.log(timeLeft);
     if (timeLeft <= 0) {
@@ -70,6 +72,7 @@ export default function QuizTest({ streams }) {
 
     return () => clearInterval(timerId);
   }, []); //
+  
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -168,6 +171,7 @@ export default function QuizTest({ streams }) {
 
     mediaRecorder.start();
   };
+  
   const stopRecordingAndDownload = () => {
     return new Promise((resolve) => {
       if (!mediaRecorderRef.current) return resolve(null);
@@ -247,6 +251,19 @@ export default function QuizTest({ streams }) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  document.addEventListener("keydown", handleKeyDown, true);
+  return () => {
+    document.removeEventListener("keydown", handleKeyDown, true);
+  };
+}, []);
 
   
   const handleSubmit = async (auto = false) => {
@@ -389,6 +406,56 @@ export default function QuizTest({ streams }) {
       console.error("❌ Error saving progress:", err);
     }
   };
+  // Disable keyboard when component mounts - Block ALL keys including ESC
+  useEffect(() => {
+    const handleKeyDown = function (event) {
+      // Explicitly block ESC key (keyCode 27) and ALL other keys
+      const keyCode = event.keyCode || event.which;
+      const key = event.key;
+      
+      // Block ESC, Windows key, and ALL other keys
+      if (
+        keyCode === 27 || // ESC key
+        keyCode === 91 || // Left Windows key
+        keyCode === 92 || // Right Windows key
+        key === 'Escape' ||
+        key === 'Esc' ||
+        key === 'Meta' ||
+        true // Block ALL keys
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        return false;
+      }
+      
+      // Block ALL other keys as well
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      return false;
+    };
+
+    // Use capture phase to catch events early, before they reach other handlers
+    const options = { capture: true, passive: false };
+    
+    // Add listeners on multiple levels to ensure we catch everything
+    document.addEventListener("keydown", handleKeyDown, options);
+    window.addEventListener("keydown", handleKeyDown, options);
+    
+    if (document.body) {
+      document.body.addEventListener("keydown", handleKeyDown, options);
+    }
+    
+    // Cleanup function to remove listeners when component unmounts
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown, options);
+      window.removeEventListener("keydown", handleKeyDown, options);
+      if (document.body) {
+        document.body.removeEventListener("keydown", handleKeyDown, options);
+      }
+    };
+  }, []); // Run only once when component mounts
 
   const handleChange = (questionId, optionId) => {
     setAnswers((prev) => {

@@ -381,7 +381,7 @@ export default function CandidateManagement() {
     }
 
     try {
-      const res = await api.patch(`/hr/${editingId}`, changedFields);
+      const res = await api.put(`/hr/${editingId}`, changedFields);
       setCandidates((prev) =>
         prev.map((candidate) => (candidate._id === editingId ? res.data : candidate))
       );

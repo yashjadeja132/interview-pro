@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 
 export default function PositionManagement() {
-  const [positions, setPositions] = useState([]);
+  const [positions, setPositions] = useState([]); []
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -90,11 +90,11 @@ export default function PositionManagement() {
     }
   };
 
-  // PATCH request to update position
+  // PUT request to update position
   const updatePosition = async () => {
     if (!editing._id) return;
     try {
-      await axiosInstance.patch(
+      await axiosInstance.put(
         `/position/${editing._id}`,
         {
           name: editing.name,
@@ -325,7 +325,7 @@ export default function PositionManagement() {
                               open={editing._id === pos._id}
                               onOpenChange={(open) =>
                                 !open && setEditing({ _id: null, name: "" })
-                              }
+                              }               
                             >
                               <DialogTrigger asChild>
                                 <Button
@@ -347,7 +347,7 @@ export default function PositionManagement() {
                                   <div>
                                     <label className="text-sm font-medium text-slate-700 mb-2 block">
                                       Position Name
-                                    </label>
+                                    </label>ni
                                     <Input
                                       value={editing.name}
                                       onChange={(e) =>

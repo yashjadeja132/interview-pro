@@ -112,6 +112,8 @@ export function Homepage() {
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
               <Button
+             
+              
                 className="bg-slate-900 hover:bg-slate-800 text-white text-sm md:text-base px-4 md:px-6"
                 onClick={() => navigate("/adminAndHRLogin")}
               >

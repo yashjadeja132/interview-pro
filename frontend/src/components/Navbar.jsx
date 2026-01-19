@@ -144,15 +144,7 @@ export default function Navbar({ heading = "Admin Dashboard" }) {
       {/* Right Side */}
       <div className="flex items-center gap-4">
         {/* Home Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleGoHome}
-          className="flex items-center gap-2 text-slate-600 hover:text-slate-800"
-        >
-          <Home className="w-4 h-4" />
-          <span className="hidden sm:inline">Home</span>
-        </Button>
+        
 
         {/* Notifications */}
         {/* <Button 
