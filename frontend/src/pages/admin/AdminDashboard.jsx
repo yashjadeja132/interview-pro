@@ -119,13 +119,16 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-6">
+    <div className="min-h-screen bg-slate-50/50 p-6 dark:bg-slate-900 "
+    
+    // style={{ backgroundColor: primaryColor }}
+    >
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
-            <p className="text-slate-600 mt-1">Overview of your interview system</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+            <p className="text-slate-600 dark:text-gray-400 mt-1">Overview of your interview system</p>
           </div>
           <div className="flex items-center gap-3">
             <Button 

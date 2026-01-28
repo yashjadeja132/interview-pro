@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Bell, Settings, User, LogOut, Home, ChevronDown, Mail, Briefcase, RefreshCw, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -97,7 +98,7 @@ export default function Navbar({ heading = "Admin Dashboard" }) {
     localStorage.removeItem("token");
     sessionStorage.clear();
     // Navigate to login page
-    navigate("/adminAndHRLogin");
+    navigate("/admin/login");
   };
 
   const handleGoHome = () => {
@@ -133,40 +134,22 @@ export default function Navbar({ heading = "Admin Dashboard" }) {
   const userInfo = getUserInfo();
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm">
+    <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 shadow-sm transition-colors duration-200">
       {/* Left Side */}
       <div className="flex items-center gap-4">
-        <SidebarTrigger className="h-8 w-8 hover:bg-slate-100" />
-        <div className="h-6 w-px bg-slate-200" />
-        <h1 className="text-xl font-semibold text-slate-800">{heading}</h1>
+        <SidebarTrigger className="h-8 w-8 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-200" />
+        <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
+        <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{heading}</h1>
       </div>
 
       {/* Right Side */}
       <div className="flex items-center gap-4">
-        {/* Home Button */}
-        
-
-        {/* Notifications */}
-        {/* <Button 
-          variant="ghost" 
-          size="sm" 
-          className="relative"
-          onClick={() => setIsNotificationOpen(true)}
-        >
-          <Bell className="w-4 h-4" />
-          {pendingCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-semibold">
-              {pendingCount > 9 ? '9+' : pendingCount}
-            </span>
-          )}
-        </Button> */}
-
         {/* User Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex items-center gap-2 h-8 px-3"
+            className="flex items-center gap-2 h-8 px-3 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
               {userInfo.name.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -174,35 +157,38 @@ export default function Navbar({ heading = "Admin Dashboard" }) {
             <span className="hidden sm:inline text-sm font-medium">{userInfo.name}</span>
             <ChevronDown className="w-3 h-3" />
           </Button>
-          
+
           {isProfileOpen && (
-            <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-slate-200 rounded-md shadow-lg z-50">
-              <div className="p-3 border-b border-slate-200">
-                <p className="text-sm font-medium">{userInfo.name}</p>
-                <p className="text-xs text-slate-500">{userInfo.email}</p>
+            <div className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-lg z-50">
+              <div className="p-3 border-b border-slate-200 dark:border-slate-800">
+                <p className="text-sm font-medium dark:text-slate-100">{userInfo.name}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{userInfo.email}</p>
                 <p className="text-xs text-blue-600 font-medium">{userInfo.role}</p>
               </div>
               <div className="py-1">
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-sm"
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-sm dark:text-slate-300 dark:hover:bg-slate-800"
+                  asChild
                   onClick={() => setIsProfileOpen(false)}
                 >
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
+                  <Link to="/admin/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-sm"
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-sm dark:text-slate-300 dark:hover:bg-slate-800"
                   onClick={() => setIsProfileOpen(false)}
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Button>
-                <div className="border-t border-slate-200 my-1"></div>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-sm text-red-600 hover:text-red-600 hover:bg-red-50"
+                <div className="border-t border-slate-200 dark:border-slate-800 my-1"></div>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-sm text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                   onClick={handleLogout}
                 >
                   <LogOut className="mr-2 h-4 w-4" />

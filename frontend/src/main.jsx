@@ -3,15 +3,19 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import './App.css'
 import './question.css'
+import './main.css'
 import Layout from "./Layout.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import { Homepage } from "./pages/Homepage.jsx";
 import { StudentLogin } from "./pages/candidate/CandidateLogin.jsx";
-import {Route,RouterProvider,createBrowserRouter,createRoutesFromElements} from "react-router-dom";
-import { AdminLogin } from "./pages/authpages/AdminAndHRLogin.jsx";
+import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
+import { AdminLogin } from "./pages/authpages/AdminLogin.jsx";
 import CreateQuestion from "./pages/admin/CreateQuestion.jsx";
 import QuestionManagement from "./pages/admin/QuestionManagement.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
+import Settings from "./pages/admin/Settings.jsx";
+import Profile from "./pages/admin/Profile.jsx";
+import ResetPassword from "./pages/authpages/ResetPassword.jsx";
 // import AttemptManagement from "./pages/admin/AttemptManagement.jsx";
 // import AttemptManagementTest from "./pages/admin/AttemptManagementTest.jsx";
 import CandidateHistory from "./pages/admin/CandidateHistory.jsx";
@@ -25,8 +29,11 @@ import QuizTestWithAttempts from "./pages/candidate/QuizTestWithAttempts";
 import ThankYou from "./pages/candidate/ThankYou.jsx";
 import ThankYouWithAttempts from "./pages/candidate/ThankYouWithAttempts.jsx";
 import CandidateResult from './pages/candidate/CandidateResult.jsx'
+import ForgotPassword from "./pages/authpages/ForgotPassword.jsx";
+import ThemeProvider from "./context/ThemeContext";
+
 function Main() {
-  const [streams, setStreams] = useState(null); 
+  const [streams, setStreams] = useState(null);
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route>
@@ -35,20 +42,22 @@ function Main() {
         <Route path="/candidate/login" element={<StudentLogin />} />
         <Route path="/candidate/StartTest" element={<StartButton setStreams={setStreams} />} />
         <Route path="/candidate/dashboard" element={<CandidateDashboardWithAttempts />} />
-        <Route path="/candidate/Quiztest" element={<QuizTest streams={streams}/>}/>
-        <Route path="/candidate/QuiztestWithAttempts" element={<QuizTestWithAttempts streams={streams}/>}/>
-        <Route path="/thank-you" element={<ThankYou/>}/>
-        <Route path="/thank-you-with-attempts" element={<ThankYouWithAttempts/>}/>
-        <Route path='/candidate/result/:candidateId' element={<CandidateResult/>}/>
-        <Route path="/adminAndHRLogin" element={<AdminLogin />} />
-        
+        <Route path="/candidate/Quiztest" element={<QuizTest streams={streams} />} />
+        <Route path="/candidate/QuiztestWithAttempts" element={<QuizTestWithAttempts streams={streams} />} />
+        <Route path="/thank-you" element={<ThankYou />} />
+        <Route path="/thank-you-with-attempts" element={<ThankYouWithAttempts />} />
+        <Route path='/candidate/result/:candidateId' element={<CandidateResult />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/reset-password/:email" element={<ResetPassword />} />
+        <Route path="/admin/forgot-password" element={<ForgotPassword />} />
         {/* Admin/HR Routes - With AdminLayout */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="analytics" element={<div className="p-6"><h1 className="text-2xl font-bold">Analytics</h1></div>} />
-          <Route path="settings" element={<div className="p-6"><h1 className="text-2xl font-bold">Settings</h1></div>} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
-        
+
         {/* Admin/HR Routes - Direct with AdminLayout */}
         <Route path="/candidateManagement" element={<AdminLayout />}>
           <Route index element={<CandidateManagement />} />
@@ -82,9 +91,14 @@ function Main() {
 }
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <Main />
+ 
+ <ThemeProvider >
+ <StrictMode>
+    
+      <Main />
+    
   </StrictMode>
+  </ThemeProvider> 
 );
 
 

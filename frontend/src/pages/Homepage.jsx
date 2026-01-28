@@ -115,7 +115,7 @@ export function Homepage() {
              
               
                 className="bg-slate-900 hover:bg-slate-800 text-white text-sm md:text-base px-4 md:px-6"
-                onClick={() => navigate("/adminAndHRLogin")}
+                onClick={() => navigate("/admin/login")}
               >
                 Admin Login
               </Button>
@@ -149,7 +149,7 @@ export function Homepage() {
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4"></div>
           </div>
         </div>
-      </section>
+    </section>
 
       {/* Stats Section */}
      <section className="bg-slate-50 px-4 sm:px-6 lg:px-8 pt-12 md:pt-16">

@@ -63,7 +63,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
 
   // Agar box khali (null / empty) ho
 
-  
+
 
   const validateForm = () => {
     let errors = {};
@@ -102,7 +102,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
       const formData = new FormData();
       formData.append("positionId", form.positionId);
       formData.append("questionText", form.question);
-      
+
       // Category (optional) - send as number
       if (form.category) {
         formData.append("category", Number(form.category));
@@ -177,7 +177,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
     const newOptions = [...form.options];
     newOptions[idx] = { ...newOptions[idx], optionImage: null };
     setForm((prev) => ({ ...prev, options: newOptions }));
-    
+
     if (optionImageRefs.current[idx]) {
       optionImageRefs.current[idx].value = "";
     }
@@ -185,9 +185,9 @@ export default function CreateQuestion({ onQuestionCreated }) {
 
   return (
     <div className="space-y-6">
-      <Card className="border-0 shadow-sm">
+      <Card className="border-0 shadow-sm dark:bg-slate-900">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold">Create New Question</CardTitle>
+          <CardTitle className="text-xl font-semibold dark:text-white">Create New Question</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -195,7 +195,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Position Selection */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Position</Label>
+              <Label className="text-sm font-medium dark:text-gray-300">Position</Label>
               <Select
                 value={form.positionId || ""}
                 onValueChange={(value) => {
@@ -203,12 +203,12 @@ export default function CreateQuestion({ onQuestionCreated }) {
                   validateField("positionId", value);
                 }}
               >
-                <SelectTrigger className={fieldErrors.positionId ? "border-red-500" : ""}>
+                <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.positionId ? "border-red-500" : ""}`}>
                   <SelectValue placeholder="Select position" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
                   {positions.map((pos) => (
-                    <SelectItem key={pos._id} value={pos._id}>
+                    <SelectItem key={pos._id} value={pos._id} className="dark:text-white dark:focus:bg-slate-700">
                       {pos.name}
                     </SelectItem>
                   ))}
@@ -224,19 +224,19 @@ export default function CreateQuestion({ onQuestionCreated }) {
 
             {/* Category Selection */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Category</Label>
+              <Label className="text-sm font-medium dark:text-gray-300">Category</Label>
               <Select
                 value={form.category ? String(form.category) : ""}
                 onValueChange={(value) => {
                   setForm((prev) => ({ ...prev, category: value ? Number(value) : "" }));
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
                   {categories.map((cat) => (
-                    <SelectItem key={cat.value} value={String(cat.value)}>
+                    <SelectItem key={cat.value} value={String(cat.value)} className="dark:text-white dark:focus:bg-slate-700">
                       {cat.label}
                     </SelectItem>
                   ))}
@@ -247,7 +247,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
 
           {/* Question Text */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Question Text</Label>
+            <Label className="text-sm font-medium dark:text-gray-300">Question Text</Label>
             <Input
               name="question"
               value={form.question}
@@ -256,7 +256,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
                 validateField("question", e.target.value);
               }}
               placeholder="Enter your question here..."
-              className={fieldErrors.question ? "border-red-500" : ""}
+              className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.question ? "border-red-500" : ""}`}
             />
             {fieldErrors.question && (
               <p className="text-sm text-red-600 flex items-center gap-1">
@@ -268,7 +268,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
 
           {/* Question Image */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Question Image (Optional)</Label>
+            <Label className="text-sm font-medium dark:text-gray-300">Question Image (Optional)</Label>
             <Input
               type="file"
               accept="image/*"
@@ -279,13 +279,14 @@ export default function CreateQuestion({ onQuestionCreated }) {
                   questionImage: e.target.files[0],
                 }))
               }
+              className="dark:bg-slate-800 dark:border-slate-700 dark:text-white file:dark:text-white"
             />
             {form.questionImage && (
               <div className="relative inline-block">
                 <img
                   src={URL.createObjectURL(form.questionImage)}
                   alt="preview"
-                  className="w-48 h-32 object-cover rounded border"
+                  className="w-48 h-32 object-cover rounded border dark:border-slate-700"
                 />
                 <button
                   type="button"
@@ -300,12 +301,12 @@ export default function CreateQuestion({ onQuestionCreated }) {
 
           {/* Answer Options */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-slate-800">Answer Options</h3>
-            
+            <h3 className="text-lg font-medium text-slate-800 dark:text-white">Answer Options</h3>
+
             {form.options.map((opt, idx) => (
-              <div key={idx} className="border border-slate-200 rounded-lg p-4 space-y-3">
+              <div key={idx} className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 space-y-3 dark:bg-slate-800/50">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Option {idx + 1}</Label>
+                  <Label className="text-sm font-medium dark:text-gray-300">Option {idx + 1}</Label>
                   <RadioGroup
                     value={opt.isCorrect ? String(idx) : ""}
                     onValueChange={(value) => {
@@ -321,8 +322,8 @@ export default function CreateQuestion({ onQuestionCreated }) {
                       validateField("correct", true);
                     }}
                   >
-                    <Label className="flex items-center gap-2 cursor-pointer text-sm">
-                      <RadioGroupItem value={String(idx)} />
+                    <Label className="flex items-center gap-2 cursor-pointer text-sm dark:text-gray-300">
+                      <RadioGroupItem value={String(idx)} className="dark:border-slate-400 dark:text-blue-500" />
                       Mark as correct answer
                     </Label>
                   </RadioGroup>
@@ -343,11 +344,11 @@ export default function CreateQuestion({ onQuestionCreated }) {
                     }));
                     validateField(`option${idx}`, e.target.value);
                   }}
-                  className={fieldErrors[`option${idx}`] ? "border-red-500" : ""}
+                  className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors[`option${idx}`] ? "border-red-500" : ""}`}
                 />
 
                 <div className="space-y-2">
-                  <Label className="text-xs text-slate-600">Option Image (Optional)</Label>
+                  <Label className="text-xs text-slate-600 dark:text-slate-400">Option Image (Optional)</Label>
                   <Input
                     type="file"
                     accept="image/*"
@@ -365,14 +366,15 @@ export default function CreateQuestion({ onQuestionCreated }) {
                       }));
                       validateField(`option${idx}`, file ? "image" : "");
                     }}
+                    className="dark:bg-slate-800 dark:border-slate-700 dark:text-white file:dark:text-white"
                   />
-                  
+
                   {opt.optionImage && (
                     <div className="relative inline-block">
                       <img
                         src={URL.createObjectURL(opt.optionImage)}
                         alt="preview"
-                        className="w-32 h-24 object-cover rounded border"
+                        className="w-32 h-24 object-cover rounded border dark:border-slate-700"
                       />
                       <button
                         type="button"
@@ -387,7 +389,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
 
                 {fieldErrors[`option${idx}`] && (
                   <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
+                    <AlertCircle className="w-4 h-4" /> 
                     {fieldErrors[`option${idx}`]}
                   </p>
                 )}
@@ -410,6 +412,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
                 variant="outline"
                 onClick={() => onQuestionCreated()}
                 disabled={isLoading}
+                className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
               >
                 Cancel
               </Button>
@@ -418,7 +421,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
               type="button"
               onClick={handleSubmit}
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isLoading ? "Creating Question..." : "Create Question"}
             </Button>

@@ -10,9 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import axios from "axios";
+import axiosInstance from "../../Api/axiosInstance";
 import { AlertCircle, Shield, Users, Settings, ArrowLeft, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 export function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,18 +63,18 @@ export function AdminLogin() {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
+      const response = await axiosInstance.post(
+        "/auth/login",
         { email, password }
       );
 
       console.log("Login successful:", response.data);
       setSuccess("Login successful!");
-      
+
       // Store token and user data
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      
+
       // Navigate to dashboard based on user role with a small delay
       setTimeout(() => {
         if (response.data.user.role === "Admin") {
@@ -189,7 +189,7 @@ export function AdminLogin() {
               <div className="mx-auto mb-6 w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg">
                 <Shield className="w-8 h-8 text-white" />
               </div>
-              
+
               <CardTitle className="text-2xl font-bold text-slate-800 mb-2">
                 Admin Portal
               </CardTitle>
@@ -197,7 +197,7 @@ export function AdminLogin() {
                 Sign in to access your management dashboard
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="px-8 pb-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Email Field */}
@@ -220,11 +220,10 @@ export function AdminLogin() {
                         setEmail(e.target.value);
                         validateField("email", e.target.value);
                       }}
-                      className={`pl-10 h-12 bg-white/50 border-2 transition-all duration-200 ${
-                        fieldErrors.email 
-                          ? "border-red-300 focus:border-red-500 focus:ring-red-200" 
-                          : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
-                      } rounded-xl`}
+                      className={`pl-10 h-12 bg-white/50 border-2 transition-all duration-200 ${fieldErrors.email
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                        : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
+                        } rounded-xl`}
                     />
                   </div>
                   {fieldErrors.email && (
@@ -255,11 +254,10 @@ export function AdminLogin() {
                         setPassword(e.target.value);
                         validateField("password", e.target.value);
                       }}
-                      className={`pl-10 h-12 bg-white/50 border-2 transition-all duration-200 ${
-                        fieldErrors.password 
-                          ? "border-red-300 focus:border-red-500 focus:ring-red-200" 
-                          : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
-                      } rounded-xl`}
+                      className={`pl-10 h-12 bg-white/50 border-2 transition-all duration-200 ${fieldErrors.password
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                        : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
+                        } rounded-xl`}
                     />
                   </div>
                   {fieldErrors.password && (
@@ -268,6 +266,15 @@ export function AdminLogin() {
                       {fieldErrors.password}
                     </div>
                   )}
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin/forgot-password')}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
                 </div>
 
                 {/* General Error */}
@@ -296,8 +303,8 @@ export function AdminLogin() {
                 )}
 
                 {/* Login Button */}
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={loading}
                   className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >

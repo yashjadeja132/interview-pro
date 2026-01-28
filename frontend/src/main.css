@@ -1,0 +1,45 @@
+/* LIGHT MODE (default) */
+body {
+  background: #ffffff;
+  color: #000;
+}
+
+header, footer {
+  background: #f4f4f4;
+}
+
+.card, .box, .panel {
+  background: #fff;
+  color: #000;
+}
+
+/* ================= DARK MODE ================= */
+
+.dark {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.dark header,
+.dark footer {
+  background-color: #1e1e1e;
+}
+
+.dark .card,
+.dark .box,
+.dark .panel {
+  background-color: #1f1f1f;
+  color: #ffffff;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+}
+
+.theme-btn {
+  cursor: pointer;
+}

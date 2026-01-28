@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { 
-  Search, 
-  Edit2, 
-  Trash2, 
-  AlertCircle, 
-  Plus, 
-  Users, 
-  UserCheck, 
-  Clock, 
+import {
+  Search,
+  Edit2,
+  Trash2,
+  AlertCircle,
+  Plus,
+  Users,
+  UserCheck,
+  Clock,
   FileText,
   Mail,
   Phone,
@@ -66,13 +66,13 @@ export default function CandidateManagement() {
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  
+
   // Bulk selection state
   const [selectedCandidates, setSelectedCandidates] = useState([]);
   const [isAllSelected, setIsAllSelected] = useState(false);
   const [showBulkDelete, setShowBulkDelete] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
-  
+
   // Add candidate modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddingCandidate, setIsAddingCandidate] = useState(false);
@@ -166,7 +166,7 @@ export default function CandidateManagement() {
       const res = await axios.get("http://localhost:5000/api/position");
       const positionsData = res.data.data || [];
       setPositions(positionsData);
-      
+
       // If a position is selected in the form, update question count
       if (form.position) {
         const selectedPos = positionsData.find(p => p._id === form.position);
@@ -281,7 +281,7 @@ export default function CandidateManagement() {
         errors.schedule = "Interview schedule cannot be in the past";
       }
     }
-    
+
     // Validate questionsAskedToCandidate - always validate when clicking button
     // Show error if empty, or if value is invalid
     if (!form.questionsAskedToCandidate || form.questionsAskedToCandidate === "") {
@@ -297,7 +297,7 @@ export default function CandidateManagement() {
           errors.questionsAskedToCandidate = `Only ${selectedPositionQuestionCount} question${selectedPositionQuestionCount !== 1 ? 's' : ''} available for this position. Not enough questions.`;
         }
       }
-      
+
       // Validate technicalQuestions and logicalQuestions when questionsAskedToCandidate is filled
       if (!form.technicalQuestions || form.technicalQuestions === "") {
         errors.technicalQuestions = "Technical questions are required";
@@ -307,7 +307,7 @@ export default function CandidateManagement() {
           errors.technicalQuestions = "Technical questions must be a positive number";
         }
       }
-      
+
       if (!form.logicalQuestions || form.logicalQuestions === "") {
         errors.logicalQuestions = "Logical questions are required";
       } else {
@@ -317,11 +317,11 @@ export default function CandidateManagement() {
         }
       }
     }
-    
+
     // Also validate using validateField to ensure fieldErrors state is updated
     // This ensures consistency between errors object and fieldErrors state
     validateField("questionsAskedToCandidate", form.questionsAskedToCandidate || "");
-    
+
     // Set all validation errors at once
     // Merge with existing fieldErrors to preserve any errors from validateField
     setFieldErrors((prevErrors) => ({ ...prevErrors, ...errors }));
@@ -332,19 +332,19 @@ export default function CandidateManagement() {
     try {
       const res = await api.post("/hr", form);
       const newCandidate = res.data;
-      
+
       // Add new candidate at the beginning of the list
       setCandidates([newCandidate, ...candidates]);
-      
+
       // Clear form and close modal
       setForm({});
       setFieldErrors({});
       setGeneralError("");
       setIsAddModalOpen(false);
-      
+
       // Refresh the list to get updated data
       fetchCandidates();
-      
+
       // Show success message
       console.log("Candidate added successfully:", newCandidate.name);
     } catch (err) {
@@ -411,16 +411,16 @@ export default function CandidateManagement() {
   // Bulk selection functions
   const handleSelectCandidate = (candidateId) => {
     setSelectedCandidates(prev => {
-      const newSelection = prev.includes(candidateId) 
+      const newSelection = prev.includes(candidateId)
         ? prev.filter(id => id !== candidateId)
         : [...prev, candidateId];
-      
+
       // Update showBulkDelete based on selection
       setShowBulkDelete(newSelection.length > 0);
-      
+
       // Update isAllSelected state
       setIsAllSelected(newSelection.length === candidates.length);
-      
+
       return newSelection;
     });
   };
@@ -440,21 +440,21 @@ export default function CandidateManagement() {
 
   const handleBulkDelete = async () => {
     if (selectedCandidates.length === 0) return;
-    
+
     try {
       await api.delete('/hr/bulk', {
         data: { candidateIds: selectedCandidates }
       });
-      
+
       // Update local state
       setCandidates(candidates.filter(c => !selectedCandidates.includes(c._id)));
-      
+
       // Reset selection
       setSelectedCandidates([]);
       setShowBulkDelete(false);
       setIsAllSelected(false);
       setShowBulkDeleteConfirm(false);
-      
+
       // Refresh the list
       fetchCandidates();
     } catch (err) {
@@ -497,14 +497,14 @@ export default function CandidateManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
       {/* Header Section */}
-      <div className="bg-white border-b border-slate-200 px-6 py-6">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-6 transition-colors duration-200">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Candidate Management</h1>
-              <p className="text-slate-600 mt-1">Manage and track all candidates in your system</p>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Candidate Management</h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">Manage and track all candidates in your system</p>
             </div>
             <div className="flex items-center gap-3">
               {/* <Button 
@@ -531,292 +531,350 @@ export default function CandidateManagement() {
                 }}
               >
                 <DialogTrigger asChild>
-                  <Button 
-                    className="h-10 bg-blue-600 hover:bg-blue-700"
-                    onClick={() => setIsAddModalOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
+                 <Button
+                       className="h-10 bg-blue-600 hover:bg-blue-700 text-white"
+                       onClick={() => setIsAddModalOpen(true)}
+                        >
+                        <Plus className="w-4 h-4 mr-2 text-white" />
                     Add Candidate
-                  </Button>
+              </Button>
                 </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Plus className="w-5 h-5" />
-                    Add New Candidate
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-6 py-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Name */}
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name *</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        placeholder="John Doe"
-                        value={form.name || ""}
-                        onChange={(e) => {
-                          handleChange(e);
-                          validateField("name", e.target.value);
-                        }}
-                        className={fieldErrors.name ? "border-red-500" : ""}
-                      />
-                      {fieldErrors.name && (
-                        <p className="flex items-center gap-1 text-sm text-red-600">
-                          <AlertCircle className="w-3 h-3" />
-                          {fieldErrors.name}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address *</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="john@example.com"
-                        value={form.email || ""}
-                        onChange={(e) => {
-                          handleChange(e);
-                          validateField("email", e.target.value);
-                        }}
-                        className={fieldErrors.email ? "border-red-500" : ""}
-                      />
-                      {fieldErrors.email && (
-                        <p className="flex items-center gap-1 text-sm text-red-600">
-                          <AlertCircle className="w-3 h-3" />
-                          {fieldErrors.email}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Phone */}
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number *</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        placeholder="1234567890"
-                        value={form.phone || ""}
-                        onChange={(e) => {
-                          handleChange(e);
-                          validateField("phone", e.target.value);
-                        }}
-                        className={fieldErrors.phone ? "border-red-500" : ""}
-                      />
-                      {fieldErrors.phone && (
-                        <p className="flex items-center gap-1 text-sm text-red-600">
-                          <AlertCircle className="w-3 h-3" />
-                          {fieldErrors.phone}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Experience */}
-                    <div className="space-y-2">
-                      <Label htmlFor="experience">Experience Level *</Label>
-                      <Select
-                        value={form.experience || ""}
-                        onValueChange={(value) => {
-                          setForm((prev) => ({ ...prev, experience: value }));
-                          validateField("experience", value);
-                        }}
-                      >
-                        <SelectTrigger className={fieldErrors.experience ? "border-red-500" : ""}>
-                          <SelectValue placeholder="Select experience level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fresher">Fresher (0-1 years)</SelectItem>
-                          <SelectItem value="1-2">1-2 Years</SelectItem>
-                          <SelectItem value="3-5">3-5 Years</SelectItem>
-                          <SelectItem value="5+">5+ Years</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {fieldErrors.experience && (
-                        <p className="flex items-center gap-1 text-sm text-red-600">
-                          <AlertCircle className="w-3 h-3" />
-                          {fieldErrors.experience}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Position */}
-                    <div className="space-y-2">
-                      <Label htmlFor="position">Position *</Label>
-                      <Select
-                        value={form.position || ""}
-                        onValueChange={(value) => {
-                          const selectedPos = positions.find(p => p._id === value);
-                          setSelectedPositionQuestionCount(selectedPos?.questionCount || 0);
-                          setForm((prev) => ({ ...prev, position: value }));
-                          validateField("position", value);
-                          // Re-validate questionsAskedToCandidate if it exists
-                          if (form.questionsAskedToCandidate) {
-                            validateField("questionsAskedToCandidate", form.questionsAskedToCandidate);
-                          }
-                        }}
-                      >
-                        <SelectTrigger className={fieldErrors.position ? "border-red-500" : ""}>
-                          <SelectValue placeholder="Select position" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {positions.map((pos) => (
-                            <SelectItem key={pos._id} value={pos._id}>
-                              {pos.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldErrors.position && (
-                        <p className="flex items-center gap-1 text-sm text-red-600">
-                          <AlertCircle className="w-3 h-3" />
-                          {fieldErrors.position}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Schedule */}
-                    <div className="space-y-2">
-                      <Label htmlFor="schedule">Interview Schedule *</Label>
-                      <Input
-                        id="schedule"
-                        name="schedule"
-                        type="datetime-local"
-                        min={new Date().toISOString().slice(0, 16)}
-                        value={form.schedule || ""}
-                        onChange={(e) => {
-                          handleChange(e);
-                          validateField("schedule", e.target.value);
-                        }}
-                        className={fieldErrors.schedule ? "border-red-500" : ""}
-                      />
-                      {fieldErrors.schedule && (
-                        <p className="flex items-center gap-1 text-sm text-red-600">
-                          <AlertCircle className="w-3 h-3" />
-                          {fieldErrors.schedule}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Questions Asked To Candidate */}
-                    <div className="space-y-2">
-                      <Label htmlFor="questionsAskedToCandidate">Questions Asked To Candidate *</Label>
-                      <Input
-                        id="questionsAskedToCandidate"
-                        name="questionsAskedToCandidate"
-                        type="number"
-                        min="0"
-                        placeholder="Enter number of questions"
-                        value={form.questionsAskedToCandidate || ""}
-                        onChange={(e) => {
-                          handleChange(e);
-                          validateField("questionsAskedToCandidate", e.target.value);
-                        }}
-                        className={fieldErrors.questionsAskedToCandidate ? "border-red-500" : ""}
-                      />
-                      {selectedPositionQuestionCount !== null && (
-                        <p className="text-xs text-slate-500">
-                          Available questions for selected position {selectedPositionQuestionCount}
-                        </p>
-                      )}
-                      {fieldErrors.questionsAskedToCandidate && (
-                        <p className="flex items-center gap-1 text-sm text-red-600">
-                          <AlertCircle className="w-3 h-3" />
-                          {fieldErrors.questionsAskedToCandidate}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Technical and Logical Questions Section - Show when questionsAskedToCandidate has a value */}
-                  {form.questionsAskedToCandidate && form.questionsAskedToCandidate !== "" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200">
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Plus className="w-5 h-5" />
+                      Add New Candidate
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-6 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Name */}
                       <div className="space-y-2">
-                        <Label htmlFor="technicalQuestions">Technical Questions</Label>
+                        <Label
+                         className= "dark:text-white"
+                          htmlFor="name">Full Name *</Label>
                         <Input
-                          id="technicalQuestions"
-                          name="technicalQuestions"
-                          type="number"
-                          min="0"
-                          placeholder="Enter number of technical questions"
-                          value={form.technicalQuestions || ""}
+                          id="name"
+                          name="name"
+                          placeholder="John Doe"
+                          value={form.name || ""}
                           onChange={(e) => {
                             handleChange(e);
-                            validateField("technicalQuestions", e.target.value);
+                            validateField("name", e.target.value);
                           }}
-                          className={fieldErrors.technicalQuestions ? "border-red-500" : ""}
+                          className={fieldErrors.name ? "border-red-500" : ""}
                         />
-                        {fieldErrors.technicalQuestions && (
+                        {fieldErrors.name && (
                           <p className="flex items-center gap-1 text-sm text-red-600">
                             <AlertCircle className="w-3 h-3" />
-                            {fieldErrors.technicalQuestions}
+                            {fieldErrors.name}
                           </p>
                         )}
                       </div>
+
+                      {/* Email */}
                       <div className="space-y-2">
-                        <Label htmlFor="logicalQuestions">Logical Questions</Label>
+                        <Label
+                         className= "dark:text-white"
+                        htmlFor="email">Email Address *</Label>
                         <Input
-                          id="logicalQuestions"
-                          name="logicalQuestions"
-                          type="number"
-                          min="0"
-                          placeholder="Enter number of logical questions"
-                          value={form.logicalQuestions || ""}
+                          id="email"
+                          name="email"
+                          type="email"
+                          placeholder="john@example.com"
+                          value={form.email || ""}
                           onChange={(e) => {
                             handleChange(e);
-                            validateField("logicalQuestions", e.target.value);
+                            validateField("email", e.target.value);
                           }}
-                          className={fieldErrors.logicalQuestions ? "border-red-500" : ""}
+                          className={fieldErrors.email ? "border-red-500" : ""}
                         />
-                        {fieldErrors.logicalQuestions && (
+                        {fieldErrors.email && (
                           <p className="flex items-center gap-1 text-sm text-red-600">
                             <AlertCircle className="w-3 h-3" />
-                            {fieldErrors.logicalQuestions}
+                            {fieldErrors.email}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Phone */}
+                      <div className="space-y-2">
+                        <Label
+                           className= "dark:text-white"
+                        htmlFor="phone">Phone Number *</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          placeholder="1234567890"
+                          value={form.phone || ""}
+                          onChange={(e) => {
+                            handleChange(e);
+                            validateField("phone", e.target.value);
+                          }}
+                          className={fieldErrors.phone ? "border-red-500" : ""}
+                        />
+                        {fieldErrors.phone && (
+                          <p className="flex items-center gap-1 text-sm text-red-600">
+                            <AlertCircle className="w-3 h-3" />
+                            {fieldErrors.phone}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Experience Level */}
+<div className="space-y-2">
+  <Label
+    htmlFor="experience"
+    className="text-gray-900 dark:text-white"
+  >
+    Experience Level *
+  </Label>
+
+  <Select
+    value={form.experience || ""}
+    onValueChange={(value) => {
+      setForm((prev) => ({ ...prev, experience: value }));
+      validateField("experience", value);
+    }}
+  >
+    <SelectTrigger
+      className={`
+        ${fieldErrors.experience ? "border-red-500" : ""}
+        text-gray-900 dark:text-white
+        bg-white dark:bg-gray-900
+      `}
+    >
+      <SelectValue placeholder="Select experience level" />
+    </SelectTrigger>
+
+    <SelectContent className="bg-white dark:bg-gray-900">
+      <SelectItem value="fresher" className="dark:text-white">
+        Fresher (0-1 years)
+      </SelectItem>
+      <SelectItem value="1-2" className="dark:text-white">
+        1-2 Years
+      </SelectItem>
+      <SelectItem value="3-5" className="dark:text-white">
+        3-5 Years
+      </SelectItem>
+      <SelectItem value="5+" className="dark:text-white">
+        5+ Years
+      </SelectItem>
+    </SelectContent>
+  </Select>
+
+  {fieldErrors.experience && (
+    <p className="flex items-center gap-1 text-sm text-red-600">
+      <AlertCircle className="w-3 h-3" />
+      {fieldErrors.experience}
+    </p>
+  )}
+</div>
+
+
+                      {/* Position */}
+                      <div className="space-y-2">
+  <Label
+    htmlFor="position"
+    className="text-gray-900 dark:text-white"
+  >
+    Position *
+  </Label>
+
+  <Select
+    value={form.position || ""}
+    onValueChange={(value) => {
+      const selectedPos = positions.find(p => p._id === value);
+      setSelectedPositionQuestionCount(selectedPos?.questionCount || 0);
+      setForm((prev) => ({ ...prev, position: value }));
+      validateField("position", value);
+
+      if (form.questionsAskedToCandidate) {
+        validateField("questionsAskedToCandidate", form.questionsAskedToCandidate);
+      }
+    }}
+  >
+    <SelectTrigger
+      className={`
+        ${fieldErrors.position ? "border-red-500" : ""}
+        text-gray-900 dark:text-white
+        bg-white dark:bg-gray-900
+      `}
+    >
+      <SelectValue placeholder="Select position" />
+    </SelectTrigger>
+
+    <SelectContent className="bg-white dark:bg-gray-900">
+      {positions.map((pos) => (
+        <SelectItem
+          key={pos._id}
+          value={pos._id}
+          className="dark:text-white"
+        >
+          {pos.name}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+
+  {fieldErrors.position && (
+    <p className="flex items-center gap-1 text-sm text-red-600">
+      <AlertCircle className="w-3 h-3" />
+      {fieldErrors.position}
+    </p>
+  )}
+</div>
+
+
+                      {/* Schedule */}
+                  <div className="space-y-2">
+  <Label
+    htmlFor="schedule"
+    className="text-gray-900 dark:text-white"
+  >
+    Interview Schedule *
+  </Label>
+                        <Input
+                          id="schedule"
+                          name="schedule"
+                          type="datetime-local"
+                          min={new Date().toISOString().slice(0, 16)}
+                          value={form.schedule || ""}
+                          onChange={(e) => {
+                            handleChange(e);
+                            validateField("schedule", e.target.value);
+                          }}
+                          className={fieldErrors.schedule ? "border-red-500" : ""}
+                        />
+                        {fieldErrors.schedule && (
+                          <p className="flex items-center gap-1 text-sm text-red-600">
+                            <AlertCircle className="w-3 h-3" />
+                            {fieldErrors.schedule}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Questions Asked To Candidate */}
+                      <div className="space-y-2">
+                        <Label htmlFor="questionsAskedToCandidate"
+                          className= "dark:text-white"
+                        
+                        
+                        >Questions Asked To Candidate *</Label>
+                        <Input
+                          id="questionsAskedToCandidate"
+                          name="questionsAskedToCandidate"
+                          type="number"
+                          min="0"
+                          placeholder="Enter number of questions"
+                          value={form.questionsAskedToCandidate || ""}
+                          onChange={(e) => {
+                            handleChange(e);
+                            validateField("questionsAskedToCandidate", e.target.value);
+                          }}
+                          className={fieldErrors.questionsAskedToCandidate ? "border-red-500" : ""}
+                        />
+                        {selectedPositionQuestionCount !== null && (
+                          <p className="text-xs text-slate-500">
+                            Available questions for selected position {selectedPositionQuestionCount}
+                          </p>
+                        )}
+                        {fieldErrors.questionsAskedToCandidate && (
+                          <p className="flex items-center gap-1 text-sm text-red-600">
+                            <AlertCircle className="w-3 h-3" />
+                            {fieldErrors.questionsAskedToCandidate}
                           </p>
                         )}
                       </div>
                     </div>
-                  )}
 
-                  {/* General error */}
-                  {generalError && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-sm text-red-600">{generalError}</p>
-                    </div>
-                  )}
-                </div>
-                <DialogFooter>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setForm({});
-                      setFieldErrors({});
-                      setGeneralError("");
-                      setIsAddModalOpen(false);
-                    }}
-                    disabled={isAddingCandidate}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleAdd} 
-                    className="bg-blue-600 hover:bg-blue-700"
-                    disabled={isAddingCandidate}
-                  >
-                    {isAddingCandidate ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Adding Candidate...
-                      </>
-                    ) : (
-                      "Add Candidate"
+                    {/* Technical and Logical Questions Section - Show when questionsAskedToCandidate has a value */}
+                    {form.questionsAskedToCandidate && form.questionsAskedToCandidate !== "" && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200">
+                        <div className="space-y-2">
+                          <Label htmlFor="technicalQuestions">Technical Questions</Label>
+                          <Input
+                            id="technicalQuestions"
+                            name="technicalQuestions"
+                            type="number"
+                            min="0"
+                            placeholder="Enter number of technical questions"
+                            value={form.technicalQuestions || ""}
+                            onChange={(e) => {
+                              handleChange(e);
+                              validateField("technicalQuestions", e.target.value);
+                            }}
+                            className={fieldErrors.technicalQuestions ? "border-red-500" : ""}
+                          />
+                          {fieldErrors.technicalQuestions && (
+                            <p className="flex items-center gap-1 text-sm text-red-600">
+                              <AlertCircle className="w-3 h-3" />
+                              {fieldErrors.technicalQuestions}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="logicalQuestions">Logical Questions</Label>
+                          <Input
+                            id="logicalQuestions"
+                            name="logicalQuestions"
+                            type="number"
+                            min="0"
+                            placeholder="Enter number of logical questions"
+                            value={form.logicalQuestions || ""}
+                            onChange={(e) => {
+                              handleChange(e);
+                              validateField("logicalQuestions", e.target.value);
+                            }}
+                            className={fieldErrors.logicalQuestions ? "border-red-500" : ""}
+                          />
+                          {fieldErrors.logicalQuestions && (
+                            <p className="flex items-center gap-1 text-sm text-red-600">
+                              <AlertCircle className="w-3 h-3" />
+                              {fieldErrors.logicalQuestions}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     )}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+
+                    {/* General error */}
+                    {generalError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-600">{generalError}</p>
+                      </div>
+                    )}
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setForm({});
+                        setFieldErrors({});
+                        setGeneralError("");
+                        setIsAddModalOpen(false);
+                      }}
+                      disabled={isAddingCandidate}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleAdd}
+                      className="bg-blue-600 hover:bg-blue-700"
+                      disabled={isAddingCandidate}
+                    >
+                      {isAddingCandidate ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Adding Candidate...
+                        </>
+                      ) : (
+                        "Add Candidate"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
@@ -890,7 +948,7 @@ export default function CandidateManagement() {
         </div> */}
 
         {/* Search and Filter Section */}
-        <Card className="border-0 shadow-sm mb-6">
+        <Card className="border-0 shadow-sm mb-6 dark:bg-slate-900">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -903,31 +961,31 @@ export default function CandidateManagement() {
                       setSearch(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="pl-10 w-80 h-10"
+                    className="pl-10 w-80 h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                   />
                 </div>
-                
+
                 {/* Quick Position Filter */}
                 <div className="flex items-center space-x-2">
-                  <Label className="text-sm font-medium text-slate-700 whitespace-nowrap">Position:</Label>
-                  <Select 
-                    value={filters.position || "all"} 
+                  <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">Position:</Label>
+                  <Select
+                    value={filters.position || "all"}
                     onValueChange={(value) => {
                       setFilters(prev => ({ ...prev, position: value === "all" ? "" : value }));
                       setCurrentPage(1);
                     }}
                   >
-                    <SelectTrigger className={`w-48 h-10 ${filters.position ? 'border-blue-500 bg-blue-50' : ''}`}>
+                    <SelectTrigger className={`w-48 h-10 ${filters.position ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'dark:bg-slate-800 dark:border-slate-700 dark:text-white'}`}>
                       <SelectValue placeholder="All Positions" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Positions</SelectItem>
+                    <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                      <SelectItem value="all" className="dark:text-white dark:focus:bg-slate-700">All Positions</SelectItem>
                       {positions.map((pos) => (
-                        <SelectItem key={pos._id} value={pos._id}>{pos.name}</SelectItem>
+                        <SelectItem key={pos._id} value={pos._id} className="dark:text-white dark:focus:bg-slate-700">{pos.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  
+
                   {/* Clear Position Filter */}
                   {filters.position && (
                     <Button
@@ -937,14 +995,14 @@ export default function CandidateManagement() {
                         setFilters(prev => ({ ...prev, position: "" }));
                         setCurrentPage(1);
                       }}
-                      className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
+                      className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                     >
                       <XCircle className="w-4 h-4" />
                     </Button>
                   )}
                 </div>
               </div>
-              <div className="text-sm text-slate-500">
+              <div className="text-sm text-slate-500 dark:text-slate-400">
                 Showing {candidates.length} of {totalCandidates} candidates
               </div>
             </div>
@@ -1036,22 +1094,22 @@ export default function CandidateManagement() {
         )} */}
 
         {/* Candidates Table */}
-        <Card className="border-0 shadow-sm">
+        <Card className="border-0 shadow-sm dark:bg-slate-900">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-xl font-semibold">All Candidates</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-xl font-semibold dark:text-white">All Candidates</CardTitle>
+                <CardDescription className="dark:text-slate-400">
                   Manage and view all candidate information
                 </CardDescription>
               </div>
-              
+
               {/* Bulk Delete Button - Inline with heading */}
               {showBulkDelete && (
-                <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-900/50">
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-red-600" />
-                    <span className="text-sm font-medium text-red-800">
+                    <Check className="w-4 h-4 text-red-600 dark:text-red-400" />
+                    <span className="text-sm font-medium text-red-800 dark:text-red-300">
                       {selectedCandidates.length} candidate{selectedCandidates.length > 1 ? 's' : ''} selected
                     </span>
                   </div>
@@ -1064,6 +1122,7 @@ export default function CandidateManagement() {
                         setShowBulkDelete(false);
                         setIsAllSelected(false);
                       }}
+                      className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
                     >
                       Cancel
                     </Button>
@@ -1083,7 +1142,7 @@ export default function CandidateManagement() {
             {loading ? (
               <div className="space-y-4">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
+                  <Skeleton key={i} className="h-16 w-full dark:bg-slate-800" />
                 ))}
               </div>
             ) : error ? (
@@ -1094,62 +1153,64 @@ export default function CandidateManagement() {
             ) : candidates.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                <p className="text-slate-600">No candidates found</p>
+                <p className="text-slate-600 dark:text-slate-400">No candidates found</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
                       <TableHead className="w-12">
                         <Checkbox
                           checked={isAllSelected}
                           onCheckedChange={handleSelectAll}
+                          className="dark:border-slate-500"
                         />
                       </TableHead>
-                      <TableHead className="font-semibold text-slate-700">Candidate</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Contact</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Experience</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Position</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Schedule</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Questions Asked</TableHead>
-                      <TableHead className="font-semibold text-slate-700 text-right">Actions</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Candidate</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Contact</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Experience</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Schedule</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Questions Asked</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {candidates.map((candidate) => (
-                      <TableRow key={candidate._id} className="hover:bg-slate-50">
+                      <TableRow key={candidate._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
                         <TableCell>
                           <Checkbox
                             checked={selectedCandidates.includes(candidate._id)}
                             onCheckedChange={() => handleSelectCandidate(candidate._id)}
+                            className="dark:border-slate-500"
                           />
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-slate-900">{candidate.name || 'N/A'}</p>
-                            <p className="text-sm text-slate-500">ID: {candidate._id?.slice(-8)}</p>
+                            <p className="font-medium text-slate-900 dark:text-white">{candidate.name || 'N/A'}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">ID: {candidate._id?.slice(-8)}</p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <Mail className="w-3 h-3 text-slate-400" />
-                              <span className="text-sm text-slate-600">{candidate.email || 'N/A'}</span>
+                              <span className="text-sm text-slate-600 dark:text-slate-300">{candidate.email || 'N/A'}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Phone className="w-3 h-3 text-slate-400" />
-                              <span className="text-sm text-slate-600">{candidate.phone || 'N/A'}</span>
+                              <span className="text-sm text-slate-600 dark:text-slate-300">{candidate.phone || 'N/A'}</span>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getExperienceBadgeVariant(candidate.experience)}>
+                          <Badge variant={getExperienceBadgeVariant(candidate.experience)} className="dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
                             {getExperienceDisplayText(candidate.experience)}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-slate-600">
+                          <span className="text-sm text-slate-600 dark:text-slate-300">
                             {candidate.positionName || positions.find(p => p._id === candidate.position)?.name || 'N/A'}
                           </span>
                         </TableCell>
@@ -1157,7 +1218,7 @@ export default function CandidateManagement() {
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <Clock className="w-3 h-3 text-slate-400" />
-                              <span className="text-sm text-slate-600">
+                              <span className="text-sm text-slate-600 dark:text-slate-300">
                                 {formatDate(candidate.schedule)}
                               </span>
                             </div>
@@ -1169,9 +1230,9 @@ export default function CandidateManagement() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <FileText className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm font-medium text-slate-700">
-                              {candidate.questionsAskedToCandidate !== undefined && candidate.questionsAskedToCandidate !== null 
-                                ? candidate.questionsAskedToCandidate 
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                              {candidate.questionsAskedToCandidate !== undefined && candidate.questionsAskedToCandidate !== null
+                                ? candidate.questionsAskedToCandidate
                                 : 'N/A'}
                             </span>
                           </div>
@@ -1184,7 +1245,7 @@ export default function CandidateManagement() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="h-8 w-8 p-0"
+                                  className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
                                   onClick={() => {
                                     setEditingId(candidate._id);
                                     setForm(candidate);
@@ -1199,9 +1260,9 @@ export default function CandidateManagement() {
                                   <Edit2 className="w-3 h-3" />
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-2xl">
+                              <DialogContent className="max-w-2xl dark:bg-slate-900 dark:border-slate-800">
                                 <DialogHeader>
-                                  <DialogTitle className="flex items-center gap-2">
+                                  <DialogTitle className="flex items-center gap-2 dark:text-white">
                                     <Edit2 className="w-5 h-5" />
                                     Edit Candidate
                                   </DialogTitle>
@@ -1210,13 +1271,13 @@ export default function CandidateManagement() {
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {/* Name */}
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-name">Full Name *</Label>
+                                      <Label htmlFor="edit-name" className="dark:text-slate-300">Full Name *</Label>
                                       <Input
                                         id="edit-name"
                                         name="name"
                                         value={form.name || ""}
                                         onChange={handleChange}
-                                        className={fieldErrors.name ? "border-red-500" : ""}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.name ? "border-red-500" : ""}`}
                                       />
                                       {fieldErrors.name && (
                                         <p className="flex items-center gap-1 text-sm text-red-600">
@@ -1228,14 +1289,14 @@ export default function CandidateManagement() {
 
                                     {/* Email */}
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-email">Email Address *</Label>
+                                      <Label htmlFor="edit-email" className="dark:text-slate-300">Email Address *</Label>
                                       <Input
                                         id="edit-email"
                                         name="email"
                                         type="email"
                                         value={form.email || ""}
                                         onChange={handleChange}
-                                        className={fieldErrors.email ? "border-red-500" : ""}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.email ? "border-red-500" : ""}`}
                                       />
                                       {fieldErrors.email && (
                                         <p className="flex items-center gap-1 text-sm text-red-600">
@@ -1247,13 +1308,13 @@ export default function CandidateManagement() {
 
                                     {/* Phone */}
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-phone">Phone Number *</Label>
+                                      <Label htmlFor="edit-phone" className="dark:text-slate-300">Phone Number *</Label>
                                       <Input
                                         id="edit-phone"
                                         name="phone"
                                         value={form.phone || ""}
                                         onChange={handleChange}
-                                        className={fieldErrors.phone ? "border-red-500" : ""}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.phone ? "border-red-500" : ""}`}
                                       />
                                       {fieldErrors.phone && (
                                         <p className="flex items-center gap-1 text-sm text-red-600">
@@ -1265,7 +1326,7 @@ export default function CandidateManagement() {
 
                                     {/* Experience */}
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-experience">Experience Level *</Label>
+                                      <Label htmlFor="edit-experience" className="dark:text-slate-300">Experience Level *</Label>
                                       <Select
                                         value={form.experience || ""}
                                         onValueChange={(value) => {
@@ -1273,14 +1334,14 @@ export default function CandidateManagement() {
                                           validateField("experience", value);
                                         }}
                                       >
-                                        <SelectTrigger className={fieldErrors.experience ? "border-red-500" : ""}>
+                                        <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.experience ? "border-red-500" : ""}`}>
                                           <SelectValue placeholder="Select experience level" />
                                         </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="fresher">Fresher (0-1 years)</SelectItem>
-                                          <SelectItem value="1-2">1-2 Years</SelectItem>
-                                          <SelectItem value="3-5">3-5 Years</SelectItem>
-                                          <SelectItem value="5+">5+ Years</SelectItem>
+                                        <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                                          <SelectItem value="fresher" className="dark:text-white dark:focus:bg-slate-700">Fresher (0-1 years)</SelectItem>
+                                          <SelectItem value="1-2" className="dark:text-white dark:focus:bg-slate-700">1-2 Years</SelectItem>
+                                          <SelectItem value="3-5" className="dark:text-white dark:focus:bg-slate-700">3-5 Years</SelectItem>
+                                          <SelectItem value="5+" className="dark:text-white dark:focus:bg-slate-700">5+ Years</SelectItem>
                                         </SelectContent>
                                       </Select>
                                       {fieldErrors.experience && (
@@ -1293,7 +1354,7 @@ export default function CandidateManagement() {
 
                                     {/* Position */}
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-position">Position *</Label>
+                                      <Label htmlFor="edit-position" className="dark:text-slate-300">Position *</Label>
                                       <Select
                                         value={form.position || ""}
                                         onValueChange={(value) => {
@@ -1307,13 +1368,13 @@ export default function CandidateManagement() {
                                           }
                                         }}
                                       >
-                                        <SelectTrigger className={fieldErrors.position ? "border-red-500" : ""}>
+                                        <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.position ? "border-red-500" : ""}`}>
                                           <SelectValue placeholder="Select position" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
                                           {positions.map((pos) => (
-                                            <SelectItem key={pos._id} value={pos._id}>
-                                              {pos.name} 
+                                            <SelectItem key={pos._id} value={pos._id} className="dark:text-white dark:focus:bg-slate-700">
+                                              {pos.name}
                                             </SelectItem>
                                           ))}
                                         </SelectContent>
@@ -1328,7 +1389,7 @@ export default function CandidateManagement() {
 
                                     {/* Schedule */}
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-schedule">Interview Schedule *</Label>
+                                      <Label htmlFor="edit-schedule" className="dark:text-slate-300">Interview Schedule *</Label>
                                       <Input
                                         id="edit-schedule"
                                         name="schedule"
@@ -1339,7 +1400,7 @@ export default function CandidateManagement() {
                                           handleChange(e);
                                           validateField("schedule", e.target.value);
                                         }}
-                                        className={fieldErrors.schedule ? "border-red-500" : ""}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.schedule ? "border-red-500" : ""}`}
                                       />
                                       {fieldErrors.schedule && (
                                         <p className="flex items-center gap-1 text-sm text-red-600">
@@ -1351,7 +1412,7 @@ export default function CandidateManagement() {
 
                                     {/* Questions Asked To Candidate */}
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-questionsAskedToCandidate">Questions Asked To Candidate *</Label>
+                                      <Label htmlFor="edit-questionsAskedToCandidate" className="dark:text-slate-300">Questions Asked To Candidate *</Label>
                                       <Input
                                         id="edit-questionsAskedToCandidate"
                                         name="questionsAskedToCandidate"
@@ -1363,10 +1424,10 @@ export default function CandidateManagement() {
                                           handleChange(e);
                                           validateField("questionsAskedToCandidate", e.target.value);
                                         }}
-                                        className={fieldErrors.questionsAskedToCandidate ? "border-red-500" : ""}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.questionsAskedToCandidate ? "border-red-500" : ""}`}
                                       />
                                       {selectedPositionQuestionCount !== null && (
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">
                                           Available questions for selected position: {selectedPositionQuestionCount}
                                         </p>
                                       )}
@@ -1381,9 +1442,9 @@ export default function CandidateManagement() {
 
                                   {/* Technical and Logical Questions Section - Show when questionsAskedToCandidate has a value */}
                                   {form.questionsAskedToCandidate && form.questionsAskedToCandidate !== "" && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-800">
                                       <div className="space-y-2">
-                                        <Label htmlFor="edit-technicalQuestions">Technical Questions</Label>
+                                        <Label htmlFor="edit-technicalQuestions" className="dark:text-slate-300">Technical Questions</Label>
                                         <Input
                                           id="edit-technicalQuestions"
                                           name="technicalQuestions"
@@ -1395,7 +1456,7 @@ export default function CandidateManagement() {
                                             handleChange(e);
                                             validateField("technicalQuestions", e.target.value);
                                           }}
-                                          className={fieldErrors.technicalQuestions ? "border-red-500" : ""}
+                                          className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.technicalQuestions ? "border-red-500" : ""}`}
                                         />
                                         {fieldErrors.technicalQuestions && (
                                           <p className="flex items-center gap-1 text-sm text-red-600">
@@ -1405,7 +1466,7 @@ export default function CandidateManagement() {
                                         )}
                                       </div>
                                       <div className="space-y-2">
-                                        <Label htmlFor="edit-logicalQuestions">Logical Questions</Label>
+                                        <Label htmlFor="edit-logicalQuestions" className="dark:text-slate-300">Logical Questions</Label>
                                         <Input
                                           id="edit-logicalQuestions"
                                           name="logicalQuestions"
@@ -1417,7 +1478,7 @@ export default function CandidateManagement() {
                                             handleChange(e);
                                             validateField("logicalQuestions", e.target.value);
                                           }}
-                                          className={fieldErrors.logicalQuestions ? "border-red-500" : ""}
+                                          className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.logicalQuestions ? "border-red-500" : ""}`}
                                         />
                                         {fieldErrors.logicalQuestions && (
                                           <p className="flex items-center gap-1 text-sm text-red-600">
@@ -1431,7 +1492,7 @@ export default function CandidateManagement() {
                                 </div>
                                 <DialogFooter>
                                   <DialogClose asChild>
-                                    <Button variant="outline" onClick={() => setEditingId(null)}>
+                                    <Button variant="outline" onClick={() => setEditingId(null)} className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700">
                                       Cancel
                                     </Button>
                                   </DialogClose>
@@ -1446,7 +1507,7 @@ export default function CandidateManagement() {
                             <Button
                               variant="destructive"
                               size="sm"
-                              className="h-8 w-8 p-0"
+                              className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-red-900/50 dark:hover:bg-red-900/20"
                               onClick={() => setDeleteId(candidate._id)}
                             >
                               <Trash2 className="w-3 h-3" />
@@ -1457,15 +1518,16 @@ export default function CandidateManagement() {
                               open={deleteId === candidate._id}
                               onOpenChange={() => setDeleteId(null)}
                             >
-                              <DialogContent>
+                              <DialogContent className="dark:bg-slate-900 dark:border-slate-800">
                                 <DialogHeader>
-                                  <DialogTitle>Confirm Delete</DialogTitle>
+                                  <DialogTitle className="dark:text-white">Confirm Delete</DialogTitle>
                                 </DialogHeader>
-                                <p>Are you sure you want to delete <strong>{candidate.name}</strong>? This action cannot be undone.</p>
+                                <p className="dark:text-slate-300">Are you sure you want to delete <strong>{candidate.name}</strong>? This action cannot be undone.</p>
                                 <DialogFooter className="flex gap-2">
                                   <Button
                                     variant="outline"
                                     onClick={() => setDeleteId(null)}
+                                    className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
                                   >
                                     Cancel
                                   </Button>
@@ -1499,7 +1561,7 @@ export default function CandidateManagement() {
               <DialogTitle>Confirm Bulk Delete</DialogTitle>
             </DialogHeader>
             <p>
-              Are you sure you want to delete <strong>{selectedCandidates.length} candidate{selectedCandidates.length > 1 ? 's' : ''}</strong>? 
+              Are you sure you want to delete <strong>{selectedCandidates.length} candidate{selectedCandidates.length > 1 ? 's' : ''}</strong>?
               This action cannot be undone.
             </p>
             <DialogFooter className="flex gap-2">
@@ -1526,12 +1588,12 @@ export default function CandidateManagement() {
               <div className="text-sm text-slate-600">
                 Showing {((currentPage - 1) * rowsPerPage) + 1} to {Math.min(currentPage * rowsPerPage, totalCandidates)} of {totalCandidates} candidates
               </div>
-              
+
               {/* Page Size Dropdown */}
               <div className="flex items-center gap-2">
                 <Label className="text-sm font-medium text-slate-700 whitespace-nowrap">Show:</Label>
-                <Select 
-                  value={rowsPerPage.toString()} 
+                <Select
+                  value={rowsPerPage.toString()}
                   onValueChange={handlePageSizeChange}
                 >
                   <SelectTrigger className="w-20 h-8">
@@ -1547,7 +1609,7 @@ export default function CandidateManagement() {
                 <span className="text-sm text-slate-500">per page</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"

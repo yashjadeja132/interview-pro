@@ -49,7 +49,8 @@
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.623 0.214 259.815);
+  --primary-color: #1976d2;
+  --primary: var(--primary-color);
   --primary-foreground: oklch(0.97 0.014 254.604);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
@@ -120,5 +121,69 @@
   img {
     image-rendering: high-quality;
     image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Apply custom primary color globally */
+@layer utilities {
+  /* Override blue colors with custom primary color for buttons and interactive elements */
+  button.bg-blue-600,
+  .bg-blue-600:not(.dark *) {
+    background-color: var(--primary-color) !important;
+  }
+  
+  button.bg-blue-600:hover,
+  .bg-blue-600:hover,
+  button.bg-blue-700,
+  .bg-blue-700 {
+    background-color: var(--primary-color) !important;
+    filter: brightness(0.9);
+  }
+  
+  .text-blue-600,
+  .text-blue-500 {
+    color: var(--primary-color) !important;
+  }
+  
+  .border-blue-500 {
+    border-color: var(--primary-color) !important;
+  }
+  
+  .focus\:ring-blue-500:focus,
+  .ring-blue-500 {
+    --tw-ring-color: var(--primary-color) !important;
+  }
+  
+  .peer-focus\:ring-blue-300:focus ~ *,
+  .ring-blue-300 {
+    --tw-ring-color: var(--primary-color) !important;
+    opacity: 0.5;
+  }
+  
+  .peer-checked\:bg-blue-600 {
+    background-color: var(--primary-color) !important;
+  }
+  
+  .bg-blue-50 {
+    background-color: color-mix(in srgb, var(--primary-color) 10%, white) !important;
+  }
+  
+  .bg-blue-100 {
+    background-color: color-mix(in srgb, var(--primary-color) 20%, white) !important;
+  }
+  
+  .text-blue-700,
+  .text-blue-900 {
+    color: var(--primary-color) !important;
+  }
+  
+  /* Apply to all elements with blue classes */
+  [class*="bg-blue-600"]:not([class*="dark"]) {
+    background-color: var(--primary-color) !important;
+  }
+  
+  [class*="text-blue-600"],
+  [class*="text-blue-500"] {
+    color: var(--primary-color) !important;
   }
 }

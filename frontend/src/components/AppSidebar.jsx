@@ -1,16 +1,14 @@
-import { 
-  Home, 
-  Users, 
-  UserCheck, 
-  Monitor, 
-  FileText, 
-  Building2, 
+import {
+  Home,
+  UserCheck,
+  Monitor,
+  FileText,
+  Building2,
   Shield,
   BarChart3,
   Settings,
   LogOut,
   Database,
-  ClipboardList
 } from "lucide-react";
 import {
   Sidebar,
@@ -21,88 +19,80 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import sparrowLogo from "../assets/sparrowlogo.png";
 
 const navigationItems = [
-  { 
-    title: "Dashboard", 
-    url: "/admin/dashboard", 
+  {
+    title: "Dashboard",
+    url: "/admin/dashboard",
     icon: Home,
-    description: "Overview and analytics"
+    description: "Overview and analytics",
   },
-  { 
-    title: "Position Management", 
-    url: "/positionManagement", 
+  {
+    title: "Position Management",
+    url: "/positionManagement",
     icon: Building2,
-    description: "Job positions and roles"
+    description: "Job positions and roles",
   },
-  { 
-    title: "Candidate Management", 
-    url: "/candidateManagement", 
+  {
+    title: "Candidate Management",
+    url: "/candidateManagement",
     icon: UserCheck,
-    description: "Manage candidates"
+    description: "Manage candidates",
   },
-  // { 
-  //   title: "Attempt Management", 
-  //   url: "/attemptManagement", 
-  //   icon: ClipboardList,
-  //   description: "View and manage test attempts"
-  // },
-  // { 
-  //   title: "Attempt Test", 
-  //   url: "/attemptManagementTest", 
-  //   icon: ClipboardList,
-  //   description: "Test API connection"
-  // },
-  { 
-    title: "Candidate Monitoring", 
-    url: "/candidateMonitoring", 
+  {
+    title: "Candidate Monitoring",
+    url: "/candidateMonitoring",
     icon: Monitor,
-    description: "Monitor interviews"
+    description: "Monitor interviews",
   },
-  { 
-    title: "Create Questions", 
-    url: "/createQuestion", 
+  {
+    title: "Create Questions",
+    url: "/createQuestion",
     icon: FileText,
-    description: "Add new questions"
+    description: "Add new questions",
   },
-  { 
-    title: "Question Management", 
-    url: "/questionManagement", 
+  {
+    title: "Question Management",
+    url: "/questionManagement",
     icon: Database,
-    description: "Manage questions by position"
+    description: "Manage questions by position",
   },
-  { 
-    title: "Analytics", 
-    url: "/admin/analytics", 
+  {
+    title: "Analytics",
+    url: "/admin/analytics",
     icon: BarChart3,
-    description: "Reports and insights"
+    description: "Reports and insights",
   },
-  { 
-    title: "Settings", 
-    url: "/admin/settings", 
+  {
+    title: "Settings",
+    url: "/admin/settings",
     icon: Settings,
-    description: "System configuration"
+    description: "System configuration",
   },
 ];
 
 export default function AppSidebar() {
   const navigate = useNavigate();
 
+  // ✅ LOGOUT HANDLER (FIXED)
   const handleLogout = () => {
-    // Clear any stored authentication data
     localStorage.removeItem("token");
     sessionStorage.clear();
-    // Navigate to login page
-    navigate("/adminAndHRLogin");
+
+    // replace: true = back button disable
+    navigate("/admin/login", { replace: true });
   };
 
   return (
-    <Sidebar side="left" variant="sidebar" collapsible="icon" className="border-r border-slate-200">
-      {/* Header */}
-      <SidebarHeader className="border-b border-slate-200 p-4">
+    <Sidebar
+      side="left"
+      variant="sidebar"
+      collapsible="icon"
+      className="border-r border-slate-200"
+    >
+      {/* ================= HEADER ================= */}
+      <SidebarHeader className="border-b border-slate-200 dark:border-slate-800 p-4">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="hover:bg-transparent">
@@ -111,8 +101,12 @@ export default function AppSidebar() {
                   <Shield className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="font-bold text-slate-800">InterviewPro</span>
-                  <span className="text-xs text-slate-500">Admin Portal</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100">
+                    InterviewPro
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    Admin Portal
+                  </span>
                 </div>
               </div>
             </SidebarMenuButton>
@@ -120,17 +114,27 @@ export default function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      {/* Navigation Content */}
+      {/* ================= NAVIGATION ================= */}
       <SidebarContent className="p-2">
         <SidebarMenu className="space-y-1">
           {navigationItems.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild className="h-12 hover:bg-slate-100 rounded-lg">
-                <Link to={item.url} className="flex items-center space-x-3 w-full">
-                  <item.icon className="w-5 h-5 text-slate-600" />
+              <SidebarMenuButton
+                asChild
+                className="h-12 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <Link
+                  to={item.url}
+                  className="flex items-center space-x-3 w-full"
+                >
+                  <item.icon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                   <div className="flex flex-col items-start">
-                    <span className="font-medium text-slate-800">{item.title}</span>
-                    <span className="text-xs text-slate-500">{item.description}</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">
+                      {item.title}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-500">
+                      {item.description}
+                    </span>
                   </div>
                 </Link>
               </SidebarMenuButton>
@@ -139,18 +143,20 @@ export default function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      {/* Footer */}
-      <SidebarFooter className="border-t border-slate-200 p-4">
+      {/* ================= FOOTER / LOGOUT ================= */}
+      <SidebarFooter className="border-t border-slate-200 dark:border-slate-800 p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <Button 
-              variant="ghost" 
+            {/* ✅ IMPORTANT: SidebarMenuButton use kiya */}
+            <SidebarMenuButton
               onClick={handleLogout}
-              className="w-full justify-start h-12 hover:bg-red-50 hover:text-red-600 rounded-lg"
+              className="h-12 w-full justify-start rounded-lg
+                         hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:text-slate-200 dark:hover:text-red-400"
+              tooltip="Logout"
             >
               <LogOut className="w-5 h-5 mr-3" />
               <span className="font-medium">Logout</span>
-            </Button>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
