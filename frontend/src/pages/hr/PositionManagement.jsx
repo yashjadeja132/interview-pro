@@ -81,11 +81,11 @@ export default function PositionManagement() {
   // POST request to add new position
   const addPosition = async () => {
     if (!newPosition.trim()
-    || !newSalary.trim()
-    || !newJobType.trim()
-    || !newExperience.trim()
-    || !noofvacancy.trim()
-    || !newShift.trim()) return;
+      || !newSalary.trim()
+      || !newJobType.trim()
+      || !newExperience.trim()
+      || !noofvacancy.trim()
+      || !newShift.trim()) return;
     try {
       const res = await axiosInstance.post("/position", {
         name: newPosition,
@@ -97,14 +97,14 @@ export default function PositionManagement() {
       });
       if (res.status === 201) {
         toast.success("Position added successfully");
-              fetchPositions();
-         // Reset form
-            setNewPosition("");
-           setNewSalary("");
-           setNewExperience("") ;
-           setNoofvacancy("");
-           setNewShift("");
-           setNewJobType("");
+        fetchPositions();
+        // Reset form
+        setNewPosition("");
+        setNewSalary("");
+        setNewExperience("");
+        setNoofvacancy("");
+        setNewShift("");
+        setNewJobType("");
       } else {
         toast.error("Something went wrong, please try again");
       }
@@ -231,7 +231,7 @@ export default function PositionManagement() {
                   />
                 </div>
 
-                 <div>
+                <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                     Shift
                   </label>
@@ -407,7 +407,11 @@ export default function PositionManagement() {
                     <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position Name</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Questions Count</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Salary</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Experience</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Vacancies</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Shift</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Job Type</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Created</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
                     </TableRow>
@@ -427,13 +431,28 @@ export default function PositionManagement() {
                           </div>
                         </TableCell>
                         <TableCell className="text-slate-500 dark:text-slate-400">
-                          <span className="font-medium">{pos.questionCount || 0}</span>
+                          <span className="font-medium">{pos.salary || 0}</span>
                         </TableCell>
                         <TableCell className="text-slate-500 dark:text-slate-400">
-                          {pos.createdAt ? new Date(pos.createdAt).toLocaleDateString('en-GB', {
+                          <span className="font-medium">{pos.experience || 0}</span>
+                        </TableCell>
+                        <TableCell className="text-slate-500 dark:text-slate-400">
+                          <span className="font-medium">{pos.vacancies || 0}</span>
+                        </TableCell>
+                        <TableCell className="text-slate-500 dark:text-slate-400">
+                          <span className="font-medium">{pos.shift || 0}</span>
+                        </TableCell>
+                        <TableCell className="text-slate-500 dark:text-slate-400">
+                          <span className="font-medium">{pos.jobType || 0}</span>
+                        </TableCell>
+                        <TableCell className="text-slate-500 dark:text-slate-400">
+                          {pos.createdAt ? new Date(pos.createdAt).toLocaleString('en-GB', {
                             day: '2-digit',
                             month: '2-digit',
-                            year: 'numeric'
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
                           }) : 'N/A'}
                         </TableCell>
                         <TableCell className="text-right">
