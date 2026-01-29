@@ -80,21 +80,35 @@ export default function PositionManagement() {
 
   // POST request to add new position
   const addPosition = async () => {
-    if (!newPosition.trim()) return;
+    if (!newPosition.trim()
+    || !newSalary.trim()
+    || !newJobType.trim()
+    || !newExperience.trim()
+    || !noofvacancy.trim()
+    || !newShift.trim()) return;
     try {
       const res = await axiosInstance.post("/position", {
         name: newPosition,
+        salary: Number(newSalary),
+        jobType: newJobType,
+        experience: newExperience,
+        vacancies: Number(noofvacancy),
+        shift: newShift,
       });
-      console.log(res);
-
       if (res.status === 201) {
         toast.success("Position added successfully");
+              fetchPositions();
+         // Reset form
+            setNewPosition("");
+           setNewSalary("");
+           setNewExperience("") ;
+           setNoofvacancy("");
+           setNewShift("");
+           setNewJobType("");
       } else {
         toast.error("Something went wrong, please try again");
       }
       // setPositions([...positions, res.data.data]);
-      fetchPositions();
-      setNewPosition("");
     } catch (err) {
       console.error("Error adding position", err);
       toast.error("Failed to add position");
@@ -109,6 +123,11 @@ export default function PositionManagement() {
         `/position/${editing._id}`,
         {
           name: editing.name,
+          salary: Number(editing.salary),
+          jobType: editing.jobType,
+          experience: editing.experience,
+          vacancies: Number(editing.vacancies),
+          shift: editing.shift,
         }
       );
       setPositions(

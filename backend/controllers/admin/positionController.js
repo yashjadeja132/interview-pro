@@ -4,17 +4,26 @@ const Question = require('../../models/Question')
 // Add a new position
 exports.addPosition = async (req, res) => {
   try {
-    const { name, salary, freelancer, experienced, partTime, shift } = req.body;
+    const { name, salary, experience, vacancies, shift, jobType } = req.body;
     const existing = await Position.findOne({ name });
     if (existing) {
       return res.status(400).json({ success: false, message: "Position already exists" });
     }
 
-    const position = new Position({ name, salary, freelancer, experienced, partTime, shift });
+      const position = new Position({
+      name,
+      salary,
+      experience,
+      vacancies,
+      shift,
+      jobType,
+    });
+    console.log(position);
     await position.save();
 
     res.status(201).json({ success: true, data: position });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ success: false, error: err.message });
   }
 };
