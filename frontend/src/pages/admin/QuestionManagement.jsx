@@ -251,8 +251,8 @@ export default function QuestionManagement() {
       <div className="flex-1 p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Question Management</h1>
-          <p className="text-slate-600">Organize and manage questions by position for your interviews</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">Question Management</h1>
+          <p className="text-slate-600 dark:text-slate-400">Organize and manage questions by position for your interviews</p>
         </div>
 
         {/* Select Position & Search */}
@@ -302,30 +302,30 @@ export default function QuestionManagement() {
         </div>
 
         {/* Table Section */}
-        <div className="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-slate-50 border-b border-slate-200">
+              <TableHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                 <TableRow>
-                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Question</TableHead>
-                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Position</TableHead>
-                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Difficulty</TableHead>
-                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Options</TableHead>
-                  <TableHead className="px-6 py-4 text-center text-sm font-semibold text-slate-700">Actions</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Question</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Difficulty</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Options</TableHead>
+                  <TableHead className="px-6 py-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 {filteredQuestions.map((question) => (
-                  <TableRow key={question._id} className="border-b border-slate-200 hover:bg-slate-50 transition">
-                    <TableCell className="px-6 py-4 text-slate-900">{question.questionText}</TableCell>
-                    <TableCell className="px-6 py-4 text-slate-600">{question.position?.name}</TableCell>
+                  <TableRow key={question._id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                    <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{question.questionText}</TableCell>
+                    <TableCell className="px-6 py-4 text-slate-600 dark:text-slate-400">{question.position?.name}</TableCell>
                     <TableCell className="px-6 py-4">
-                      <Badge variant="outline" className={`text-xs ${getDifficultyBadgeClass(question.difficulty)}`}>
+                      <Badge variant="outline" className={`text-xs ${getDifficultyBadgeClass(question.difficulty)} dark:border-slate-700`}>
                         {question.difficulty}
                       </Badge>
                     </TableCell>
-                    <TableCell className="px-6 py-4 text-slate-600">{question.options?.length} Options</TableCell>
+                    <TableCell className="px-6 py-4 text-slate-600 dark:text-slate-400">{question.options?.length} Options</TableCell>
                     <TableCell className="px-6 py-4 flex justify-center gap-2">
                       <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => handleViewQuestion(question)}>
                         <Eye className="w-4 h-4" />
