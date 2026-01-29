@@ -179,156 +179,182 @@ export function AdminLogin() {
         </div> */}
 
         {/* Right Side - Login Form */}
-        <div className="w-full max-w-md mx-auto lg:mx-0">
-          <Card className="bg-white/80 backdrop-blur-xl border-0 shadow-2xl shadow-blue-500/10">
-            <CardHeader className="text-center pb-6 pt-8">
-              {/* Logo */}
-              <div className="mx-auto mb-6 w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
+       <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-100 to-blue-100 lg:col-span-2">
+  <div className="w-full max-w-md">
 
-              <CardTitle className="text-2xl font-bold text-slate-800 mb-2">
-                Admin Portal
-              </CardTitle>
-              <CardDescription className="text-slate-600">
-                Sign in to access your management dashboard
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="px-8 pb-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Email Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-700 font-medium">
-                    Email Address
-                  </Label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                      </svg>
-                    </div>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="admin@company.com"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        validateField("email", e.target.value);
-                      }}
-                      className={`pl-10 h-12 bg-white/50 border-2 transition-all duration-200 ${fieldErrors.email
-                        ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                        : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
-                        } rounded-xl`}
-                    />
-                  </div>
-                  {fieldErrors.email && (
-                    <div className="flex items-center gap-2 text-sm text-red-600">
-                      <AlertCircle className="w-4 h-4" />
-                      {fieldErrors.email}
-                    </div>
-                  )}
-                </div>
-
-                {/* Password Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-slate-700 font-medium">
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    </div>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        validateField("password", e.target.value);
-                      }}
-                      className={`pl-10 h-12 bg-white/50 border-2 transition-all duration-200 ${fieldErrors.password
-                        ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                        : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
-                        } rounded-xl`}
-                    />
-                  </div>
-                  {fieldErrors.password && (
-                    <div className="flex items-center gap-2 text-sm text-red-600">
-                      <AlertCircle className="w-4 h-4" />
-                      {fieldErrors.password}
-                    </div>
-                  )}
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => navigate('/admin/forgot-password')}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                    >
-                      Forgot Password?
-                    </button>
-                  </div>
-                </div>
-
-                {/* General Error */}
-                {generalError && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-                    <div className="flex items-center gap-2 text-sm text-red-700">
-                      <AlertCircle className="w-4 h-4" />
-                      {generalError}
-                    </div>
-                  </div>
-                )}
-
-                {/* Success Message */}
-                {success && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
-                    <div className="flex items-center gap-2 text-sm text-green-700">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {success}
-                    </div>
-                    <div className="mt-2 text-xs text-green-600">
-                      Redirecting to dashboard...
-                    </div>
-                  </div>
-                )}
-
-                {/* Login Button */}
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  {loading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Signing in...
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-5 h-5" />
-                      Login
-                    </div>
-                  )}
-                </Button>
-              </form>
-
-              {/* Security Badge */}
-              <div className="mt-6 text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                  <Shield className="w-4 h-4 text-green-600" />
-                  <span className="text-slate-600 text-sm font-medium">Enterprise Security</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <Card className="bg-white/80 backdrop-blur-xl border-0 shadow-2xl shadow-blue-500/10">
+      <CardHeader className="text-center pb-6 pt-8">
+        {/* Logo */}
+        <div className="mx-auto mb-6 w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg">
+          <Shield className="w-8 h-8 text-white" />
         </div>
+
+        <CardTitle className="text-2xl font-bold text-slate-800 mb-2">
+          Admin Portal
+        </CardTitle>
+        <CardDescription className="text-slate-600">
+          Sign in to access your management dashboard
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="px-8 pb-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Email Field */}
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-slate-700 font-medium">
+              Email Address
+            </Label>
+
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  className="h-5 w-5 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                  />
+                </svg>
+              </div>
+
+              <Input
+                id="email"
+                type="email"
+                placeholder="admin@company.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  validateField("email", e.target.value);
+                }}
+                className={`pl-10 h-12 bg-white/50 border-2 transition-all duration-200 rounded-xl
+                  ${
+                    fieldErrors.email
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                      : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
+                  }`}
+              />
+            </div>
+
+            {fieldErrors.email && (
+              <div className="flex items-center gap-2 text-sm text-red-600">
+                <AlertCircle className="w-4 h-4" />
+                {fieldErrors.email}
+              </div>
+            )}
+          </div>
+
+          {/* Password Field */}
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-slate-700 font-medium">
+              Password
+            </Label>
+
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  className="h-5 w-5 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+              </div>
+
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  validateField("password", e.target.value);
+                }}
+                className={`pl-10 h-12 bg-white/50 border-2 transition-all duration-200 rounded-xl
+                  ${
+                    fieldErrors.password
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                      : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
+                  }`}
+              />
+            </div>
+
+            {fieldErrors.password && (
+              <div className="flex items-center gap-2 text-sm text-red-600">
+                <AlertCircle className="w-4 h-4" />
+                {fieldErrors.password}
+              </div>
+            )}
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => navigate("/admin/forgot-password")}
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
+          </div>
+
+          {/* General Error */}
+          {generalError && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <div className="flex items-center gap-2 text-sm text-red-700">
+                <AlertCircle className="w-4 h-4" />
+                {generalError}
+              </div>
+            </div>
+          )}
+
+          {/* Success */}
+          {success && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+              <div className="flex items-center gap-2 text-sm text-green-700">
+                {success}
+              </div>
+              <div className="mt-1 text-xs text-green-600">
+                Redirecting to dashboard...
+              </div>
+            </div>
+          )}
+
+          {/* Button */}
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]"
+          >
+            {loading ? "Signing in..." : "Login"}
+          </Button>
+        </form>
+
+        {/* Security Badge */}
+        <div className="mt-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+            <Shield className="w-4 h-4 text-green-600" />
+            <span className="text-slate-600 text-sm font-medium">
+              Enterprise Security
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+  </div>
+</div>
+
       </div>
     </div>
   );
