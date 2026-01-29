@@ -133,7 +133,7 @@ export default function QuestionManagement() {
     <Card key={question._id} className="group border border-gray-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all duration-200 bg-white dark:bg-slate-900">
       <CardContent className="p-6">
         {/* Header with badges and actions */}
-        <div className="flex items-start justify-between mb-4">
+        {/* <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-3">
               <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
@@ -179,7 +179,7 @@ export default function QuestionManagement() {
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>
-        </div>
+        </div> */}
 
         {/* Question Content */}
         <div className="mb-4">
@@ -203,9 +203,10 @@ export default function QuestionManagement() {
             </div>
           ) : null}
 
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3 leading-relaxed">
-            {question.questionText || "No question text provided"}
-          </h3>
+         <h1 className="text-base font-semibold text-gray-900 dark:text-white mb-3 leading-relaxed border border-slate-300 dark:border-slate-700 rounded-lg p-3 bg-white dark:bg-gray-900 shadow-sm">
+                   {question.questionText || "No question text provided"}
+            </h1>
+
         </div>
 
         {/* Options */}

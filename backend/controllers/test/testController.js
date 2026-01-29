@@ -207,7 +207,6 @@ exports.getAllResults = async (req, res) => {
     countPipeline.push({ $count: "count" });
     const totalResult = await TestResult.aggregate(countPipeline);
     const total = totalResult[0]?.count || 0;
-
     const simplifiedResults = results.map((result) => ({
       candidateId: result.candidateId,
       candidateName: result.candidate.name,
@@ -216,6 +215,7 @@ exports.getAllResults = async (req, res) => {
       attemptNumber: result.attemptNumber,
       positionName: result.position.name,
       score: result.score,
+      questionsAskedToCandidate: result.candidate.questionsAskedToCandidate,
       video: result.videoPath,
       timeTakenFormatted: result.timeTakenFormatted,
       createdAt: result.createdAt,

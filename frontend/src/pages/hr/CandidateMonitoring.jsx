@@ -104,6 +104,7 @@ export default function CandidateMonitoring() {
 
       const { data } = await axiosInstance.get("/test", { params });
       setResults(data.data);
+      console.log('data.data',data.data);
       setTotalPages(data.pagination.totalPages);
       setTotalResults(data.pagination.total);
     } catch (err) {
@@ -313,36 +314,36 @@ export default function CandidateMonitoring() {
             </div>
           </div>
           <div className="flex items-center space-x-3">
-           <Button
-  variant="outline"
-  onClick={() => setShowFilters(!showFilters)}
-  className="
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="
     flex items-center gap-2
     text-black dark:text-white
     bg-white dark:bg-slate-800
     border-slate-300 dark:border-slate-700
     hover:bg-slate-100 dark:hover:bg-slate-700
   "
->
-  <Filter className="h-4 w-4 text-black dark:text-white" />
-  Filters
-</Button>
+            >
+              <Filter className="h-4 w-4 text-black dark:text-white" />
+              Filters
+            </Button>
 
-<Button
-  variant="outline"
-  onClick={exportToCSV}
-  disabled={results.length === 0}
-  className="
+            <Button
+              variant="outline"
+              onClick={exportToCSV}
+              disabled={results.length === 0}
+              className="
     flex items-center gap-2
     text-black dark:text-white
     bg-white dark:bg-slate-800
     border-slate-300 dark:border-slate-700
     hover:bg-slate-100 dark:hover:bg-slate-700
   "
->
-  <FileDown className="h-4 w-4 text-black dark:text-white" />
-  Export CSV
-</Button>
+            >
+              <FileDown className="h-4 w-4 text-black dark:text-white" />
+              Export CSV
+            </Button>
 
           </div>
 
@@ -569,7 +570,7 @@ export default function CandidateMonitoring() {
         {/* Candidates Table */}
         <Card className="border-0 shadow-sm dark:bg-slate-900">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold dark:text-white">All Candidates</CardTitle>
+            <CardTitle className="text-xl font-semibold dark:text-white">Candidate Monitoring</CardTitle>
             <CardDescription className="dark:text-slate-400">
               Monitor and track candidate interview performance and results
             </CardDescription>
@@ -601,6 +602,7 @@ export default function CandidateMonitoring() {
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Candidate</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Questions Asked</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Score</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Time Taken</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
@@ -629,6 +631,11 @@ export default function CandidateMonitoring() {
                         <TableCell>
                           <Badge variant="outline" className="font-medium text-slate-700 dark:text-white dark:border-slate-600 dark:bg-slate-800/50">
                             {r.positionName}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="font-medium text-slate-700 dark:text-white dark:border-slate-600 dark:bg-slate-800/50">
+                            {r.questionsAskedToCandidate ? r.questionsAskedToCandidate : `N/A`}
                           </Badge>
                         </TableCell>
                         <TableCell>

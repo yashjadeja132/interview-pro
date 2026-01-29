@@ -165,7 +165,6 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm font-medium text-orange-600">Available Positions</p>
                   <p className="text-3xl font-bold text-orange-900">{dashboardData.totalPositions}</p>
-                  <p className="text-xs text-orange-700 mt-1">Open positions</p>
                 </div>
                 <div className="w-12 h-12 bg-orange-200 rounded-lg flex items-center justify-center">
                   <Building2 className="w-6 h-6 text-orange-600" />

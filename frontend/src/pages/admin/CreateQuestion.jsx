@@ -286,7 +286,7 @@ export default function CreateQuestion({ onQuestionCreated }) {
                 <img
                   src={URL.createObjectURL(form.questionImage)}
                   alt="preview"
-                  className="w-48 h-32 object-cover rounded border dark:border-slate-700"
+                  className="w-450 h-40 object-cover rounded border dark:border-slate-700"
                 />
                 <button
                   type="button"

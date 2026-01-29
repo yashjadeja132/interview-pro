@@ -95,49 +95,6 @@ export default function ProfileSettings() {
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
 
-            {/* ================= PROFILE IMAGE ================= */}
-            <div className="flex items-center gap-6">
-                <div className="relative">
-                    <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
-                        {formData.image && !imageError ? (
-                            <img
-                                src={formData.image}
-                                alt="Profile"
-                                className="w-full h-full object-cover"
-                                onError={handleImageError}
-                            />
-                        ) : (
-                            <User size={40} className="text-gray-400 dark:text-gray-500" />
-                        )}
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={() => fileInputRef.current.click()}
-                        className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full text-white shadow-md hover:bg-blue-700 transition"
-                    >
-                        <Camera size={14} />
-                    </button>
-
-                    <input
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        className="hidden"
-                        onChange={handleImageUpload}
-                    />
-                </div>
-
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Profile Photo
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Update your profile picture
-                    </p>
-                </div>
-            </div>
-
             {/* ================= FORM FIELDS ================= */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">

@@ -531,13 +531,13 @@ export default function CandidateManagement() {
                 }}
               >
                 <DialogTrigger asChild>
-                 <Button
-                       className="h-10 bg-blue-600 hover:bg-blue-700 text-white"
-                       onClick={() => setIsAddModalOpen(true)}
-                        >
-                        <Plus className="w-4 h-4 mr-2 text-white" />
+                  <Button
+                    className="h-10 bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => setIsAddModalOpen(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2 text-white" />
                     Add Candidate
-              </Button>
+                  </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
@@ -547,11 +547,11 @@ export default function CandidateManagement() {
                     </DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-6 py-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:[&>div]:w-full">
                       {/* Name */}
                       <div className="space-y-2">
                         <Label
-                         className= "dark:text-white"
+                          className="dark:text-white"
                           htmlFor="name">Full Name *</Label>
                         <Input
                           id="name"
@@ -575,8 +575,8 @@ export default function CandidateManagement() {
                       {/* Email */}
                       <div className="space-y-2">
                         <Label
-                         className= "dark:text-white"
-                        htmlFor="email">Email Address *</Label>
+                          className="dark:text-white"
+                          htmlFor="email">Email Address *</Label>
                         <Input
                           id="email"
                           name="email"
@@ -600,8 +600,8 @@ export default function CandidateManagement() {
                       {/* Phone */}
                       <div className="space-y-2">
                         <Label
-                           className= "dark:text-white"
-                        htmlFor="phone">Phone Number *</Label>
+                          className="dark:text-white"
+                          htmlFor="phone">Phone Number *</Label>
                         <Input
                           id="phone"
                           name="phone"
@@ -622,118 +622,120 @@ export default function CandidateManagement() {
                       </div>
 
                       {/* Experience Level */}
-<div className="space-y-2">
-  <Label
-    htmlFor="experience"
-    className="text-gray-900 dark:text-white"
-  >
-    Experience Level *
-  </Label>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="experience"
+                          className="text-gray-900 dark:text-white"
+                        >
+                          Experience Level *
+                        </Label>
 
-  <Select
-    value={form.experience || ""}
-    onValueChange={(value) => {
-      setForm((prev) => ({ ...prev, experience: value }));
-      validateField("experience", value);
-    }}
-  >
-    <SelectTrigger
-      className={`
-        ${fieldErrors.experience ? "border-red-500" : ""}
-        text-gray-900 dark:text-white
-        bg-white dark:bg-gray-900
-      `}
-    >
-      <SelectValue placeholder="Select experience level" />
-    </SelectTrigger>
+                        <Select
+                          value={form.experience || ""}
+                          onValueChange={(value) => {
+                            setForm((prev) => ({ ...prev, experience: value }));
+                            validateField("experience", value);
+                          }}
+                        >
+                          <SelectTrigger
+                            className={`  
+                              w-full
+                             ${fieldErrors.experience ? "border-red-500" : ""}
+                             text-gray-900 dark:text-white
+                             bg-white dark:bg-gray-900
+                            `}
+                          >
+                            <SelectValue placeholder="Select experience level" />
+                          </SelectTrigger>
 
-    <SelectContent className="bg-white dark:bg-gray-900">
-      <SelectItem value="fresher" className="dark:text-white">
-        Fresher (0-1 years)
-      </SelectItem>
-      <SelectItem value="1-2" className="dark:text-white">
-        1-2 Years
-      </SelectItem>
-      <SelectItem value="3-5" className="dark:text-white">
-        3-5 Years
-      </SelectItem>
-      <SelectItem value="5+" className="dark:text-white">
-        5+ Years
-      </SelectItem>
-    </SelectContent>
-  </Select>
+                          <SelectContent className="bg-white dark:bg-gray-900">
+                            <SelectItem value="fresher" className="dark:text-white">
+                              Fresher (0-1 years)
+                            </SelectItem>
+                            <SelectItem value="1-2" className="dark:text-white">
+                              1-2 Years
+                            </SelectItem>
+                            <SelectItem value="3-5" className="dark:text-white">
+                              3-5 Years
+                            </SelectItem>
+                            <SelectItem value="5+" className="dark:text-white">
+                              5+ Years
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
 
-  {fieldErrors.experience && (
-    <p className="flex items-center gap-1 text-sm text-red-600">
-      <AlertCircle className="w-3 h-3" />
-      {fieldErrors.experience}
-    </p>
-  )}
-</div>
+                        {fieldErrors.experience && (
+                          <p className="flex items-center gap-1 text-sm text-red-600">
+                            <AlertCircle className="w-3 h-3" />
+                            {fieldErrors.experience}
+                          </p>
+                        )}
+                      </div>
 
 
                       {/* Position */}
                       <div className="space-y-2">
-  <Label
-    htmlFor="position"
-    className="text-gray-900 dark:text-white"
-  >
-    Position *
-  </Label>
+                        <Label
+                          htmlFor="position"
+                          className="text-gray-900 dark:text-white"
+                        >
+                          Position *
+                        </Label>
 
-  <Select
-    value={form.position || ""}
-    onValueChange={(value) => {
-      const selectedPos = positions.find(p => p._id === value);
-      setSelectedPositionQuestionCount(selectedPos?.questionCount || 0);
-      setForm((prev) => ({ ...prev, position: value }));
-      validateField("position", value);
+                        <Select
+                          value={form.position || ""}
+                          onValueChange={(value) => {
+                            const selectedPos = positions.find(p => p._id === value);
+                            setSelectedPositionQuestionCount(selectedPos?.questionCount || 0);
+                            setForm((prev) => ({ ...prev, position: value }));
+                            validateField("position", value);
 
-      if (form.questionsAskedToCandidate) {
-        validateField("questionsAskedToCandidate", form.questionsAskedToCandidate);
-      }
-    }}
-  >
-    <SelectTrigger
-      className={`
+                            if (form.questionsAskedToCandidate) {
+                              validateField("questionsAskedToCandidate", form.questionsAskedToCandidate);
+                            }
+                          }}
+                        >
+                          <SelectTrigger
+                            className={`
+                              w-full
         ${fieldErrors.position ? "border-red-500" : ""}
         text-gray-900 dark:text-white
         bg-white dark:bg-gray-900
       `}
-    >
-      <SelectValue placeholder="Select position" />
-    </SelectTrigger>
+                          >
+                            <SelectValue placeholder="Select position" />
+                          </SelectTrigger>
 
-    <SelectContent className="bg-white dark:bg-gray-900">
-      {positions.map((pos) => (
-        <SelectItem
-          key={pos._id}
-          value={pos._id}
-          className="dark:text-white"
-        >
-          {pos.name}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
+                          <SelectContent className="bg-white dark:bg-gray-900">
+                            {positions.map((pos) => (
+                              <SelectItem
+                                key={pos._id}
+                                value={pos._id}
+                                className="dark:text-white"
+                              >
+                                {pos.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-  {fieldErrors.position && (
-    <p className="flex items-center gap-1 text-sm text-red-600">
-      <AlertCircle className="w-3 h-3" />
-      {fieldErrors.position}
-    </p>
-  )}
-</div>
+                        {fieldErrors.position && (
+                          <p className="flex items-center gap-1 text-sm text-red-600">
+                            <AlertCircle className="w-3 h-3" />
+                            {fieldErrors.position}
+                          </p>
+                        )}
+                      </div>
 
 
                       {/* Schedule */}
-                  <div className="space-y-2">
-  <Label
-    htmlFor="schedule"
-    className="text-gray-900 dark:text-white"
-  >
-    Interview Schedule *
-  </Label>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="schedule"
+                          className="text-gray-900 dark:text-white"
+                        >
+                          Interview Schedule *
+                        </Label>
                         <Input
                           id="schedule"
                           name="schedule"
@@ -757,9 +759,9 @@ export default function CandidateManagement() {
                       {/* Questions Asked To Candidate */}
                       <div className="space-y-2">
                         <Label htmlFor="questionsAskedToCandidate"
-                          className= "dark:text-white"
-                        
-                        
+                          className="dark:text-white"
+
+
                         >Questions Asked To Candidate *</Label>
                         <Input
                           id="questionsAskedToCandidate"
@@ -1167,18 +1169,19 @@ export default function CandidateManagement() {
                           className="dark:border-slate-500"
                         />
                       </TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Candidate</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Contact</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Experience</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Schedule</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Questions Asked</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
+                      <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">#</TableHead>
+                      <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">Candidate</TableHead>
+                      <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">Contact</TableHead>
+                      <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">Experience</TableHead>
+                      <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">Position</TableHead>
+                      <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">Schedule</TableHead>
+                      <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {candidates.map((candidate) => (
                       <TableRow key={candidate._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
+
                         <TableCell>
                           <Checkbox
                             checked={selectedCandidates.includes(candidate._id)}
@@ -1187,9 +1190,11 @@ export default function CandidateManagement() {
                           />
                         </TableCell>
                         <TableCell>
+                          {candidates.indexOf(candidate) + 1}
+                        </TableCell>
+                        <TableCell>
                           <div>
                             <p className="font-medium text-slate-900 dark:text-white">{candidate.name || 'N/A'}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">ID: {candidate._id?.slice(-8)}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -1227,16 +1232,6 @@ export default function CandidateManagement() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                              {candidate.questionsAskedToCandidate !== undefined && candidate.questionsAskedToCandidate !== null
-                                ? candidate.questionsAskedToCandidate
-                                : 'N/A'}
-                            </span>
-                          </div>
-                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             {/* Edit Modal */}
@@ -1246,12 +1241,43 @@ export default function CandidateManagement() {
                                   variant="outline"
                                   size="sm"
                                   className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                                  disabled={candidate.isSubmitted === 1}
                                   onClick={() => {
                                     setEditingId(candidate._id);
-                                    setForm(candidate);
-                                    setOriginalForm(candidate);
+
+                                    // Format schedule for datetime-local input
+                                    let formattedSchedule = "";
+                                    if (candidate.schedule) {
+                                      const date = new Date(candidate.schedule);
+                                      const offset = date.getTimezoneOffset();
+                                      const localDate = new Date(date.getTime() - (offset * 60000));
+                                      formattedSchedule = localDate.toISOString().slice(0, 16);
+                                    }
+
+                                    // Handle position if it's populated as an object
+                                    let positionId = typeof candidate.position === 'object' && candidate.position ? candidate.position._id : candidate.position;
+
+                                    // If positionId is not found in positions list, try to find by name
+                                    const matchingPosition = positions.find(p => p._id === positionId);
+                                    if (!matchingPosition) {
+                                      const nameToMatch = candidate.positionName || (typeof candidate.position === 'string' ? candidate.position : '');
+                                      const foundByName = positions.find(p => p.name === nameToMatch);
+                                      if (foundByName) {
+                                        positionId = foundByName._id;
+                                      }
+                                    }
+
+                                    const formData = {
+                                      ...candidate,
+                                      schedule: formattedSchedule,
+                                      position: positionId
+                                    };
+
+                                    setForm(formData);
+                                    setOriginalForm(formData);
+
                                     // Set question count for the candidate's position
-                                    const candidatePos = positions.find(p => p._id === candidate.position);
+                                    const candidatePos = positions.find(p => p._id === positionId);
                                     if (candidatePos) {
                                       setSelectedPositionQuestionCount(candidatePos.questionCount || 0);
                                     }

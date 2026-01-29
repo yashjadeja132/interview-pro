@@ -10,7 +10,6 @@ import { Homepage } from "./pages/Homepage.jsx";
 import { StudentLogin } from "./pages/candidate/CandidateLogin.jsx";
 import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
 import { AdminLogin } from "./pages/authpages/AdminLogin.jsx";
-import CreateQuestion from "./pages/admin/CreateQuestion.jsx";
 import QuestionManagement from "./pages/admin/QuestionManagement.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import Settings from "./pages/admin/Settings.jsx";
@@ -53,7 +52,6 @@ function Main() {
         {/* Admin/HR Routes - With AdminLayout */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="analytics" element={<div className="p-6"><h1 className="text-2xl font-bold">Analytics</h1></div>} />
           <Route path="settings" element={<Settings />} />
           <Route path="profile" element={<Profile />} />
         </Route>
@@ -70,9 +68,6 @@ function Main() {
         </Route> */}
         <Route path="/candidateMonitoring" element={<AdminLayout />}>
           <Route index element={<CandidateMonitoring />} />
-        </Route>
-        <Route path="/createQuestion" element={<AdminLayout />}>
-          <Route index element={<CreateQuestion />} />
         </Route>
         <Route path="/questionManagement" element={<AdminLayout />}>
           <Route index element={<QuestionManagement />} />

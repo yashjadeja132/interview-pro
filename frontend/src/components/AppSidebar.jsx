@@ -29,7 +29,7 @@ const navigationItems = [
     description: "Overview and analytics",
   },
   {
-    title: "Position Management",
+    title: "Job Post Management",
     url: "/positionManagement",
     icon: Building2,
     description: "Job positions and roles",
@@ -46,24 +46,14 @@ const navigationItems = [
     icon: Monitor,
     description: "Monitor interviews",
   },
-  {
-    title: "Create Questions",
-    url: "/createQuestion",
-    icon: FileText,
-    description: "Add new questions",
-  },
+ 
   {
     title: "Question Management",
     url: "/questionManagement",
     icon: Database,
     description: "Manage questions by position",
   },
-  {
-    title: "Analytics",
-    url: "/admin/analytics",
-    icon: BarChart3,
-    description: "Reports and insights",
-  },
+  
   {
     title: "Settings",
     url: "/admin/settings",

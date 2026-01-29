@@ -118,8 +118,7 @@ export function AdminLogin() {
       </div>
 
       <div className="relative w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Company Info */}
-        <div className="hidden lg:block space-y-8">
+        {/* <div className="hidden lg:block space-y-8">
           <div className="space-y-6">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg">
@@ -142,7 +141,6 @@ export function AdminLogin() {
             </div>
           </div>
 
-          {/* Features List */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -164,7 +162,6 @@ export function AdminLogin() {
             </div>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-3 gap-4 pt-6">
             <div className="text-center p-4 bg-white/60 rounded-xl backdrop-blur-sm">
               <div className="text-2xl font-bold text-slate-800">500+</div>
@@ -179,7 +176,7 @@ export function AdminLogin() {
               <div className="text-sm text-slate-600">Uptime</div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Right Side - Login Form */}
         <div className="w-full max-w-md mx-auto lg:mx-0">
@@ -316,7 +313,7 @@ export function AdminLogin() {
                   ) : (
                     <div className="flex items-center gap-2">
                       <Shield className="w-5 h-5" />
-                      Access Dashboard
+                      Login
                     </div>
                   )}
                 </Button>

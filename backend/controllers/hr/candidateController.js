@@ -368,6 +368,9 @@ exports.createCandidate=async(req,res)=>{
                   message: "No technical questions available for this position yet. Please add questions first." 
                 });
               }
+              console.log('technicalQuestionsCount',technicalQuestionsCount)
+              console.log('technicalCount',technicalCount)
+
               return res.status(400).json({ 
                 message: `Only ${technicalQuestionsCount} technical question${technicalQuestionsCount !== 1 ? 's' : ''} available for this position.` 
               });
