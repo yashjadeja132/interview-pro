@@ -11,11 +11,12 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import axios from "axios";
 import axiosInstance from "../../Api/axiosInstance";
-import { AlertCircle, Shield, Users, Settings, ArrowLeft, Building2 } from "lucide-react";
+import { AlertCircle, Shield, Users, Settings, ArrowLeft, Building2, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 export function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -274,7 +275,7 @@ export function AdminLogin() {
 
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => {
@@ -288,6 +289,21 @@ export function AdminLogin() {
                       : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
                   }`}
               />
+
+              {/* Toggle password visibility */}
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="text-slate-500 hover:text-slate-700"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {fieldErrors.password && (
