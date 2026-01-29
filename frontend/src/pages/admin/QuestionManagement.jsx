@@ -18,11 +18,13 @@ import {
   FileText,
   Filter,
   CheckCircle,
-  XCircle
+  XCircle,
+  Edit2
 } from "lucide-react";
 import api from "../../Api/axiosInstance";
 import CreateQuestion from "./CreateQuestion";
 import EditQuestion from "./EditQuestion";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function QuestionManagement() {
   const [positions, setPositions] = useState([]);
@@ -246,223 +248,108 @@ export default function QuestionManagement() {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="flex-1 p-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Question Management</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Organize and manage questions by position for your interviews</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right text-sm text-gray-600 dark:text-gray-400">
-              <div className="font-medium text-gray-900 dark:text-white">
-                {positions.length} Position{positions.length !== 1 ? 's' : ''}
-              </div>
-              <div>Available</div>
-            </div>
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-              <DialogTrigger asChild>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Question Management</h1>
+          <p className="text-slate-600">Organize and manage questions by position for your interviews</p>
+        </div>
 
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto dark:bg-slate-900 dark:border-slate-800">
-                <DialogHeader>
-                  <DialogTitle className="dark:text-white">Create New Question</DialogTitle>
-                </DialogHeader>
-                <CreateQuestion onQuestionCreated={handleQuestionCreated} />
-              </DialogContent>
-            </Dialog>
+        {/* Select Position & Search */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          <div>
+            <Label className="block text-sm font-medium text-slate-700 mb-3">
+              Select Position
+            </Label>
+            <Select value={selectedPosition} onValueChange={setSelectedPosition}>
+              <SelectTrigger className="h-11 border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                <SelectValue placeholder="Choose a position to view questions" />
+              </SelectTrigger>
+              <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                {positions.map((pos) => (
+                  <SelectItem key={pos._id} value={pos._id} className="dark:text-gray-200 dark:focus:bg-slate-700">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      {pos.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="block text-sm font-medium text-slate-700 mb-3">
+              Search Questions
+            </Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
+              <Input
+                placeholder="Search questions by text..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-11 border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XCircle className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Filters */}
-        <Card className="border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row gap-6">
-              <div className="flex-1">
-                <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">
-                  Select Position
-                </Label>
-                <Select value={selectedPosition} onValueChange={setSelectedPosition}>
-                  <SelectTrigger className="h-11 border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-blue-500 focus:ring-blue-500">
-                    <SelectValue placeholder="Choose a position to view questions" />
-                  </SelectTrigger>
-                  <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                    {positions.map((pos) => (
-                      <SelectItem key={pos._id} value={pos._id} className="dark:text-gray-200 dark:focus:bg-slate-700">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          {pos.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {selectedPosition && (
-                <div className="flex-1">
-                  <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">
-                    Search Questions
-                  </Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
-                    <Input
-                      placeholder="Search questions by text..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 h-11 border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-blue-500 focus:ring-blue-500"
-                    />
-                    {searchTerm && (
-                      <button
-                        onClick={() => setSearchTerm("")}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                      >
-                        <XCircle className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Table Section */}
+        <div className="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-slate-50 border-b border-slate-200">
+                <TableRow>
+                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Question</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Position</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Difficulty</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Options</TableHead>
+                  <TableHead className="px-6 py-4 text-center text-sm font-semibold text-slate-700">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
 
-            {/* Quick Stats */}
-            {selectedPosition && (
-              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-slate-800">
-                <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span>Position: <span className="font-medium text-gray-900 dark:text-white">{positions.find(p => p._id === selectedPosition)?.name}</span></span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>Questions: <span className="font-medium text-gray-900 dark:text-white">{filteredQuestions.length}</span></span>
-                  </div>
-                  {searchTerm && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                      <span>Searching: <span className="font-medium text-gray-900 dark:text-white">"{searchTerm}"</span></span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Questions Section */}
-        {selectedPosition ? (
-          <div className="space-y-6">
-            {/* Header with Stats */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Questions for {positions.find(p => p._id === selectedPosition)?.name}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  Manage and organize questions for this position
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {filteredQuestions.length}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Total Questions
-                  </div>
-                </div>
-                <Button
-                  onClick={() => setShowCreateDialog(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Question
-                </Button>
-              </div>
-            </div>
-
-            {/* Questions Content */}
-            {isLoading ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Card key={i} className="border border-gray-200 dark:border-slate-800 dark:bg-slate-900">
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        <div className="flex gap-2">
-                          <div className="h-6 w-16 bg-gray-200 dark:bg-slate-800 rounded animate-pulse"></div>
-                          <div className="h-6 w-20 bg-gray-200 dark:bg-slate-800 rounded animate-pulse"></div>
-                        </div>
-                        <div className="h-4 bg-gray-200 dark:bg-slate-800 rounded animate-pulse"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-slate-800 rounded animate-pulse w-3/4"></div>
-                        <div className="space-y-2">
-                          <div className="h-8 bg-gray-200 dark:bg-slate-800 rounded animate-pulse"></div>
-                          <div className="h-8 bg-gray-200 dark:bg-slate-800 rounded animate-pulse"></div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+              <TableBody>
+                {filteredQuestions.map((question) => (
+                  <TableRow key={question._id} className="border-b border-slate-200 hover:bg-slate-50 transition">
+                    <TableCell className="px-6 py-4 text-slate-900">{question.questionText}</TableCell>
+                    <TableCell className="px-6 py-4 text-slate-600">{question.position?.name}</TableCell>
+                    <TableCell className="px-6 py-4">
+                      <Badge variant="outline" className={`text-xs ${getDifficultyBadgeClass(question.difficulty)}`}>
+                        {question.difficulty}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-slate-600">{question.options?.length} Options</TableCell>
+                    <TableCell className="px-6 py-4 flex justify-center gap-2">
+                      <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => handleViewQuestion(question)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-amber-600 hover:bg-amber-50" onClick={() => handleEditQuestion(question)}>
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteQuestion(question._id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </div>
-            ) : filteredQuestions.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredQuestions.map(renderQuestionCard)}
-              </div>
-            ) : (
-              <Card className="border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                <CardContent className="p-16 text-center">
-                  <div className="w-24 h-24 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <FileText className="w-12 h-12 text-blue-500 dark:text-blue-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                    {searchTerm ? "No questions found" : "No questions available"}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                    {searchTerm
-                      ? "We couldn't find any questions matching your search. Try adjusting your search terms or clear the search to see all questions."
-                      : "This position doesn't have any questions yet. Start building your question bank by adding the first question."
-                    }
-                  </p>
-                  <div className="flex gap-3 justify-center">
-                    {searchTerm ? (
-                      <Button
-                        variant="outline"
-                        onClick={() => setSearchTerm("")}
-                        className="dark:border-slate-700 dark:text-gray-200 dark:hover:bg-slate-800"
-                      >
-                        Clear Search
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => setShowCreateDialog(true)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add First Question
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+              </TableBody>
+            </Table>
           </div>
-        ) : (
-          <Card className="border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <CardContent className="p-16 text-center">
-              <div className="w-24 h-24 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Filter className="w-12 h-12 text-gray-400 dark:text-gray-500" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                Select a Position
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                Choose a position from the dropdown above to view and manage its questions.
-                Each position can have its own set of questions for interviews.
-              </p>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                💡 Tip: Questions are organized by position to ensure relevant assessments
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        </div>
+
+        {/* Add Question Button */}
+        <div className="mt-8 flex justify-end">
+          <Button onClick={() => setShowCreateDialog(true)} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2">
+            + Add Question
+          </Button>
+        </div>
       </div>
 
       {/* View Question Dialog */}
@@ -592,4 +479,17 @@ export default function QuestionManagement() {
       <Toaster />
     </>
   );
+}
+
+function getDifficultyBadgeClass(difficulty) {
+  switch (difficulty) {
+    case 'Easy':
+      return 'bg-green-100 text-green-700 border-green-200';
+    case 'Medium':
+      return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+    case 'Hard':
+      return 'bg-red-100 text-red-700 border-red-200';
+    default:
+      return 'bg-gray-100 text-gray-700 border-gray-200';
+  }
 }
