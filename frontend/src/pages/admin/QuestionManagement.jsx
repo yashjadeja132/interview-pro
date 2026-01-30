@@ -349,6 +349,16 @@ export default function QuestionManagement() {
        
       </div>
 
+      {/* Create Question Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto dark:bg-slate-900 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="dark:text-white">Add Question</DialogTitle>
+          </DialogHeader>
+          <CreateQuestion onQuestionCreated={handleQuestionCreated} />
+        </DialogContent>
+      </Dialog>
+
       {/* View Question Dialog */}
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto dark:bg-slate-900 dark:border-slate-800">
