@@ -355,7 +355,7 @@ export default function CandidateManagement() {
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async () => {    
     if (!editingId) return;
 
     // Validate schedule if it's being updated
@@ -768,7 +768,7 @@ export default function CandidateManagement() {
                           name="questionsAskedToCandidate"
                           type="number"
                           min="0"
-                          placeholder="Enter number of questions"
+                                 placeholder="Enter number of questions"
                           value={form.questionsAskedToCandidate || ""}
                           onChange={(e) => {
                             handleChange(e);
@@ -849,6 +849,9 @@ export default function CandidateManagement() {
                   </div>
                   <DialogFooter>
                     <Button
+                    style={{ marginRight: '8px',
+                      color: 'gray'
+                     }}
                       variant="outline"
                       onClick={() => {
                         setForm({});
