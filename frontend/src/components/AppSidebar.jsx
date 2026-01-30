@@ -20,6 +20,9 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Link, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+const location = useLocation();
+
 
 const navigationItems = [
   {
@@ -105,33 +108,54 @@ export default function AppSidebar() {
       </SidebarHeader>
 
       {/* ================= NAVIGATION ================= */}
-      <SidebarContent className="p-2">
-        <SidebarMenu className="space-y-1">
-          {navigationItems.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                asChild
-                className="h-12 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <Link
-                  to={item.url}
-                  className="flex items-center space-x-3 w-full"
+    <SidebarContent className="p-2">
+  <SidebarMenu className="space-y-1">
+    {navigationItems.map((item) => {
+      const isActive = location.pathname === item.url;
+
+      return (
+        <SidebarMenuItem key={item.title}>
+          <SidebarMenuButton
+            asChild
+            className={`h-12 rounded-lg 
+              ${isActive 
+                ? "bg-primary/10 text-primary" 
+                : "hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+          >
+            <Link
+              to={item.url}
+              className="flex items-center space-x-3 w-full"
+            >
+              <item.icon
+                className={`w-5 h-5 ${
+                  isActive 
+                    ? "text-primary" 
+                    : "text-slate-600 dark:text-slate-400"
+                }`}
+              />
+              <div className="flex flex-col items-start">
+                <span
+                  className={`font-medium ${
+                    isActive 
+                      ? "text-primary" 
+                      : "text-slate-800 dark:text-slate-200"
+                  }`}
                 >
-                  <item.icon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                  <div className="flex flex-col items-start">
-                    <span className="font-medium text-slate-800 dark:text-slate-200">
-                      {item.title}
-                    </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-500">
-                      {item.description}
-                    </span>
-                  </div>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
+                  {item.title}
+                </span>
+                <span className="text-xs text-slate-500">
+                  {item.description}
+                </span>
+              </div>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      );
+    })}
+  </SidebarMenu>
+</SidebarContent>
+
 
       {/* ================= FOOTER / LOGOUT ================= */}
       <SidebarFooter className="border-t border-slate-200 dark:border-slate-800 p-2">
