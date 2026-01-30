@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-const location = useLocation();
 
 
 const navigationItems = [
