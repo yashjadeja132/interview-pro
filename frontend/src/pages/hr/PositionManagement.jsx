@@ -10,7 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -38,11 +44,12 @@ import {
   Filter,
   MoreVertical,
   Edit3,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 
 export default function PositionManagement() {
-  const [positions, setPositions] = useState([]);[]
+  const [positions, setPositions] = useState([]);
+  [];
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [newPosition, setNewPosition] = useState("");
@@ -55,8 +62,8 @@ export default function PositionManagement() {
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
 
   // Filter positions based on search term
-  const filteredPositions = positions.filter(position =>
-    position.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPositions = positions.filter((position) =>
+    position.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Fetch positions
@@ -80,12 +87,15 @@ export default function PositionManagement() {
 
   // POST request to add new position
   const addPosition = async () => {
-    if (!newPosition.trim()
-      || !newSalary.trim()
-      || !newJobType.trim()
-      || !newExperience.trim()
-      || !noofvacancy.trim()
-      || !newShift.trim()) return;
+    if (
+      !newPosition.trim() ||
+      !newSalary.trim() ||
+      !newJobType.trim() ||
+      !newExperience.trim() ||
+      !noofvacancy.trim() ||
+      !newShift.trim()
+    )
+      return;
     try {
       const res = await axiosInstance.post("/position", {
         name: newPosition,
@@ -119,21 +129,18 @@ export default function PositionManagement() {
   const updatePosition = async () => {
     if (!editing._id) return;
     try {
-      await axiosInstance.put(
-        `/position/${editing._id}`,
-        {
-          name: editing.name,
-          salary: Number(editing.salary),
-          jobType: editing.jobType,
-          experience: editing.experience,
-          vacancies: Number(editing.vacancies),
-          shift: editing.shift,
-        }
-      );
+      await axiosInstance.put(`/position/${editing._id}`, {
+        name: editing.name,
+        salary: Number(editing.salary),
+        jobType: editing.jobType,
+        experience: editing.experience,
+        vacancies: Number(editing.vacancies),
+        shift: editing.shift,
+      });
       setPositions(
         positions.map((pos) =>
-          pos._id === editing._id ? { ...pos, name: editing.name } : pos
-        )
+          pos._id === editing._id ? { ...pos, name: editing.name } : pos,
+        ),
       );
       setEditing({ _id: null, name: "" });
     } catch (err) {
@@ -144,9 +151,7 @@ export default function PositionManagement() {
   // DELETE request to delete position
   const deletePosition = async (id) => {
     try {
-      const res = await axiosInstance.delete(
-        `/position/${id}`
-      );
+      const res = await axiosInstance.delete(`/position/${id}`);
       if (res.status === 200) {
         toast.success("Position deleted successfully");
       }
@@ -169,21 +174,28 @@ export default function PositionManagement() {
               <Building2 className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Job Post Management</h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">Manage job positions and roles in your organization</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-white">
+                Job Post Management
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">
+                Manage job positions and roles in your organization
+              </p>
             </div>
           </div>
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Position
-              </Button>
+              <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg">
+  <Plus className="w-4 h-4 mr-2" />
+  Add Position
+</Button>
+
             </DialogTrigger>
             <DialogContent className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800">
               <DialogHeader>
-                <DialogTitle className="text-xl font-semibold dark:text-white">Add New Position</DialogTitle>
+                <DialogTitle className="text-xl font-semibold dark:text-white">
+                  Add New Position
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div>
@@ -246,7 +258,10 @@ export default function PositionManagement() {
                         onChange={(e) => setNewShift(e.target.value)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:border-gray-600"
                       />
-                      <label htmlFor="dayShift" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      <label
+                        htmlFor="dayShift"
+                        className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                      >
                         Day Shift
                       </label>
                     </div>
@@ -260,7 +275,10 @@ export default function PositionManagement() {
                         onChange={(e) => setNewShift(e.target.value)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                       />
-                      <label htmlFor="nightShift" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      <label
+                        htmlFor="nightShift"
+                        className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                      >
                         Night Shift
                       </label>
                     </div>
@@ -278,15 +296,39 @@ export default function PositionManagement() {
                       <SelectValue placeholder="Select job type" />
                     </SelectTrigger>
                     <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                      <SelectItem value="Full-time" className="dark:text-white dark:focus:bg-slate-700">Full-time</SelectItem>
-                      <SelectItem value="Part-time" className="dark:text-white dark:focus:bg-slate-700">Part-time</SelectItem>
-                      <SelectItem value="Freelancer" className="dark:text-white dark:focus:bg-slate-700">Freelancer</SelectItem>
-                      <SelectItem value="Contract" className="dark:text-white dark:focus:bg-slate-700">Contract</SelectItem>
+                      <SelectItem
+                        value="Full-time"
+                        className="dark:text-white dark:focus:bg-slate-700"
+                      >
+                        Full-time
+                      </SelectItem>
+                      <SelectItem
+                        value="Part-time"
+                        className="dark:text-white dark:focus:bg-slate-700"
+                      >
+                        Part-time
+                      </SelectItem>
+                      <SelectItem
+                        value="Freelancer"
+                        className="dark:text-white dark:focus:bg-slate-700"
+                      >
+                        Freelancer
+                      </SelectItem>
+                      <SelectItem
+                        value="Contract"
+                        className="dark:text-white dark:focus:bg-slate-700"
+                      >
+                        Contract
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="flex justify-end space-x-3">
-                  <Button variant="outline" onClick={() => setNewPosition("")} className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700">
+                  <Button
+                    variant="outline"
+                    onClick={() => setNewPosition("")}
+                    className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
+                  >
                     Cancel
                   </Button>
                   <Button
@@ -362,13 +404,17 @@ export default function PositionManagement() {
                     className="pl-10 w-80 h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                   />
                 </div>
-                <Button variant="outline" className="h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700">
+                <Button
+                  variant="outline"
+                  className="h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
+                >
                   <Filter className="w-4 h-4 mr-2" />
                   Filter
                 </Button>
               </div>
               <div className="text-sm text-slate-500 dark:text-slate-400">
-                Showing {filteredPositions.length} of {positions.length} positions
+                Showing {filteredPositions.length} of {positions.length}{" "}
+                positions
               </div>
             </div>
           </CardContent>
@@ -377,7 +423,9 @@ export default function PositionManagement() {
         {/* Positions Table */}
         <Card className="border-0 shadow-sm dark:bg-slate-900">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold dark:text-white">All Positions</CardTitle>
+            <CardTitle className="text-xl font-semibold dark:text-white">
+              All Positions
+            </CardTitle>
             <CardDescription className="dark:text-slate-400">
               Manage and organize job positions in your organization
             </CardDescription>
@@ -387,7 +435,9 @@ export default function PositionManagement() {
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center space-x-3">
                   <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-slate-600 dark:text-slate-400">Loading positions...</span>
+                  <span className="text-slate-600 dark:text-slate-400">
+                    Loading positions...
+                  </span>
                 </div>
               </div>
             ) : filteredPositions.length === 0 ? (
@@ -395,9 +445,13 @@ export default function PositionManagement() {
                 <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                   <Building2 className="w-8 h-8 text-slate-400" />
                 </div>
-                <h3 className="text-lg font-medium text-slate-800 dark:text-white mb-2">No positions found</h3>
+                <h3 className="text-lg font-medium text-slate-800 dark:text-white mb-2">
+                  No positions found
+                </h3>
                 <p className="text-slate-500 dark:text-slate-400 text-center max-w-sm">
-                  {searchTerm ? "No positions match your search criteria." : "Get started by adding your first position."}
+                  {searchTerm
+                    ? "No positions match your search criteria."
+                    : "Get started by adding your first position."}
                 </p>
               </div>
             ) : (
@@ -405,20 +459,41 @@ export default function PositionManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position Name</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Salary</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Experience</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Vacancies</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Shift</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Job Type</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Created</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                        #
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                        Position Name
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                        Salary
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                        Experience
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                        Vacancies
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                        Shift
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                        Job Type
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                        Created
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredPositions.map((pos, index) => (
-                      <TableRow key={pos._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
+                      <TableRow
+                        key={pos._id}
+                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800"
+                      >
                         <TableCell className="font-medium text-slate-600 dark:text-slate-300">
                           {index + 1}
                         </TableCell>
@@ -427,33 +502,43 @@ export default function PositionManagement() {
                             <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                               <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <span className="font-medium text-slate-800 dark:text-slate-200">{pos.name}</span>
+                            <span className="font-medium text-slate-800 dark:text-slate-200">
+                              {pos.name}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell className="text-slate-500 dark:text-slate-400">
                           <span className="font-medium">{pos.salary || 0}</span>
                         </TableCell>
                         <TableCell className="text-slate-500 dark:text-slate-400">
-                          <span className="font-medium">{pos.experience || 0}</span>
+                          <span className="font-medium">
+                            {pos.experience || 0}
+                          </span>
                         </TableCell>
                         <TableCell className="text-slate-500 dark:text-slate-400">
-                          <span className="font-medium">{pos.vacancies || 0}</span>
+                          <span className="font-medium">
+                            {pos.vacancies || 0}
+                          </span>
                         </TableCell>
                         <TableCell className="text-slate-500 dark:text-slate-400">
                           <span className="font-medium">{pos.shift || 0}</span>
                         </TableCell>
                         <TableCell className="text-slate-500 dark:text-slate-400">
-                          <span className="font-medium">{pos.jobType || 0}</span>
+                          <span className="font-medium">
+                            {pos.jobType || 0}
+                          </span>
                         </TableCell>
                         <TableCell className="text-slate-500 dark:text-slate-400">
-                          {pos.createdAt ? new Date(pos.createdAt).toLocaleString('en-GB', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                          }) : 'N/A'}
+                          {pos.createdAt
+                            ? new Date(pos.createdAt).toLocaleString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                            : "N/A"}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end space-x-2">
@@ -478,7 +563,9 @@ export default function PositionManagement() {
                               </DialogTrigger>
                               <DialogContent className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800">
                                 <DialogHeader>
-                                  <DialogTitle className="text-xl font-semibold dark:text-white">Edit Position</DialogTitle>
+                                  <DialogTitle className="text-xl font-semibold dark:text-white">
+                                    Edit Position
+                                  </DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-4 mt-4">
                                   <div>
@@ -499,7 +586,9 @@ export default function PositionManagement() {
                                   <div className="flex justify-end space-x-3">
                                     <Button
                                       variant="outline"
-                                      onClick={() => setEditing({ _id: null, name: "" })}
+                                      onClick={() =>
+                                        setEditing({ _id: null, name: "" })
+                                      }
                                       className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
                                     >
                                       Cancel
@@ -517,6 +606,8 @@ export default function PositionManagement() {
 
                             {/* Delete Button */}
                             <Button
+                              Add
+                              position
                               size="sm"
                               variant="outline"
                               onClick={() =>
@@ -551,12 +642,15 @@ export default function PositionManagement() {
               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
-              <DialogTitle className="text-xl font-semibold">Confirm Delete</DialogTitle>
+              <DialogTitle className="text-xl font-semibold">
+                Confirm Delete
+              </DialogTitle>
             </div>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <p className="text-slate-600">
-              Are you sure you want to delete this position? This action cannot be undone.
+              Are you sure you want to delete this position? This action cannot
+              be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <Button

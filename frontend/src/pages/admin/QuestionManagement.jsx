@@ -254,7 +254,10 @@ export default function QuestionManagement() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">Question Management</h1>
             <div className="flex justify-between gap-5">
             <p className="text-slate-600 dark:text-slate-400">Organize and manage questions by position for your interviews</p>
-          <Button onClick={() => setShowCreateDialog(true)} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2">
+<Button 
+  onClick={() => setShowCreateDialog(true)} 
+  className="bg-primary hover:bg-primary/90 text-white px-6 py-2"
+>
             + Add Question
           </Button>
         </div>
