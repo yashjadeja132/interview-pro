@@ -49,7 +49,6 @@ import {
 
 export default function PositionManagement() {
   const [positions, setPositions] = useState([]);
-  [];
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [newPosition, setNewPosition] = useState("");
@@ -58,19 +57,48 @@ export default function PositionManagement() {
   const [newExperience, setNewExperience] = useState("");
   const [noofvacancy, setNoofvacancy] = useState("");
   const [newShift, setNewShift] = useState("");
-  const [editing, setEditing] = useState({ _id: null, name: "" });
+  const [editing, setEditing] = useState({
+    _id: null,
+    name: "",
+    salary: "",
+    jobType: "",
+    experience: "",
+    vacancies: "",
+    shift: ""
+  });
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
 
-  // Filter positions based on search term
-  const filteredPositions = positions.filter((position) =>
-    position.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // Filter states
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    vacancy: "",
+    jobType: "all",
+    salary: "",
+    shift: "all",
+    experience: "",
+  });
 
-  // Fetch positions
+
+
+  // Fetch positions with filters
   const fetchPositions = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/position");
+
+      // Build query parameters
+      const params = new URLSearchParams();
+
+      if (searchTerm) params.append('search', searchTerm);
+      if (filters.vacancy) params.append('vacancy', filters.vacancy);
+      if (filters.jobType && filters.jobType !== 'all') params.append('jobType', filters.jobType);
+      if (filters.salary) params.append('salary', filters.salary);
+      if (filters.shift && filters.shift !== 'all') params.append('shift', filters.shift);
+      if (filters.experience) params.append('experience', filters.experience);
+
+      const queryString = params.toString();
+      const url = `http://localhost:5000/api/position${queryString ? `?${queryString}` : ''}`;
+
+      const res = await axios.get(url);
       console.log(res);
 
       setPositions(res.data.data);
@@ -83,7 +111,7 @@ export default function PositionManagement() {
 
   useEffect(() => {
     fetchPositions();
-  }, []);
+  }, [searchTerm, filters]);
 
   // POST request to add new position
   const addPosition = async () => {
@@ -139,12 +167,30 @@ export default function PositionManagement() {
       });
       setPositions(
         positions.map((pos) =>
-          pos._id === editing._id ? { ...pos, name: editing.name } : pos,
+          pos._id === editing._id ? {
+            ...pos,
+            name: editing.name,
+            salary: editing.salary,
+            jobType: editing.jobType,
+            experience: editing.experience,
+            vacancies: editing.vacancies,
+            shift: editing.shift
+          } : pos,
         ),
       );
-      setEditing({ _id: null, name: "" });
+      setEditing({
+        _id: null,
+        name: "",
+        salary: "",
+        jobType: "",
+        experience: "",
+        vacancies: "",
+        shift: ""
+      });
+      toast.success("Position updated successfully");
     } catch (err) {
       console.error("Error updating position", err);
+      toast.error("Failed to update position");
     }
   };
 
@@ -186,9 +232,9 @@ export default function PositionManagement() {
           <Dialog>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg">
-  <Plus className="w-4 h-4 mr-2" />
-  Add Position
-</Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Position
+              </Button>
 
             </DialogTrigger>
             <DialogContent className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800">
@@ -393,7 +439,7 @@ export default function PositionManagement() {
         {/* Search and Filter Section */}
         <Card className="border-0 shadow-sm mb-6 dark:bg-slate-900">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -406,17 +452,152 @@ export default function PositionManagement() {
                 </div>
                 <Button
                   variant="outline"
-                  className="h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''}`}
                 >
                   <Filter className="w-4 h-4 mr-2" />
-                  Filter
+                  Filter {showFilters ? '▲' : '▼'}
                 </Button>
+                {(filters.vacancy || filters.jobType !== 'all' || filters.salary || filters.shift !== 'all' || filters.experience !== 'all') && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFilters({ vacancy: "", jobType: "all", salary: "", shift: "all", experience: "all" })}
+                    className="h-10 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
               </div>
               <div className="text-sm text-slate-500 dark:text-slate-400">
-                Showing {filteredPositions.length} of {positions.length}{" "}
-                positions
+                Showing {positions.length} position{positions.length !== 1 ? 's' : ''}
               </div>
             </div>
+
+            {/* Filter Panel */}
+            {showFilters && (
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="grid grid-cols-1 md:grid-cols-9 gap-4">
+                  {/* Vacancy Filter */}
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                      Vacancies
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="Min vacancies"
+                      value={filters.vacancy}
+                      onChange={(e) => setFilters({ ...filters, vacancy: e.target.value })}
+                      className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                    />
+                  </div>
+
+                  {/* Job Type Filter */}
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                      Job Type
+                    </label>
+                    <Select
+                      value={filters.jobType}
+                      onValueChange={(value) => setFilters({ ...filters, jobType: value })}
+                    >
+                      <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                        <SelectValue placeholder="All Job Types" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                        <SelectItem value="all" className="dark:text-white dark:focus:bg-slate-700">
+                          All Job Types
+                        </SelectItem>
+                        <SelectItem value="Full-time" className="dark:text-white dark:focus:bg-slate-700">
+                          Full-time
+                        </SelectItem>
+                        <SelectItem value="Part-time" className="dark:text-white dark:focus:bg-slate-700">
+                          Part-time
+                        </SelectItem>
+                        <SelectItem value="Freelancer" className="dark:text-white dark:focus:bg-slate-700">
+                          Freelancer
+                        </SelectItem>
+                        <SelectItem value="Contract" className="dark:text-white dark:focus:bg-slate-700">
+                          Contract
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Experience Filter */}
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                      Experience
+                    </label>
+                    <Select
+                      value={filters.experience}
+                      onValueChange={(value) => setFilters({ ...filters, experience: value })}
+                    >
+                      <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                        <SelectValue placeholder="All Experience" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                        <SelectItem value="all" className="dark:text-white dark:focus:bg-slate-700">
+                          All
+                        </SelectItem>
+                        <SelectItem value="0-1 years" className="dark:text-white dark:focus:bg-slate-700">
+                          0-1 years
+                        </SelectItem>
+                        <SelectItem value="1-3 years" className="dark:text-white dark:focus:bg-slate-700">
+                          1-3 years
+                        </SelectItem>
+                        <SelectItem value="3-5 years" className="dark:text-white dark:focus:bg-slate-700">
+                          3-5 years
+                        </SelectItem>
+                        <SelectItem value="5+ years" className="dark:text-white dark:focus:bg-slate-700">
+                          5+ years
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Salary Filter */}
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                      Minimum Salary
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 50000"
+                      value={filters.salary}
+                      onChange={(e) => setFilters({ ...filters, salary: e.target.value })}
+                      className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                    />
+                  </div>
+
+                  {/* Shift Filter */}
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                      Shift
+                    </label>
+                    <Select
+                      value={filters.shift}
+                      onValueChange={(value) => setFilters({ ...filters, shift: value })}
+                    >
+                      <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                        <SelectValue placeholder="All Shifts" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                        <SelectItem value="all" className="dark:text-white dark:focus:bg-slate-700">
+                          All Shifts
+                        </SelectItem>
+                        <SelectItem value="Day Shift" className="dark:text-white dark:focus:bg-slate-700">
+                          Day Shift
+                        </SelectItem>
+                        <SelectItem value="Night Shift" className="dark:text-white dark:focus:bg-slate-700">
+                          Night Shift
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -440,7 +621,7 @@ export default function PositionManagement() {
                   </span>
                 </div>
               </div>
-            ) : filteredPositions.length === 0 ? (
+            ) : positions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                   <Building2 className="w-8 h-8 text-slate-400" />
@@ -449,8 +630,8 @@ export default function PositionManagement() {
                   No positions found
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 text-center max-w-sm">
-                  {searchTerm
-                    ? "No positions match your search criteria."
+                  {searchTerm || filters.vacancy || filters.jobType !== 'all' || filters.salary || filters.shift !== 'all'
+                    ? "No positions match your search or filter criteria."
                     : "Get started by adding your first position."}
                 </p>
               </div>
@@ -489,7 +670,7 @@ export default function PositionManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredPositions.map((pos, index) => (
+                    {positions.map((pos, index) => (
                       <TableRow
                         key={pos._id}
                         className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800"
@@ -531,13 +712,13 @@ export default function PositionManagement() {
                         <TableCell className="text-slate-500 dark:text-slate-400">
                           {pos.createdAt
                             ? new Date(pos.createdAt).toLocaleString("en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              })
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
                             : "N/A"}
                         </TableCell>
                         <TableCell className="text-right">
@@ -546,7 +727,7 @@ export default function PositionManagement() {
                             <Dialog
                               open={editing._id === pos._id}
                               onOpenChange={(open) =>
-                                !open && setEditing({ _id: null, name: "" })
+                                !open && setEditing({ _id: null, name: "", salary: "", jobType: "", experience: "", vacancies: "", shift: "" })
                               }
                             >
                               <DialogTrigger asChild>
@@ -554,7 +735,15 @@ export default function PositionManagement() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() =>
-                                    setEditing({ _id: pos._id, name: pos.name })
+                                    setEditing({
+                                      _id: pos._id,
+                                      name: pos.name,
+                                      salary: pos.salary,
+                                      jobType: pos.jobType,
+                                      experience: pos.experience,
+                                      vacancies: pos.vacancies,
+                                      shift: pos.shift
+                                    })
                                   }
                                   className="h-8 w-8 p-0 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
                                 >
@@ -583,12 +772,109 @@ export default function PositionManagement() {
                                       className="h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                     />
                                   </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                                      Salary
+                                    </label>
+                                    <Input
+                                      value={editing.salary}
+                                      onChange={(e) =>
+                                        setEditing({
+                                          ...editing,
+                                          salary: e.target.value,
+                                        })
+                                      }
+                                      className="h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                                      Experience
+                                    </label>
+                                    <Input
+                                      value={editing.experience}
+                                      onChange={(e) =>
+                                        setEditing({
+                                          ...editing,
+                                          experience: e.target.value,
+                                        })
+                                      }
+                                      className="h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                                      Vacancies
+                                    </label>
+                                    <Input
+                                      value={editing.vacancies}
+                                      onChange={(e) =>
+                                        setEditing({
+                                          ...editing,
+                                          vacancies: e.target.value,
+                                        })
+                                      }
+                                      className="h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                                      Shift
+                                    </label>
+                                    <div className="flex gap-4 h-11 items-center">
+                                      <div className="flex items-center space-x-2">
+                                        <input
+                                          type="radio"
+                                          id="editDayShift"
+                                          name="editShift"
+                                          value="Day Shift"
+                                          checked={editing.shift === "Day Shift"}
+                                          onChange={(e) => setEditing({ ...editing, shift: e.target.value })}
+                                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:border-gray-600"
+                                        />
+                                        <label htmlFor="editDayShift" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                          Day Shift
+                                        </label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <input
+                                          type="radio"
+                                          id="editNightShift"
+                                          name="editShift"
+                                          value="Night Shift"
+                                          checked={editing.shift === "Night Shift"}
+                                          onChange={(e) => setEditing({ ...editing, shift: e.target.value })}
+                                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                                        />
+                                        <label htmlFor="editNightShift" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                          Night Shift
+                                        </label>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                                      Job type
+                                    </label>
+                                    <Select
+                                      value={editing.jobType}
+                                      onValueChange={(value) => setEditing({ ...editing, jobType: value })}
+                                    >
+                                      <SelectTrigger className="h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                        <SelectValue placeholder="Select job type" />
+                                      </SelectTrigger>
+                                      <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                                        <SelectItem value="Full-time" className="dark:text-white dark:focus:bg-slate-700">Full-time</SelectItem>
+                                        <SelectItem value="Part-time" className="dark:text-white dark:focus:bg-slate-700">Part-time</SelectItem>
+                                        <SelectItem value="Freelancer" className="dark:text-white dark:focus:bg-slate-700">Freelancer</SelectItem>
+                                        <SelectItem value="Contract" className="dark:text-white dark:focus:bg-slate-700">Contract</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
                                   <div className="flex justify-end space-x-3">
                                     <Button
                                       variant="outline"
-                                      onClick={() =>
-                                        setEditing({ _id: null, name: "" })
-                                      }
+                                      onClick={() => setEditing({ _id: null, name: "", salary: "", jobType: "", experience: "", vacancies: "", shift: "" })}
                                       className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
                                     >
                                       Cancel

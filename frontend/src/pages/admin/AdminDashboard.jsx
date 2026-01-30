@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { 
-  Users, 
-  UserCheck, 
-  Calendar, 
-  FileText, 
-  TrendingUp, 
-  Clock, 
+import {
+  Users,
+  UserCheck,
+  Calendar,
+  FileText,
+  TrendingUp,
+  Clock,
   Award,
   AlertCircle,
   CheckCircle,
@@ -38,7 +38,9 @@ export default function AdminDashboard() {
   const [dashboardData, setDashboardData] = useState({
     totalCandidates: 0,
     totalPositions: 0,
-    positionDistribution: {}
+    positionDistribution: {},
+    vacanciesDistribution: {},
+    appliedCandidates: {}
   });
 
   // Function to fetch dashboard stats from API
@@ -46,22 +48,25 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axiosInstance.get('/admin/dashboard/stats');
-      
+
       if (response.data.success) {
         const data = response.data.data;
+        console.log(data.distributions);
         setDashboardData({
           totalCandidates: data.overview.totalCandidates,
           totalPositions: data.overview.totalPositions,
-          positionDistribution: data.distributions.position || {}
+          positionDistribution: data.distributions.candidates || {},
+          vacanciesDistribution: data.distributions.vacancies || {},
+          appliedCandidates: data.distributions.appliedCandidates || {}
         });
-        
-        console.log('📊 Dashboard Stats from Backend:', {
-          totalCandidates: data.overview.totalCandidates,
-          totalPositions: data.overview.totalPositions,
-          positionDistribution: data.distributions.position
-        });
+        // console.log('📊 Dashboard Stats from Backend:', {
+        //   totalCandidates: data.overview.totalCandidates,
+        //   totalPositions: data.overview.totalPositions,
+        //   positionDistribution: data.distributions.position,
+        //   vacancies: data.distributions.vacancies
+        // });
       } else {
         console.error('❌ API returned error:', response.data.message);
         setError(response.data.message);
@@ -79,6 +84,7 @@ export default function AdminDashboard() {
     getDashboardStats();
   }, []);
 
+  console.log(dashboardData);
 
   if (loading) {
     return (
@@ -120,7 +126,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 dark:bg-slate-900 "
-    
+
     // style={{ backgroundColor: primaryColor }}
     >
       <div className="max-w-7xl mx-auto space-y-6">
@@ -131,8 +137,8 @@ export default function AdminDashboard() {
             <p className="text-slate-600 dark:text-gray-400 mt-1">Overview of your interview system</p>
           </div>
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => window.location.reload()}
               className="h-10"
             >
@@ -142,77 +148,163 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600">Total Candidates</p>
-                  <p className="text-3xl font-bold text-blue-900">{dashboardData.totalCandidates}</p>
-                  <p className="text-xs text-blue-700 mt-1">All registered candidates</p>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Current Hiring Card */}
+            <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-orange-100">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-orange-600">Current Hiring</p>
+                    <p className="text-3xl font-bold text-orange-900">{dashboardData.totalPositions}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-orange-200 rounded-lg flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-orange-600" />
+                  </div>
                 </div>
-                <div className="w-12 h-12 bg-blue-200 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-orange-100">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-600">Available Positions</p>
-                  <p className="text-3xl font-bold text-orange-900">{dashboardData.totalPositions}</p>
-                </div>
-                <div className="w-12 h-12 bg-orange-200 rounded-lg flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Position Distribution */}
-        <Card className="border-0 shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-green-600" />
-              Position Distribution
-            </CardTitle>
-            <CardDescription>
-              Candidates applied for each position
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {Object.keys(dashboardData.positionDistribution).length > 0 ? (
-                Object.entries(dashboardData.positionDistribution).map(([position, count]) => (
-                  <div key={position} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      <span className="text-sm font-medium text-slate-700">{position}</span>
+            {/* Position Distribution */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-green-600" />
+                  Position Distribution
+                </CardTitle>
+                <CardDescription>
+                  Vacancies for each position
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {Object.keys(dashboardData.vacanciesDistribution).length > 0 ? (
+                    Object.entries(dashboardData.vacanciesDistribution).map(([position, count]) => (
+                      <div key={position} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <span className="text-sm font-medium text-slate-700">{position}</span>
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          {count} Vacancies
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Target className="w-8 h-8 text-slate-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Data Available</h3>
+                      <p className="text-gray-600">
+                        {loading ? 'Loading position distribution...' : 'No position distribution data found.'}
+                      </p>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-700">
-                      {count} candidates
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Target className="w-8 h-8 text-slate-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Data Available</h3>
-                  <p className="text-gray-600">
-                    {loading ? 'Loading position distribution...' : 'No position distribution data found.'}
-                  </p>
+                  )}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* Total Candidates Card */}
+            <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-blue-600">Total Candidates</p>
+                    <p className="text-3xl font-bold text-blue-900">{dashboardData.totalCandidates}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-blue-200 rounded-lg flex items-center justify-center">
+                    <Users className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Candidate Applied */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-green-600" />
+                  Candidate Applied
+                </CardTitle>
+                <CardDescription>
+                  Candidates applied for each position
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {Object.keys(dashboardData.appliedCandidates).length > 0 ? (
+                    Object.entries(dashboardData.appliedCandidates).map(([position, count]) => (
+                      <div key={position} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <span className="text-sm font-medium text-slate-700">{position}</span>
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          {count} candidates
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Target className="w-8 h-8 text-slate-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Data Available</h3>
+                      <p className="text-gray-600">
+                        {loading ? 'Loading position distribution...' : 'No position distribution data found.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card> 
+            {/* Candidate Applied */}
+            {/* <Card className="border-0 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-green-600" />
+                  Candidate Applied
+                </CardTitle>
+                <CardDescription>
+                  Candidates applied for each position
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {Object.keys(dashboardData.positionDistribution).length > 0 ? (
+                    Object.entries(dashboardData.positionDistribution).map(([position, count]) => (
+                      <div key={position} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <span className="text-sm font-medium text-slate-700">{position}</span>
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          {count} candidates
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Target className="w-8 h-8 text-slate-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Data Available</h3>
+                      <p className="text-gray-600">
+                        {loading ? 'Loading position distribution...' : 'No position distribution data found.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card> */}
+          </div>
+        </div>
 
       </div>
     </div>

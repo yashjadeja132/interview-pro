@@ -11,7 +11,6 @@ exports.testEndpoint = async (req, res) => {
 
 // Get dashboard statistics
 exports.getDashboardStats = async (req, res) => {
-
   try {
     const now = new Date();
     // Get all candidates with proper population - no pagination for dashboard
@@ -48,6 +47,16 @@ exports.getDashboardStats = async (req, res) => {
     });
     
     // Position distribution - include all positions even with 0 candidates
+    const vacanciesDistribution = {};
+    // Initialize all positions with 0 count
+    positions.forEach(position => {
+      vacanciesDistribution[position.name] = 0;
+    });
+    //counts position vacancies
+    positions.forEach(position => {
+      vacanciesDistribution[position.name] = position.vacancies;
+    });
+
     const positionDistribution = {};
     // Initialize all positions with 0 count
     positions.forEach(position => {
@@ -56,15 +65,24 @@ exports.getDashboardStats = async (req, res) => {
     // Count candidates for each position
     candidates.forEach(candidate => {
       const pos = candidate.position?.name || 'Unknown Position';
-      // console.log(`Candidate: ${candidate.name}, Position: ${pos}`);
       if (positionDistribution.hasOwnProperty(pos)) {
         positionDistribution[pos] = (positionDistribution[pos] || 0) + 1;
       } else {
         positionDistribution[pos] = 1;
       }
     });
-        
-    // Recent candidates (last 7 days)
+    // Active positions = vacancies > 0 and candidates applied > 0
+const activePositionCandidates = {};
+positions.forEach(position => {
+  if (position.vacancies > 0) {
+    const candidateCount = candidates.filter(
+      c => c.position && c.position.name === position.name && c.isSubmitted===0
+    ).length;
+    if (candidateCount > 0) {
+      activePositionCandidates[position.name] = candidateCount;
+    }
+  }
+});
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const recentCandidates = candidates
       .filter(c => new Date(c.createdAt) > sevenDaysAgo)
@@ -133,7 +151,9 @@ exports.getDashboardStats = async (req, res) => {
         },
         distributions: {
           experience: experienceDistribution,
-          position: positionDistribution
+          vacancies: vacanciesDistribution ,
+          candidates: positionDistribution,
+          appliedCandidates: activePositionCandidates
         },
         recent: {
           candidates: recentCandidates,
