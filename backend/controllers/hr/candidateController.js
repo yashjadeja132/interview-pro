@@ -4,23 +4,6 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const {sendCandidateMail} = require('../../services/hrEmailServices')
 
-// Add Candidate
-exports.addCandidate = async (req, res) => {
-  try {
-    const { name, email, phone, experience, position } = req.body;
-const resume = req.file ? `${process.env.ResumeUploadLink}${req.file.filename}` : null;
-    if (!resume) {
-      return res.status(400).json({ message: "Resume is required" });
-    }
-  const candidate = new Candidate({name,email,phone,experience,position,resume});
-    await candidate.save();
-    res.status(201).json({ message: "Candidate added successfully", candidate });
-  } catch (error) {
-    console.error("Error adding candidate:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
 // Get all candidates with pagination, search, and filtering
 exports.getCandidates = async (req, res) => {
   try {
@@ -81,7 +64,6 @@ exports.getCandidates = async (req, res) => {
       .populate('position', 'name -_id')
       .skip(skip)
       .limit(limit);
-
     // Get total count for pagination
     const total = await Candidate.countDocuments(query);
 
@@ -95,7 +77,7 @@ exports.getCandidates = async (req, res) => {
       position: c.position?._id, // Keep position ID for frontend
       positionName: c.position?.name, // Add position name for display
       schedule: c.schedule,
-      resume: c.resume,
+      timeforTest: c.timeforTest,
       questionsAskedToCandidate: c.questionsAskedToCandidate, // Include questionsAskedToCandidate
       isSubmitted: c.isSubmitted || 0 // Include isSubmitted field
     }));
@@ -136,9 +118,9 @@ exports.getCandidateById = async (req, res) => {
 // Update candidate
 exports.updateCandidate = async (req, res) => {
   try {
-    const { name, email, phone, experience, position, questionsAskedToCandidate, technicalQuestions, logicalQuestions } = req.body;
-    const updateData = { name, email, phone, experience, position };
-
+    const { name, email, phone, experience, position,timeDurationForTest, questionsAskedToCandidate, technicalQuestions, logicalQuestions, } = req.body;
+    const timefortest = parseInt(timeDurationForTest);
+    const updateData = { name, email, phone, experience, position,timefortest, questionsAskedToCandidate, technicalQuestions, logicalQuestions };
     // Get existing candidate to use current values if fields aren't being updated
     const existingCandidate = await Candidate.findById(req.params.id);
     if (!existingCandidate) {
@@ -317,9 +299,9 @@ exports.bulkDeleteCandidates = async (req, res) => {
 
 exports.createCandidate=async(req,res)=>{
    try {
-    // console.log('req.body is ',req.body)
-          const { email,name, phone, position, experience, questionsAskedToCandidate,technicalQuestions,logicalQuestions} = req.body;
-          
+          const { email,name, phone, position, experience, timeDurationForTest,questionsAskedToCandidate,technicalQuestions,logicalQuestions} = req.body;
+            const timeforTest = parseInt(timeDurationForTest);
+        
           // Check if position is provided
           if (!position) {
             return res.status(400).json({ message: "Position is required" });
@@ -334,9 +316,6 @@ exports.createCandidate=async(req,res)=>{
             position: position,
             category: {$exists: false}
           });
-          
-          // console.log('technicalQuestionsCount for position is ',technicalQuestionsCount)
-          // console.log('numberOfNonTechnicalQuestions for position is ',numberOfNonTechnicalQuestions)
           
           // Validate logicalQuestions against position-specific non-technical questions
           if (logicalQuestions !== undefined && logicalQuestions !== null) {
@@ -430,15 +409,14 @@ exports.createCandidate=async(req,res)=>{
             }
           }
 
-              const plainPassword = Math.random().toString(36).slice(-8); // 8-char password
+           const plainPassword = Math.random().toString(36).slice(-8); // 8-char password
           const hashedPassword = await bcrypt.hash(plainPassword, 10);
-          // console.log('email is ',email)
-          // console.log('plainPassword is ',plainPassword)
+         
           const candidate = new Candidate({
               name, email, password: hashedPassword,phone ,position, experience, schedule, questionsAskedToCandidate,
-              technicalQuestions, logicalQuestions
-              // resume
+              technicalQuestions, logicalQuestions ,timeforTest
           })
+          console.log('candidate is ',candidate)
       const token = jwt.sign(
         { id: candidate._id, role: "Candidate" ,schedule:candidate.schedule},
         process.env.JWT_SECRET,
@@ -446,7 +424,6 @@ exports.createCandidate=async(req,res)=>{
       );        
           await candidate.save()
               await candidate.populate("position");
-          // console.log('send mail function calling')
           await sendCandidateMail(candidate,plainPassword) 
           return res.status(201).json({ message: 'you are registered successfully',  candidate: {
           _id: candidate._id,

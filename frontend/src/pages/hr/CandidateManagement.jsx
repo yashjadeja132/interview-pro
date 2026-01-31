@@ -7,15 +7,10 @@ import {
   AlertCircle,
   Plus,
   Users,
-  UserCheck,
   Clock,
   FileText,
   Mail,
   Phone,
-  Calendar,
-  Filter,
-  Download,
-  Eye,
   ChevronLeft,
   ChevronRight,
   XCircle,
@@ -65,7 +60,6 @@ export default function CandidateManagement() {
   const [editingId, setEditingId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
 
   // Bulk selection state
   const [selectedCandidates, setSelectedCandidates] = useState([]);
@@ -252,7 +246,15 @@ export default function CandidateManagement() {
         }
       }
     }
-
+    if (name === "timeDurationForTest") {
+      if (!value || value === "") message = "Time duration for test is required";
+      else {
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 0) {
+          message = "Time duration for test must be a positive number";
+        }
+      }
+    }
     setFieldErrors((prev) => ({ ...prev, [name]: message }));
   }
 
@@ -274,6 +276,7 @@ export default function CandidateManagement() {
     if (!form.experience) errors.experience = "Experience is required";
     if (!form.position) errors.position = "Position is required";
     if (!form.schedule) errors.schedule = "Schedule is required";
+    if (!form.timeDurationForTest) errors.timeDurationForTest = "Time duration for test is required";
     else {
       const selectedDate = new Date(form.schedule);
       const now = new Date();
@@ -281,7 +284,7 @@ export default function CandidateManagement() {
         errors.schedule = "Interview schedule cannot be in the past";
       }
     }
-
+    if (!form.timeDurationForTest) errors.timeDurationForTest = "Time duration for test is required";
     // Validate questionsAskedToCandidate - always validate when clicking button
     // Show error if empty, or if value is invalid
     if (!form.questionsAskedToCandidate || form.questionsAskedToCandidate === "") {
@@ -331,6 +334,7 @@ export default function CandidateManagement() {
     setIsAddingCandidate(true);
     try {
       const res = await api.post("/hr", form);
+      console.log('form', form);
       const newCandidate = res.data;
 
       // Add new candidate at the beginning of the list
@@ -355,7 +359,7 @@ export default function CandidateManagement() {
     }
   };
 
-  const handleUpdate = async () => {    
+  const handleUpdate = async () => {
     if (!editingId) return;
 
     // Validate schedule if it's being updated
@@ -448,28 +452,16 @@ export default function CandidateManagement() {
 
       // Update local state
       setCandidates(candidates.filter(c => !selectedCandidates.includes(c._id)));
-
       // Reset selection
       setSelectedCandidates([]);
       setShowBulkDelete(false);
       setIsAllSelected(false);
       setShowBulkDeleteConfirm(false);
-
       // Refresh the list
       fetchCandidates();
     } catch (err) {
       console.error("Failed to delete candidates:", err);
     }
-  };
-
-  // Clear filters
-  const clearFilters = () => {
-    setFilters({
-      position: "",
-      experience: "",
-      status: ""
-    });
-    setCurrentPage(1);
   };
 
   // Handle page size change
@@ -507,17 +499,7 @@ export default function CandidateManagement() {
               <p className="text-slate-600 dark:text-slate-400 mt-1">Manage and track all candidates in your system</p>
             </div>
             <div className="flex items-center gap-3">
-              {/* <Button 
-                variant="outline" 
-                onClick={() => setShowFilters(!showFilters)}
-                className="h-10"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Advanced Filters
-                {(filters.position || filters.experience || filters.status) && (
-                  <span className="ml-2 w-2 h-2 bg-blue-600 rounded-full"></span>
-                )}
-              </Button> */}
+
               <Dialog
                 open={isAddModalOpen}
                 onOpenChange={(open) => {
@@ -727,13 +709,11 @@ export default function CandidateManagement() {
                         )}
                       </div>
 
-
                       {/* Schedule */}
                       <div className="space-y-2">
                         <Label
                           htmlFor="schedule"
-                          className="text-gray-900 dark:text-white"
-                        >
+                          className="text-gray-900 dark:text-white">
                           Interview Schedule *
                         </Label>
                         <Input
@@ -759,16 +739,13 @@ export default function CandidateManagement() {
                       {/* Questions Asked To Candidate */}
                       <div className="space-y-2">
                         <Label htmlFor="questionsAskedToCandidate"
-                          className="dark:text-white"
-
-
-                        >Questions Asked To Candidate *</Label>
+                          className="dark:text-white">Questions Asked To Candidate *</Label>
                         <Input
                           id="questionsAskedToCandidate"
                           name="questionsAskedToCandidate"
                           type="number"
                           min="0"
-                                 placeholder="Enter number of questions"
+                          placeholder="Enter number of questions"
                           value={form.questionsAskedToCandidate || ""}
                           onChange={(e) => {
                             handleChange(e);
@@ -785,6 +762,32 @@ export default function CandidateManagement() {
                           <p className="flex items-center gap-1 text-sm text-red-600">
                             <AlertCircle className="w-3 h-3" />
                             {fieldErrors.questionsAskedToCandidate}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Time duration for test */}
+                      <div className="space-y-2">
+                        <Label htmlFor="timeDurationForTest"
+                          className="dark:text-white">Time duration for test *</Label>
+                        <Input
+                          id="timeDurationForTest"
+                          name="timeDurationForTest"
+                          type="number"
+                          min="0"
+                          max="120"
+                          placeholder="Enter time duration for test"
+                          value={form.timeDurationForTest || ""}
+                          onChange={(e) => {
+                            handleChange(e);
+                            validateField("timeDurationForTest", e.target.value);
+                          }}
+                          className={fieldErrors.timeDurationForTest ? "border-red-500" : ""}
+                        />
+                        {fieldErrors.timeDurationForTest && (
+                          <p className="flex items-center gap-1 text-sm text-red-600">
+                            <AlertCircle className="w-3 h-3" />
+                            {fieldErrors.timeDurationForTest}
                           </p>
                         )}
                       </div>
@@ -849,9 +852,10 @@ export default function CandidateManagement() {
                   </div>
                   <DialogFooter>
                     <Button
-                    style={{ marginRight: '8px',
-                      color: 'gray'
-                     }}
+                      style={{
+                        marginRight: '8px',
+                        color: 'gray'
+                      }}
                       variant="outline"
                       onClick={() => {
                         setForm({});
@@ -887,70 +891,6 @@ export default function CandidateManagement() {
 
       {/* Main Content */}
       <div className="p-6 max-w-7xl mx-auto">
-        {/* Statistics Cards */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600">Total Candidates</p>
-                  <p className="text-3xl font-bold text-blue-900">{totalCandidates}</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-200 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-green-100">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600">Scheduled</p>
-                  <p className="text-3xl font-bold text-green-900">
-                    {candidates.filter(c => c.schedule && new Date(c.schedule) > new Date()).length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-green-200 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-purple-100">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-600">Experienced</p>
-                  <p className="text-3xl font-bold text-purple-900">
-                    {candidates.filter(c => c.experience && c.experience !== 'fresher').length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-purple-200 rounded-lg flex items-center justify-center">
-                  <UserCheck className="w-6 h-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-orange-100">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-600">With Resume</p>
-                  <p className="text-3xl font-bold text-orange-900">
-                    {candidates.filter(c => c.resume).length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-orange-200 rounded-lg flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div> */}
 
         {/* Search and Filter Section */}
         <Card className="border-0 shadow-sm mb-6 dark:bg-slate-900">
@@ -1014,90 +954,6 @@ export default function CandidateManagement() {
           </CardContent>
         </Card>
 
-        {/* Filters */}
-        {/* {showFilters && (
-          <Card className="border-0 shadow-sm mb-6">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-slate-700">Filter Options</h3>
-                  <Button variant="outline" size="sm" onClick={clearFilters}>
-                    Clear All Filters
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-700">Position</Label>
-                    <Select 
-                      value={filters.position || "all"} 
-                      onValueChange={(value) => {
-                        setFilters(prev => ({ ...prev, position: value === "all" ? "" : value }));
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="All Positions" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Positions</SelectItem>
-                        {positions.map((pos) => (
-                          <SelectItem key={pos._id} value={pos._id}>
-                            {pos.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-700">Experience</Label>
-                    <Select 
-                      value={filters.experience || "all"} 
-                      onValueChange={(value) => {
-                        setFilters(prev => ({ ...prev, experience: value === "all" ? "" : value }));
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="All Experience Levels" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Experience Levels</SelectItem>
-                        <SelectItem value="fresher">Fresher</SelectItem>
-                        <SelectItem value="1-2">1-2 Years</SelectItem>
-                        <SelectItem value="3-5">3-5 Years</SelectItem>
-                        <SelectItem value="5+">5+ Years</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-700">Status</Label>
-                    <Select 
-                      value={filters.status || "all"} 
-                      onValueChange={(value) => {
-                        setFilters(prev => ({ ...prev, status: value === "all" ? "" : value }));
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="All Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="scheduled">Scheduled</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )} */}
-
         {/* Candidates Table */}
         <Card className="border-0 shadow-sm dark:bg-slate-900">
           <CardHeader className="pb-4">
@@ -1108,7 +964,23 @@ export default function CandidateManagement() {
                   Manage and view all candidate information
                 </CardDescription>
               </div>
-
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-medium text-slate-700 whitespace-nowrap">Show:</Label>
+                <Select
+                  value={rowsPerPage.toString()}
+                  onValueChange={handlePageSizeChange}
+                >
+                  <SelectTrigger className="w-20 h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="15">15</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               {/* Bulk Delete Button - Inline with heading */}
               {showBulkDelete && (
                 <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-900/50">
@@ -1178,6 +1050,7 @@ export default function CandidateManagement() {
                       <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">Experience</TableHead>
                       <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">Position</TableHead>
                       <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">Schedule</TableHead>
+                      <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300">Test Duration</TableHead>
                       <TableHead className="font-bold text-base text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1232,6 +1105,16 @@ export default function CandidateManagement() {
                             </div>
                             <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getScheduleStatus(candidate.isSubmitted).bg} ${getScheduleStatus(candidate.isSubmitted).color}`}>
                               {getScheduleStatus(candidate.isSubmitted).status}
+                            </div>
+                          </div>
+                        </TableCell>
+                         <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-3 h-3 text-slate-400" />
+                              <span className="text-sm text-slate-600 dark:text-slate-300">
+                                {candidate.timeforTest?candidate.timeforTest:'No time'}
+                              </span>
                             </div>
                           </div>
                         </TableCell>
@@ -1468,7 +1351,6 @@ export default function CandidateManagement() {
                                       )}
                                     </div>
                                   </div>
-
                                   {/* Technical and Logical Questions Section - Show when questionsAskedToCandidate has a value */}
                                   {form.questionsAskedToCandidate && form.questionsAskedToCandidate !== "" && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-800">
@@ -1519,6 +1401,7 @@ export default function CandidateManagement() {
                                     </div>
                                   )}
                                 </div>
+                            
                                 <DialogFooter>
                                   <DialogClose asChild>
                                     <Button variant="outline" onClick={() => setEditingId(null)} className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700">
@@ -1614,9 +1497,6 @@ export default function CandidateManagement() {
         {candidates.length > 0 && (
           <div className="flex items-center justify-between mt-6">
             <div className="flex items-center gap-4">
-              <div className="text-sm text-slate-600">
-                Showing {((currentPage - 1) * rowsPerPage) + 1} to {Math.min(currentPage * rowsPerPage, totalCandidates)} of {totalCandidates} candidates
-              </div>
 
               {/* Page Size Dropdown */}
               <div className="flex items-center gap-2">
@@ -1639,6 +1519,7 @@ export default function CandidateManagement() {
               </div>
             </div>
 
+            {/* Pagination */}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"

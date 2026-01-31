@@ -1,24 +1,9 @@
 import { useState, useEffect } from "react";
 import {
   Users,
-  UserCheck,
-  Calendar,
-  FileText,
-  TrendingUp,
-  Clock,
-  Award,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  BarChart3,
-  PieChart,
   Activity,
-  Mail,
-  Phone,
   Building2,
-  GraduationCap,
   Target,
-  Zap
 } from "lucide-react";
 import {
   Card,
@@ -39,6 +24,7 @@ export default function AdminDashboard() {
     totalCandidates: 0,
     totalPositions: 0,
     positionDistribution: {},
+    totalVacancies: 0,
     vacanciesDistribution: {},
     appliedCandidates: {}
   });
@@ -53,11 +39,16 @@ export default function AdminDashboard() {
 
       if (response.data.success) {
         const data = response.data.data;
+const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
+    (sum, count) => sum + count,
+    0
+  );
         console.log(data.distributions);
         setDashboardData({
           totalCandidates: data.overview.totalCandidates,
           totalPositions: data.overview.totalPositions,
           positionDistribution: data.distributions.candidates || {},
+          totalVacancies,
           vacanciesDistribution: data.distributions.vacancies || {},
           appliedCandidates: data.distributions.appliedCandidates || {}
         });
@@ -84,7 +75,6 @@ export default function AdminDashboard() {
     getDashboardStats();
   }, []);
 
-  console.log(dashboardData);
 
   if (loading) {
     return (
@@ -158,7 +148,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-orange-600">Current Hiring</p>
-                    <p className="text-3xl font-bold text-orange-900">{dashboardData.totalPositions}</p>
+                    <p className="text-3xl font-bold text-orange-900">{dashboardData.totalVacancies}</p>
                   </div>
                   <div className="w-12 h-12 bg-orange-200 rounded-lg flex items-center justify-center">
                     <Building2 className="w-6 h-6 text-orange-600" />

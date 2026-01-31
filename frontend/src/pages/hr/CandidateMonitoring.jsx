@@ -118,7 +118,6 @@ export default function CandidateMonitoring() {
   const fetchPositions = async () => {
     try {
       const { data } = await axiosInstance.get("/position");
-      console.log(data);
       setPositions(data.data || []);
     } catch (err) {
       console.error("Failed to fetch positions:", err.message);
@@ -186,7 +185,6 @@ export default function CandidateMonitoring() {
     try {
       console.log('Fetching test results for candidate ID:', candidateId);
       const { data } = await axiosInstance.get(`/test/${candidateId}`);
-      console.log('API response:', data);
       return data;
     } catch (err) {
       console.error("Failed to fetch candidate test results:", err.message);
@@ -317,13 +315,7 @@ export default function CandidateMonitoring() {
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="
-    flex items-center gap-2
-    text-black dark:text-white
-    bg-white dark:bg-slate-800
-    border-slate-300 dark:border-slate-700
-    hover:bg-slate-100 dark:hover:bg-slate-700
-  "
+              className="flex items-center gap-2 text-black dark:text-white bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
             >
               <Filter className="h-4 w-4 text-black dark:text-white" />
               Filters
@@ -333,14 +325,7 @@ export default function CandidateMonitoring() {
               variant="outline"
               onClick={exportToCSV}
               disabled={results.length === 0}
-              className="
-    flex items-center gap-2
-    text-black dark:text-white
-    bg-white dark:bg-slate-800
-    border-slate-300 dark:border-slate-700
-    hover:bg-slate-100 dark:hover:bg-slate-700
-  "
-            >
+              className="flex items-center gap-2 text-black dark:text-white bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 "  >
               <FileDown className="h-4 w-4 text-black dark:text-white" />
               Export CSV
             </Button>
@@ -351,69 +336,7 @@ export default function CandidateMonitoring() {
       </div>
 
       {/* Main Content */}
-      <div className="px-6 py-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Candidates</p>
-                  <p className="text-3xl font-bold text-blue-800 dark:text-blue-300">{totalResults}</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">High Performers</p>
-                  <p className="text-3xl font-bold text-yellow-800 dark:text-yellow-300">{results.filter(r => r.score >= 80).length}</p>
-                </div>
-                <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
-                  <Trophy className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600 dark:text-green-400">Avg. Time</p>
-                  <p className="text-3xl font-bold text-green-800 dark:text-green-300">
-                    {results.length > 0
-                      ? Math.round(results.reduce((acc, r) => acc + (r.timeTakenInSeconds || 0), 0) / results.length / 60)
-                      : 0}m
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400">With Videos</p>
-                  <p className="text-3xl font-bold text-purple-800 dark:text-purple-300">{results.filter(r => r.video && r.video !== 'no video').length}</p>
-                </div>
-                <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
-                  <Video className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="px-6 py-6">      
 
         {/* Search and Filter Section */}
         <Card className="border-0 shadow-sm mb-6 dark:bg-slate-900">
@@ -603,6 +526,7 @@ export default function CandidateMonitoring() {
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Candidate</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Questions Asked</TableHead>
+                    <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Scheduled Time</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Score</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Time Taken</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
@@ -622,9 +546,6 @@ export default function CandidateMonitoring() {
                             <div>
                               <div className="font-medium text-slate-800 dark:text-white">{r.candidateName}</div>
                               <div className="text-sm text-slate-500 dark:text-slate-400">{r.candidateEmail}</div>
-                              <div className="text-xs text-slate-400 dark:text-slate-500">
-                                {formatDate(r.createdAt)}
-                              </div>
                             </div>
                           </div>
                         </TableCell>
@@ -639,6 +560,12 @@ export default function CandidateMonitoring() {
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          <Badge variant="outline" className="font-medium text-slate-700 dark:text-white dark:border-slate-600 dark:bg-slate-800/50">
+                                {formatDate(r.createdAt)}
+                          </Badge>
+                        </TableCell>  
+                        <TableCell>
+                        
                           <div className="space-y-2">
                             <div className="flex items-center space-x-2">
                               <Badge variant={getScoreBadgeVariant(r.score)} className="font-semibold">

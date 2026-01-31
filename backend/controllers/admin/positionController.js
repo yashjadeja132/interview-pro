@@ -96,7 +96,6 @@ if (experience && experience !== 'all') {
 }
     // Fetch positions with filters
     let positions = await Position.find(filter).sort({ createdAt: -1 }).select('-updatedAt -__v');
-    console.log(positions);
     // Get question counts for each position
     const positionsWithCounts = await Promise.all(
       positions.map(async (position) => {

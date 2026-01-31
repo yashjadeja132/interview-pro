@@ -76,7 +76,7 @@ const activePositionCandidates = {};
 positions.forEach(position => {
   if (position.vacancies > 0) {
     const candidateCount = candidates.filter(
-      c => c.position && c.position.name === position.name && c.isSubmitted===0
+      c => c.position && c.position.name === position.name
     ).length;
     if (candidateCount > 0) {
       activePositionCandidates[position.name] = candidateCount;
