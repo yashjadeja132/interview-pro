@@ -1,6 +1,7 @@
 // server.js
 const express = require('express')
 const dotenv = require("dotenv");
+dotenv.config();
 const { Server } = require("socket.io");
 const http = require("http");
 const cors = require("cors");
@@ -22,8 +23,8 @@ const adminRetestRequestRoutes = require('./routes/admin/retestRequestRoutes')
 const passwordRoutes = require('./routes/admin/PasswordRoutes')
 const profileRoutes = require('./routes/admin/ProfileRoutes')
 const settingsRoutes = require('./routes/admin/SettingsRoutes');
+const { swaggerDocs } = require('./docs/swagger');
 const path = require("path");
-dotenv.config();
 // Connect Database
 connectDB();
 const app = express();
@@ -39,6 +40,7 @@ app.use(
   })
 );
 
+swaggerDocs(app);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
