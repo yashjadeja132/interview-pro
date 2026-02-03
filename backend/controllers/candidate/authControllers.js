@@ -55,8 +55,17 @@ module.exports.loginCandidate = async (req, res) => {
         const now = new Date();
         if (candidate.schedule) {
             const scheduleTime = new Date(candidate.schedule);
-            const thirtyMinutesAfterSchedule = new Date(scheduleTime.getTime() + 30 * 60 * 1000); // Add 30 minutes in milliseconds
             
+            // Get Admin Configured Login Time
+            // Get Admin Configured Login Time
+            
+             // Get Admin Configured Login Time
+            const LoginTime = require('../../models/logintime');
+            const loginTimeSettings = await LoginTime.findOne();
+            const allowedMinutes = loginTimeSettings?.timeDurationForTest || 30; // Default to 30 if not set
+            console.log('allowedMinutes', allowedMinutes);
+            const expirationTime = new Date(scheduleTime.getTime() + allowedMinutes * 60 * 1000); 
+            console.log('expirationTime', expirationTime);
             // Block login if current time is before scheduled time
             if (now < scheduleTime) {
                 console.log('login before scheduled time')
@@ -65,11 +74,11 @@ module.exports.loginCandidate = async (req, res) => {
                 });
             }
             
-            // Block login if current time is more than 30 minutes after scheduled time
-            if (now > thirtyMinutesAfterSchedule) {
-                console.log('login after 30 minutes window')
+            // Block login if current time is after expiration time
+            if (now > expirationTime) {
+                console.log('login after expiration window')
                 return res.status(403).json({
-                    message: "⏰ Your login window has expired. The interview window was only available for 30 minutes after the scheduled time.",
+                    message: `⏰ Your login window has expired. You could only login within ${allowedMinutes} minutes of your scheduled time.`,
                 });
             }
         }
@@ -88,30 +97,7 @@ module.exports.loginCandidate = async (req, res) => {
             });
         }
         
-        // Check for retest request status - COMMENTED OUT
-        // const retestRequest = await RetestRequest.findOne({
-        //     candidateId: candidate._id,
-        //     positionId: positionId
-        // }).sort({ createdAt: -1 });
-        // console.log('retestRequest check:', {
-        //     candidateId: candidate._id,
-        //     positionId: positionId,
-        //     found: !!retestRequest,
-        //     status: retestRequest?.status
-        // });
         const token = jwt.sign({ id: candidate._id, email: candidate.email }, process.env.JWT_SECRET, { expiresIn: '2m' })
-        
-        // If there's a pending request, show notification but don't block login - COMMENTED OUT
-        // If there's an approved request, allow them to proceed
-        // const retestRequestInfo = retestRequest ? {
-        //     hasRequest: true,
-        //     status: retestRequest.status,
-        //     requestedAt: retestRequest.requestedAt,
-        //     isPending: retestRequest.status === 'pending',
-        //     isApproved: retestRequest.status === 'approved'
-        // } : {
-        //     hasRequest: false
-        // };
 
         return res.status(200).json({
             message: 'logged sucessfully',
@@ -121,9 +107,9 @@ module.exports.loginCandidate = async (req, res) => {
                 name: candidate.name,
                 email: candidate.email,
                 position: candidate.position,
-                questionsAskedToCandidate: candidate.questionsAskedToCandidate
+                questionsAskedToCandidate: candidate.questionsAskedToCandidate,
+                timeforTest: candidate.timeforTest
             }
-            // retestRequest: retestRequestInfo - COMMENTED OUT
         })
     } catch (error) {
         console.error('Login error:', error);

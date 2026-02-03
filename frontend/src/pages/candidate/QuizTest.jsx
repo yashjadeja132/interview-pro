@@ -19,18 +19,45 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import sparrowLogo from "../../assets/sparrowlogo.png";
 
-
 export default function QuizTest({ streams }) {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [candidateData, setCandidateData] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(60 * 60); // 15 minutes timer
+  const candidateDataRef = useRef(null); // Ref to access latest data in timer closure
+
+  const storedData = JSON.parse(sessionStorage.getItem("candidateData"));
+  // Use timeforTest from stored data or default to 60 minutes
+  const initialTime = storedData?.timeforTest ? storedData.timeforTest * 60 : 60 * 60;
+  const [timeLeft, setTimeLeft] = useState(initialTime);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [visitedQuestions, setVisitedQuestions] = useState([]);
   const navigate = useNavigate();
-  const storedData = JSON.parse(sessionStorage.getItem("candidateData"));
+
+  useEffect(() => {
+    if (candidateData) {
+      candidateDataRef.current = candidateData;
+    }
+  }, [candidateData]);
+
+  // Refs for solving stale closure in timer/handleSubmit
+  const answersRef = useRef(answers);
+  const questionsRef = useRef(questions);
+  const timeLeftRef = useRef(timeLeft);
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    questionsRef.current = questions;
+  }, [questions]);
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
+
 
   const stopAllStreams = () => {
     if (streams) {
@@ -51,28 +78,36 @@ export default function QuizTest({ streams }) {
   };
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
-  
+
   useEffect(() => {
-    console.log(timeLeft);
-    if (timeLeft <= 0) {
+    console.log(timeLeft); // Initial log
+
+    // Check initial state
+    if (timeLeftRef.current <= 0) {
       console.log("time is completed");
       handleSubmit(true);
       return;
     }
+
     const timerId = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 1) {
+        const newValue = prev - 1;
+        timeLeftRef.current = newValue; // Keep ref in sync for submission
+
+        if (newValue <= 0) {
           clearInterval(timerId);
-          handleSubmit(true);
+          // Use a timeout to break stack and allow state update
+          setTimeout(() => handleSubmit(true), 0);
           return 0;
         }
-        return prev - 1;
+        return newValue;
       });
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, []); //
-  
+  }, []); // Empty dependency array is now safe because we use refs inside handleSubmit
+
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -171,7 +206,7 @@ export default function QuizTest({ streams }) {
 
     mediaRecorder.start();
   };
-  
+
   const stopRecordingAndDownload = () => {
     return new Promise((resolve) => {
       if (!mediaRecorderRef.current) return resolve(null);
@@ -251,39 +286,39 @@ export default function QuizTest({ streams }) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
-useEffect(() => {
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  };
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
 
-  document.addEventListener("keydown", handleKeyDown, true);
-  return () => {
-    document.removeEventListener("keydown", handleKeyDown, true);
-  };
-}, []);
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, []);
 
-  
+
   const handleSubmit = async (auto = false) => {
     // 🔴 KEYBOARD OFF (sabse pehle)
     // keyboardAllowed.current = true;
- if (document.fullscreenElement) {
-    document.exitFullscreen().catch(() => {});
-  }
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => { });
+    }
 
-  if (window.__fsChange) {
-    document.removeEventListener("fullscreenchange", window.__fsChange);
-    window.__fsChange = null;
-  }
+    if (window.__fsChange) {
+      document.removeEventListener("fullscreenchange", window.__fsChange);
+      window.__fsChange = null;
+    }
 
-  window.__fsEnter = null;
+    window.__fsEnter = null;
 
     // ============================
 
     if (document.fullscreenElement) {
-      await document.exitFullscreen().catch(() => {});
+      await document.exitFullscreen().catch(() => { });
     }
 
     // Prevent duplicate submissions
@@ -292,41 +327,45 @@ useEffect(() => {
       return;
     }
 
+    const dataToUse = candidateData || candidateDataRef.current;
+
+    // Use Refs if in auto-mode (stale closure protection)
+    // If manual (click), state is fine, but refs are always safer/latest in this component structure
+    const currentQuestions = questionsRef.current.length > 0 ? questionsRef.current : questions;
+    const currentAnswers = Object.keys(answersRef.current).length > 0 ? answersRef.current : answers;
+
     // If not auto and not all answered, ask for confirmation
-    if (!auto && Object.keys(answers).length !== questions.length) {
+    if (!auto && Object.keys(currentAnswers).length !== currentQuestions.length) {
       const proceed = window.confirm(
         "You have unanswered questions. Do you want to submit anyway?"
       );
       if (!proceed) return;
     }
 
-    // Exit fullscreen if active to ensure recording/streams stop cleanly
-    if (document.fullscreenElement) {
-      try {
-        await document.exitFullscreen();
-      } catch (err) {
-        console.warn("Could not exit fullscreen:", err);
-      }
-    }
-
-    if (!candidateData?.id || !candidateData?.positionId) {
-      console.error("Missing candidate data:", candidateData);
-      alert("Candidate data is missing. Please login again.");
-      return;
-    }
-
-    console.log(
-      auto ? "Auto-submitting after timer ended" : "Submitting manually"
-    );
-    console.log("Candidate data:", candidateData);
-    console.log("Answers:", answers);
-
     try {
-      setSubmitting(true);
+      setSubmitting(true); // START LOADING UI
+
+
+      if (!dataToUse?.id || !dataToUse?.positionId) {
+        console.error("Missing candidate data:", dataToUse);
+        alert("Candidate data is missing. Please login again.");
+        return;
+      }
+
+      const finalAnswers = answersRef.current; // Use Ref for latest answers
+      const finalQuestions = questionsRef.current; // Use Ref for latest questions
+      const finalTimeLeft = timeLeftRef.current;
+
+      console.log(
+        auto ? "Auto-submitting after timer ended" : "Submitting manually"
+      );
+      console.log("Candidate data:", dataToUse);
+      console.log("Answers:", finalAnswers);
+
       const videoBlob = await stopRecordingAndDownload();
       const formdata = new FormData();
-      const detailedAnswers = questions.map((q, index) => {
-        const candidateAnswer = answers[q._id];
+      const detailedAnswers = finalQuestions.map((q, index) => {
+        const candidateAnswer = finalAnswers[q._id];
         let status = 0; // default untouched
         if (candidateAnswer) status = 1; // answered
         else if (visitedQuestions.includes(index)) status = 2; // visited
@@ -337,11 +376,11 @@ useEffect(() => {
         };
       });
       formdata.append("video", videoBlob, "candidate-test.webm");
-      formdata.append("candidateId", candidateData.id);
-      formdata.append("positionId", candidateData.positionId);
+      formdata.append("candidateId", dataToUse.id);
+      formdata.append("positionId", dataToUse.positionId);
       formdata.append("answers", JSON.stringify(detailedAnswers));
-      formdata.append("timeTakenInSeconds", 60 * 60 - timeLeft);
-      formdata.append("timeTakenFormatted", formatTime(60 * 60 - timeLeft));
+      formdata.append("timeTakenInSeconds", 60 * 60 - finalTimeLeft);
+      formdata.append("timeTakenFormatted", formatTime(60 * 60 - finalTimeLeft));
       const response = await axios.post(
         `http://localhost:5000/api/test`,
         formdata,
@@ -369,11 +408,12 @@ useEffect(() => {
     updatedAnswers = answers,
     updatedIndex = currentQuestionIndex + 1
   ) => {
-    if (!candidateData?.id || !candidateData?.positionId) return;
+    const dataToUse = candidateData || candidateDataRef.current;
+    if (!dataToUse?.id || !dataToUse?.positionId) return;
     try {
       const progressPayload = {
-        candidateId: candidateData.id,
-        positionId: candidateData.positionId,
+        candidateId: dataToUse.id,
+        positionId: dataToUse.positionId,
         progress: {
           currentQuestionIndex: updatedIndex,
           timeLeft,
@@ -412,7 +452,7 @@ useEffect(() => {
       // Explicitly block ESC key (keyCode 27) and ALL other keys
       const keyCode = event.keyCode || event.which;
       const key = event.key;
-      
+
       // Block ESC, Windows key, and ALL other keys
       if (
         keyCode === 27 || // ESC key
@@ -428,7 +468,7 @@ useEffect(() => {
         event.stopImmediatePropagation();
         return false;
       }
-      
+
       // Block ALL other keys as well
       event.preventDefault();
       event.stopPropagation();
@@ -438,15 +478,15 @@ useEffect(() => {
 
     // Use capture phase to catch events early, before they reach other handlers
     const options = { capture: true, passive: false };
-    
+
     // Add listeners on multiple levels to ensure we catch everything
     document.addEventListener("keydown", handleKeyDown, options);
     window.addEventListener("keydown", handleKeyDown, options);
-    
+
     if (document.body) {
       document.body.addEventListener("keydown", handleKeyDown, options);
     }
-    
+
     // Cleanup function to remove listeners when component unmounts
     return () => {
       document.removeEventListener("keydown", handleKeyDown, options);
@@ -649,6 +689,23 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
+
+      {/* 🟢 FULL SCREEN LOADING OVERLAY FOR SUBMISSION */}
+      {submitting && (
+        <div className="fixed inset-0 z-[9999] bg-white/95 backdrop-blur-md flex flex-col items-center justify-center">
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-xl animate-pulse">
+            <Loader2 className="w-12 h-12 text-white animate-spin" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Time's Up!</h2>
+          <p className="text-lg text-gray-600 max-w-md text-center">
+            We are wrapping up your test and saving your answers. This may take a few seconds...
+          </p>
+          <div className="mt-8 w-64">
+            <Progress value={100} className="h-2 animate-pulse" />
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
@@ -681,11 +738,10 @@ useEffect(() => {
 
             {/* Timer */}
             <div
-              className={`flex items-center gap-3 px-6 py-3 rounded-xl border-2 transition-all duration-300 ${
-                timeLeft <= 10 * 60
-                  ? "border-red-300 bg-red-50 text-red-700"
-                  : "border-blue-300 bg-blue-50 text-blue-700"
-              }`}
+              className={`flex items-center gap-3 px-6 py-3 rounded-xl border-2 transition-all duration-300 ${timeLeft <= 10 * 60
+                ? "border-red-300 bg-red-50 text-red-700"
+                : "border-blue-300 bg-blue-50 text-blue-700"
+                }`}
             >
               <Clock className="w-5 h-5" />
               <div className="text-right">

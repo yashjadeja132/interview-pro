@@ -66,6 +66,7 @@ const navigationItems = [
 
 export default function AppSidebar() {
   const navigate = useNavigate();
+const location = useLocation();
 
   // ✅ LOGOUT HANDLER (FIXED)
   const handleLogout = () => {

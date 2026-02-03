@@ -249,9 +249,11 @@ export default function CandidateManagement() {
     if (name === "timeDurationForTest") {
       if (!value || value === "") message = "Time duration for test is required";
       else {
-        const numValue = parseInt(value);
-        if (isNaN(numValue) || numValue < 0) {
+        const numValue = parseFloat(value);
+        if (isNaN(numValue) || numValue <= 0) {
           message = "Time duration for test must be a positive number";
+        } else if (!Number.isInteger(numValue)) {
+          message = "Time duration must be a whole number (no decimals)";
         }
       }
     }
@@ -891,7 +893,6 @@ export default function CandidateManagement() {
 
       {/* Main Content */}
       <div className="p-6 max-w-7xl mx-auto">
-
         {/* Search and Filter Section */}
         <Card className="border-0 shadow-sm mb-6 dark:bg-slate-900">
           <CardContent className="p-6">
@@ -1108,12 +1109,12 @@ export default function CandidateManagement() {
                             </div>
                           </div>
                         </TableCell>
-                         <TableCell>
+                        <TableCell>
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <Clock className="w-3 h-3 text-slate-400" />
                               <span className="text-sm text-slate-600 dark:text-slate-300">
-                                {candidate.timeforTest?candidate.timeforTest:'No time'}
+                                {candidate.timeforTest ? candidate.timeforTest : 'No time'}
                               </span>
                             </div>
                           </div>
@@ -1156,7 +1157,8 @@ export default function CandidateManagement() {
                                     const formData = {
                                       ...candidate,
                                       schedule: formattedSchedule,
-                                      position: positionId
+                                      position: positionId,
+                                      timeDurationForTest: candidate.timeforTest
                                     };
 
                                     setForm(formData);
@@ -1322,6 +1324,31 @@ export default function CandidateManagement() {
                                       )}
                                     </div>
 
+                                    {/* Time duration for test */}
+                                    <div className="space-y-2">
+                                      <Label htmlFor="edit-timeDurationForTest" className="dark:text-slate-300">Time duration for test *</Label>
+                                      <Input
+                                        id="edit-timeDurationForTest"
+                                        name="timeDurationForTest"
+                                        type="number"
+                                        min="0"
+                                        max="120"
+                                        placeholder="Enter time duration for test"
+                                        value={form.timeDurationForTest || ""}
+                                        onChange={(e) => {
+                                          handleChange(e);
+                                          validateField("timeDurationForTest", e.target.value);
+                                        }}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.timeDurationForTest ? "border-red-500" : ""}`}
+                                      />
+                                      {fieldErrors.timeDurationForTest && (
+                                        <p className="flex items-center gap-1 text-sm text-red-600">
+                                          <AlertCircle className="w-3 h-3" />
+                                          {fieldErrors.timeDurationForTest}
+                                        </p>
+                                      )}
+                                    </div>
+
                                     {/* Questions Asked To Candidate */}
                                     <div className="space-y-2">
                                       <Label htmlFor="edit-questionsAskedToCandidate" className="dark:text-slate-300">Questions Asked To Candidate *</Label>
@@ -1401,7 +1428,7 @@ export default function CandidateManagement() {
                                     </div>
                                   )}
                                 </div>
-                            
+
                                 <DialogFooter>
                                   <DialogClose asChild>
                                     <Button variant="outline" onClick={() => setEditingId(null)} className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700">

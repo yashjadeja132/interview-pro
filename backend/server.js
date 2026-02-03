@@ -22,6 +22,7 @@ const adminRetestRequestRoutes = require('./routes/admin/retestRequestRoutes')
 const passwordRoutes = require('./routes/admin/PasswordRoutes')
 const profileRoutes = require('./routes/admin/ProfileRoutes')
 const settingsRoutes = require('./routes/admin/SettingsRoutes');
+const loginTimeRoutes = require('./routes/admin/logintimeroutes');
 const path = require("path");
 dotenv.config();
 // Connect Database
@@ -61,6 +62,7 @@ app.use('/api/recording', recordingRoutes)
 app.use('/api/test-progress', TestProgressRoutes)
 app.use('/api/candidates/retest', candidateRetestRequestRoutes)
 app.use('/api/admin/retest-requests', adminRetestRequestRoutes)
+app.use('/api/admin/login-time', loginTimeRoutes)
 // app.use('/api/admin/change-password', passwordRoutes) - Removed duplicate
 const server = http.createServer(app);
 const io = new Server(server, {

@@ -53,7 +53,7 @@ export function StudentLogin() {
       setSuccess("Login successful!");
       if (response.status === 200) {
         const { candidate, token } = response.data;
-        
+
         // Check for pending retest request - COMMENTED OUT
         // if (retestRequest?.hasRequest && retestRequest?.isPending) {
         //   setRetestRequestStatus(retestRequest);
@@ -61,9 +61,9 @@ export function StudentLogin() {
         //   // Don't navigate yet, show notification first
         //   return;
         // }
-        
+
         // If approved, they can proceed (no notification needed)
-        
+
         sessionStorage.setItem(
           "candidateData",
           JSON.stringify({
@@ -73,6 +73,7 @@ export function StudentLogin() {
             positionId: candidate.position._id,
             positionName: candidate.position.name,
             questionsAskedToCandidate: candidate.questionsAskedToCandidate,
+            timeforTest: candidate.timeforTest,
             token,
           })
         );
@@ -125,11 +126,10 @@ export function StudentLogin() {
                       setEmail(e.target.value);
                       validateField("email", e.target.value);
                     }}
-                    className={`pl-10 h-11 bg-white border transition-colors ${
-                      fieldErrors.email 
-                        ? "border-red-300 focus:border-red-500 focus:ring-red-200" 
+                    className={`pl-10 h-11 bg-white border transition-colors ${fieldErrors.email
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                         : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-                    } rounded-lg focus:ring-2 focus:ring-offset-0`}
+                      } rounded-lg focus:ring-2 focus:ring-offset-0`}
                   />
                 </div>
                 {fieldErrors.email && (
@@ -160,11 +160,10 @@ export function StudentLogin() {
                       setPassword(e.target.value);
                       validateField("password", e.target.value);
                     }}
-                    className={`pl-10 h-11 bg-white border transition-colors ${
-                      fieldErrors.password 
-                        ? "border-red-300 focus:border-red-500 focus:ring-red-200" 
+                    className={`pl-10 h-11 bg-white border transition-colors ${fieldErrors.password
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                         : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-                    } rounded-lg focus:ring-2 focus:ring-offset-0`}
+                      } rounded-lg focus:ring-2 focus:ring-offset-0`}
                   />
                 </div>
                 {fieldErrors.password && (

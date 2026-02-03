@@ -38,9 +38,7 @@ const InterviewTime = candidate.schedule
           <div class="email-container">
             <!-- Header Section -->
             <div class="header">
-              <div class="logo">
-                <img src="${`http://localhost:5000/uploads/sparrowlogo.png`}" alt="SparrowSofttech Logo" style="width: 100%; height: 100%; object-fit: contain;" />
-              </div>
+             
               <h1 class="company-name">SparrowSofttech</h1>
               <p class="tagline">Innovation Through Technology</p>
             </div>
@@ -95,6 +93,12 @@ const InterviewTime = candidate.schedule
                     <div class="info-item">
                       <span class="info-label">💼 Experience:</span>
                       <span class="info-value">${candidate.experience} years</span>
+                    </div>
+                  </div>
+                  <div style="flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem;">
+                    <div class="info-item">
+                      <span class="info-label">⏱️ Test Duration:</span>
+                      <span class="info-value">${candidate.timeforTest ? candidate.timeforTest + ' minutes' : 'N/A'}</span>
                     </div>
                   </div>
                 </div>
