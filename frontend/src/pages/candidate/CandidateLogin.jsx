@@ -4,13 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
 // import { Info, Clock } from "lucide-react"; // COMMENTED OUT - not used anymore
 import api from "../../Api/axiosInstance";
 import sparrowLogo from "../../assets/sparrowlogo.svg";
 export function StudentLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
@@ -151,18 +152,30 @@ export function StudentLogin() {
                   </div>
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
                       validateField("password", e.target.value);
                     }}
-                    className={`pl-10 h-11 bg-white border transition-colors ${fieldErrors.password
+                    className={`pl-10 pr-10 h-11 bg-white border transition-colors ${fieldErrors.password
                         ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                         : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
                       } rounded-lg focus:ring-2 focus:ring-offset-0`}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                    tabIndex="-1"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
                 </div>
                 {fieldErrors.password && (
                   <div className="flex items-center gap-1.5 text-sm text-red-600">
