@@ -86,7 +86,9 @@ useEffect(() => {
         const newValue = prev - 1;
         timeLeftRef.current = newValue; // Keep ref in sync for submission
 
-        if (newValue <= 0) {
+        // ✅ Trigger submission 1 second before time runs out
+        // This accounts for event loop delays and execution time
+        if (newValue <= 1) {
           clearInterval(timerId);
           // Use a timeout to break stack and allow state update
           setTimeout(() => handleSubmit(true), 0);
@@ -197,13 +199,29 @@ useEffect(() => {
   const stopRecordingAndDownload = () => {
     return new Promise((resolve) => {
       if (!mediaRecorderRef.current) return resolve(null);
+      
+      // ✅ Add timeout to prevent hanging
+      const timeoutId = setTimeout(() => {
+        console.warn("Recording finalization timeout - proceeding with available chunks");
+        const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+        resolve(blob);
+      }, 5000); // 5 second timeout
+      
       mediaRecorderRef.current.stop();
 
       mediaRecorderRef.current.onstop = () => {
+        clearTimeout(timeoutId);
         const blob = new Blob(recordedChunksRef.current, {
           type: "video/webm",
         });
         resolve(blob);
+      };
+      
+      mediaRecorderRef.current.onerror = (error) => {
+        clearTimeout(timeoutId);
+        console.error("MediaRecorder error:", error);
+        // Resolve with empty blob so submission can proceed
+        resolve(new Blob(recordedChunksRef.current || [], { type: "video/webm" }));
       };
     });
   };
@@ -304,9 +322,11 @@ useEffect(() => {
       console.log("Already submitting...");
       return;
     }
+    
     const dataToUse = candidateData || candidateDataRef.current;
     const currentQuestions = questionsRef.current.length > 0 ? questionsRef.current : questions;
     const currentAnswers = Object.keys(answersRef.current).length > 0 ? answersRef.current : answers;
+    
     try {
       setSubmitting(true); 
       console.log("Submitting test for candidate:",candidateData);
@@ -315,65 +335,96 @@ useEffect(() => {
         alert("Candidate data is missing. Please login again.");
         return;
       }
-      console.log('auto3',auto)
+      
+      // ✅ IMMEDIATE NAVIGATION - Show Time's Up or Thank You page RIGHT NOW
+      // This ensures the page is visible within milliseconds, not after processing
+      const targetRoute = auto ? "/TimesUpPage" : "/thank-you";
+      const navigateDeferred = Promise.resolve().then(() => {
+        navigate(targetRoute, { replace: true });
+      });
+      
+      console.log('auto3', auto);
       const finalAnswers = answersRef.current; // Use Ref for latest answers
       const finalQuestions = questionsRef.current; // Use Ref for latest questions
       const finalTimeLeft = timeLeftRef.current;
-      // const secondforTest = candidateData.timeforTest*60-finalTimeLeft;
       const totalTimeInSeconds = dataToUse.timeforTest * 60;
-    const secondsTaken = totalTimeInSeconds - finalTimeLeft;
-    const minutes = Math.floor(secondsTaken / 60);
-    const seconds = secondsTaken % 60;
-    const timeTakenFormatted = `${minutes} min ${seconds} sec`;
+      const secondsTaken = totalTimeInSeconds - finalTimeLeft;
+      const minutes = Math.floor(secondsTaken / 60);
+      const seconds = secondsTaken % 60;
+      const timeTakenFormatted = `${minutes} min ${seconds} sec`;
 
-    console.log("Final time left (seconds):", finalTimeLeft);
-    console.log("Time taken (seconds):", secondsTaken);
-    console.log("Time taken formatted:", timeTakenFormatted);
+      console.log("Final time left (seconds):", finalTimeLeft);
+      console.log("Time taken (seconds):", secondsTaken);
+      console.log("Time taken formatted:", timeTakenFormatted);
       console.log(
         auto ? "1st  Auto-submitting after timer ended" : "Submitting manually"
       );
-      const videoBlob = await stopRecordingAndDownload();
-      const formdata = new FormData();
-      const detailedAnswers = finalQuestions.map((q, index) => {
-        const candidateAnswer = finalAnswers[q._id];
-        let status = 0; // default untouched
-        if (candidateAnswer) status = 1; // answered
-        else if (visitedQuestions.includes(index)) status = 2; // visited
-        return {
-          questionId: q._id,
-          selectedOption: candidateAnswer || null,
-          status,
-        };
+      
+      // ✅ START background submission immediately (non-blocking)
+      // This runs in parallel while the page is already navigated
+      const backgroundSubmission = (async () => {
+        try {
+          // Stop streams and recording (this may take 1-2 seconds)
+          const videoBlob = await stopRecordingAndDownload();
+          
+          const formdata = new FormData();
+          const detailedAnswers = finalQuestions.map((q, index) => {
+            const candidateAnswer = finalAnswers[q._id];
+            let status = 0; // default untouched
+            if (candidateAnswer) status = 1; // answered
+            else if (visitedQuestions.includes(index)) status = 2; // visited
+            return {
+              questionId: q._id,
+              selectedOption: candidateAnswer || null,
+              status,
+            };
+          });
+          
+          formdata.append("video", videoBlob, "candidate-test.webm");
+          formdata.append("candidateId", dataToUse.id);
+          formdata.append("positionId", dataToUse.positionId);
+          formdata.append("answers", JSON.stringify(detailedAnswers));
+          formdata.append("timeTakenInSeconds", secondsTaken);
+          formdata.append("timeTakenFormatted", timeTakenFormatted);
+          
+          // Send to backend (may take 2-4 seconds with network latency)
+          const response = await axios.post(
+            `http://localhost:5000/api/test`,
+            formdata,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+              timeout: 30000, // 30 second timeout to prevent hanging
+            }
+          );
+          
+          console.log("Submission response:", response);
+          
+          if (response.status === 200) {
+            stopAllStreams();
+            sessionStorage.setItem("testSubmitted", "true");
+            sessionStorage.removeItem("candidateData");
+            console.log("Background submission completed successfully");
+          }
+        } catch (err) {
+          console.error("Error in background submission:", err);
+          console.error("Error details:", err.response?.data);
+          // Don't show alert here - user is already on the success page
+          // Log to console and optionally send to monitoring service
+          stopAllStreams();
+        }
+      })();
+      
+      // Wait for navigation to happen immediately, then let background submission continue
+      await navigateDeferred;
+      
+      // Don't wait for background submission - it can complete in the background
+      // If needed, save submission status to sessionStorage so it can retry if needed
+      backgroundSubmission.catch((err) => {
+        console.error("Unhandled background submission error:", err);
       });
-      formdata.append("video", videoBlob, "candidate-test.webm");
-      formdata.append("candidateId", dataToUse.id);
-      formdata.append("positionId", dataToUse.positionId);
-      formdata.append("answers", JSON.stringify(detailedAnswers));
-      formdata.append("timeTakenInSeconds", secondsTaken);
-      formdata.append("timeTakenFormatted", timeTakenFormatted);
-      const response = await axios.post(
-        `http://localhost:5000/api/test`,
-        formdata,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      console.log("Submission response:", response);
-      if (response.status === 200) {
-        stopAllStreams();
-        sessionStorage.setItem("testSubmitted", "true");
-        sessionStorage.removeItem ("candidateData");
-        // navigate("/thank-you");
-        if (auto) {
-          console.log("2nd Auto-submitting after timer ended");
-          navigate("/TimesUpPage",{replace:true});
-        } else {
-          console.log("2nd Submitting manually");
-          navigate("/thank-you",{replace:true});
-        }
-      }
+      
     } catch (err) {
-      console.error("Error submitting test:", err);
+      console.error("Error in handleSubmit:", err);
       console.error("Error details:", err.response?.data);
       alert(
         `Test submission failed: ${err.response?.data?.message || err.message}`
