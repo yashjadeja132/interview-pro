@@ -15,12 +15,10 @@ exports.submitTest = async (req, res) => {
       .limit(1);
     const nextAttempt = lastAttempt.length > 0 ? lastAttempt[0].attemptNumber + 1 : 1;
     const answers = JSON.parse(req.body.answers)
+    const questionIds = answers.map(a => a.questionId);
     const candidate = await Candidate.findById(candidateId).populate('position');
-    console.log('candidate question count',candidate.questionsAskedToCandidate)
     if (!candidate) return res.status(404).json({ message: "Candidate not found" });
-    const questions = await Question.find({ position: positionId   
-      
-    });
+    const questions = await Question.find({ position: positionId, _id: { $in: questionIds } });
     if (questions.length === 0)
       return res.status(400).json({ message: "No questions found for this position" });
     let correctCount = 0;
@@ -31,29 +29,31 @@ exports.submitTest = async (req, res) => {
       let isCorrect = false;
       let selectedOptionImage = "";
       let correctOptionImage = "";
-      let selectedOptionText = ""
-      let status = 0
+      let selectedOptionText = "";
+      let status = 0;
+      let marksObtained = 0; // Initialize marks for this question
+
       if (candidateAnswer) {
         const selectedOptObj = q.options.find(opt => opt._id.toString() === candidateAnswer.selectedOption);
         selectedOptionText = selectedOptObj ? selectedOptObj.optionText : "";
         selectedOptionImage = selectedOptObj ? selectedOptObj.optionImage : "";
         correctOptionImage = correctOption ? correctOption.optionImage : "";
-        status = candidateAnswer.status || 0
+        status = candidateAnswer.status || 0;
+
         if (correctOption && candidateAnswer.selectedOption === correctOption._id.toString()) {
           isCorrect = true;
           correctCount++;
+          marksObtained = 1; // Full marks for correct answer
         } else if (candidateAnswer.selectedOption) {
           incorrectCount++;
+          marksObtained = candidate.isNagativeMarking ? -candidate.negativeMarkingValue : 0; // Negative marks for incorrect answer
         }
       }
-      // console.log('isCorrect',isCorrect)
-      // console.log('incorrectCount',incorrectCount)
-          // console.log('correct count:', correctCount)
 
       return {
         questionId: q._id,
         question: q.questionText,
-        questionImage: q.questionImage || null,  // 👈 include question image,
+        questionImage: q.questionImage || null,
         selectedOption: candidateAnswer ? candidateAnswer.selectedOption : null,
         selectedOptionText,
         selectedOptionImage,
@@ -61,38 +61,48 @@ exports.submitTest = async (req, res) => {
         correctOptionText: correctOption ? correctOption.optionText : null,
         correctOptionImage,
         isCorrect,
-        status
+        status,
+        marksObtained // Include marks obtained for this question
       };
-    })
+    });
 
-    let finalScore = correctCount;
-    if (candidate.isNagativeMarking && candidate.negativeMarkingValue) {
-      finalScore -= (incorrectCount * candidate.negativeMarkingValue);
-    }
-    const score = (finalScore / candidate.questionsAskedToCandidate) * 100;
+    // Calculate total marks obtained
+    const totalMarks = detailedAnswers.reduce((sum, answer) => sum + answer.marksObtained, 0);
+    console.log('Total Marks Obtained:', totalMarks);
+    const marksPerQuestion = questions[0]?.marks ?? 1;
 
-    console.log('incorrect count:', incorrectCount)
-    // question length of position 
-    console.log('question length:', questions.length)
-    console.log('calculated score:', score) ;
-    // 5. Save TestResult
+    // Calculate score as percentage
+    const score = (totalMarks / (candidate.questionsAskedToCandidate * marksPerQuestion)) * 100;
+    console.log('candidate.questionsAskedToCandidate:', candidate.questionsAskedToCandidate);
+    console.log('marks per question:', marksPerQuestion);
+    console.log('Percentage Score:', score);
+    // return 0;
+        console.log("🧾 --- TEST SUMMARY ---");
+     console.log('correctCount:', correctCount);
+     console.log('incorrectCount:', incorrectCount);
+     console.log('totalMarks:', totalMarks);
+     console.log('score (percentage):', score.toFixed(2) + '%');
+     console.log("🧾 --- END OF SUMMARY ---");
     const testResult = new TestResult({
       candidateId,
       positionId,
       answers: detailedAnswers,
-      score,
+      score, // Save percentage score
       videoPath: candidateRecording,
       totalQuestions: candidate.questionsAskedToCandidate,
+      totalMarks, // Save total marks in the result
+      marksObtained: totalMarks, // Save total marks in marksObtained field
       timeTakenInSeconds: timeTakenInSeconds || 0,
       timeTakenFormatted: timeTakenFormatted || "",
       attemptNumber: nextAttempt,
       isSubmitted: 1
     });
+
     await testResult.save();
-    
+
     // Update candidate with isSubmitted flag
     await Candidate.findByIdAndUpdate(candidateId, { isSubmitted: 1 });
-    
+
     // Create retest request record when candidate submits test
     try {
       const existingRequest = await RetestRequest.findOne({
@@ -119,7 +129,8 @@ exports.submitTest = async (req, res) => {
 
     try {
       await sendResultMail(candidate.email, {
-        score,
+        score, // Send percentage score
+        totalMarks, // Send total marks obtained
         totalQuestions: questions.length,
         correctCount,
         candidateName: candidate.name,
@@ -131,7 +142,7 @@ exports.submitTest = async (req, res) => {
       console.error("⚠️ Failed to send result email:", emailErr.message);
     }
 
-    res.json({ message: "Test submitted successfully", score, totalQuestions: questions.length });
+    res.json({ message: "Test submitted successfully", score, totalMarks, totalQuestions: questions.length });
   } catch (error) {
     console.error("Error submitting test:", error);
     res.status(500).json({ message: "Failed to submit test", error: error.message });

@@ -20,6 +20,7 @@ const TestResultSchema = new mongoose.Schema({
     }
   ],
   score: { type: Number, default: 0 },
+  marksObtained: { type: Number, default: 0 },
   totalQuestions: { type: Number },
   videoPath: { type: String },
   timeTakenInSeconds: {
