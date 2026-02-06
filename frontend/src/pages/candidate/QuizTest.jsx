@@ -533,15 +533,15 @@ useEffect(() => {
   };
 
   const handleClearAnswer = (questionId) => {
-    setAnswers((prev) => {
-      const updated = { ...prev };
-      delete updated[questionId];
-      // 🧩 Auto-save progress after clearing
-      saveProgressToBackend(updated, currentQuestionIndex);
-      return updated;
-    });
-  };
-
+  setAnswers((prev) => {
+    const updated = { ...prev };
+    delete updated[questionId];
+    // explicit new object already created by spread — good for re-render
+    // auto-save progress after clearing
+    saveProgressToBackend(updated, currentQuestionIndex);
+    return updated;
+  });
+};
   // 1️⃣ State for restore tracking
   const [progressRestored, setProgressRestored] = useState(false);
   const [savedProgress, setSavedProgress] = useState(null); // 👈 add this
@@ -887,7 +887,7 @@ useEffect(() => {
                   {/* Options */}
                   <div className="space-y-3">
                     <RadioGroup
-                      value={answers[questions[currentQuestionIndex]._id]}
+                        value={answers[questions[currentQuestionIndex]._id] ?? ""}
                       onValueChange={(val) =>
                         handleChange(questions[currentQuestionIndex]._id, val)
                       }
@@ -940,7 +940,7 @@ useEffect(() => {
                             )
                           }
                           variant="outline"
-                          className="px-6 py-2 border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-200"
+                          className="px-6 py-2 border-2 border-red-300 text-red-600"
                         >
                           <XCircle className="w-4 h-4 mr-2" />
                           Clear Answer
