@@ -19,6 +19,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import logo from "../assets/sparrowlogo.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
@@ -48,14 +49,14 @@ const navigationItems = [
     icon: Monitor,
     description: "Monitor interviews",
   },
- 
+
   {
     title: "Question Management",
     url: "/questionManagement",
     icon: Database,
     description: "Manage questions by position",
   },
-  
+
   {
     title: "Settings",
     url: "/admin/settings",
@@ -66,7 +67,7 @@ const navigationItems = [
 
 export default function AppSidebar() {
   const navigate = useNavigate();
-const location = useLocation();
+  const location = useLocation();
 
   // ✅ LOGOUT HANDLER (FIXED)
   const handleLogout = () => {
@@ -90,8 +91,9 @@ const location = useLocation();
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="hover:bg-transparent">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-white" />
+                <div className="w-8 h-8  from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
+                  {/* <Shield className="w-5 h-5 text-white" /> */}
+                  <img src={logo} alt="Logo" className="w-32 h-15" />
                 </div>
                 <div className="flex flex-col items-start">
                   <span className="font-bold text-slate-800 dark:text-slate-100">
@@ -108,53 +110,51 @@ const location = useLocation();
       </SidebarHeader>
 
       {/* ================= NAVIGATION ================= */}
-    <SidebarContent className="p-2">
-  <SidebarMenu className="space-y-1">
-    {navigationItems.map((item) => {
-      const isActive = location.pathname === item.url;
+      <SidebarContent className="p-2">
+        <SidebarMenu className="space-y-1">
+          {navigationItems.map((item) => {
+            const isActive = location.pathname === item.url;
 
-      return (
-        <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton
-            asChild
-            className={`h-12 rounded-lg 
-              ${isActive 
-                ? "bg-primary/10 text-primary" 
-                : "hover:bg-slate-100 dark:hover:bg-slate-800"
-              }`}
-          >
-            <Link
-              to={item.url}
-              className="flex items-center space-x-3 w-full"
-            >
-              <item.icon
-                className={`w-5 h-5 ${
-                  isActive 
-                    ? "text-primary" 
-                    : "text-slate-600 dark:text-slate-400"
-                }`}
-              />
-              <div className="flex flex-col items-start">
-                <span
-                  className={`font-medium ${
-                    isActive 
-                      ? "text-primary" 
-                      : "text-slate-800 dark:text-slate-200"
-                  }`}
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  asChild
+                  className={`h-12 rounded-lg 
+              ${isActive
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                    }`}
                 >
-                  {item.title}
-                </span>
-                <span className="text-xs text-slate-500">
-                  {item.description}
-                </span>
-              </div>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      );
-    })}
-  </SidebarMenu>
-</SidebarContent>
+                  <Link
+                    to={item.url}
+                    className="flex items-center space-x-3 w-full"
+                  >
+                    <item.icon
+                      className={`w-5 h-5 ${isActive
+                          ? "text-primary"
+                          : "text-slate-600 dark:text-slate-400"
+                        }`}
+                    />
+                    <div className="flex flex-col items-start">
+                      <span
+                        className={`font-medium ${isActive
+                            ? "text-primary"
+                            : "text-slate-800 dark:text-slate-200"
+                          }`}
+                      >
+                        {item.title}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {item.description}
+                      </span>
+                    </div>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarContent>
 
 
       {/* ================= FOOTER / LOGOUT ================= */}

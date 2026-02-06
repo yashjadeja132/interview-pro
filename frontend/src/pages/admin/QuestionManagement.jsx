@@ -78,6 +78,7 @@ export default function QuestionManagement() {
     setIsLoading(true);
     try {
       const res = await api.get(`/question/position/${positionId}`);
+      console.log(res.data);
       setQuestions(res.data);
       setFilteredQuestions(res.data);
     } catch (err) {
@@ -277,7 +278,6 @@ export default function QuestionManagement() {
                 {positions.map((pos) => (
                   <SelectItem key={pos._id} value={pos._id} className="dark:text-gray-200 dark:focus:bg-slate-700">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       {pos.name}
                     </div>
                   </SelectItem>
@@ -310,43 +310,57 @@ export default function QuestionManagement() {
         </div>
 
         {/* Table Section */}
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                <TableRow>
-                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
-                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Question</TableHead>
-                  <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
-                  <TableHead className="px-6 py-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
+      <div className="bg-slate-50 dark:bg-slate-900 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
+  <div className="overflow-x-auto">
+    {isLoading ? (
+      <div className="py-10 text-center text-slate-500 dark:text-slate-400">
+        Loading questions...
+      </div>
+    ) : filteredQuestions.length > 0 ? (
+      <Table>
+        <TableHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+          <TableRow>
+            <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
+            <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Question</TableHead>
+            <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
+            <TableHead className="px-6 py-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
 
-              <TableBody>
-                {filteredQuestions.map((question) => (
-                  <TableRow key={question._id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                    <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{ filteredQuestions.indexOf(question) + 1}</TableCell>
-                    <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{question.questionText}</TableCell>
-                    <TableCell className="px-6 py-4 text-slate-600 dark:text-slate-400">{question.position?.name}</TableCell>
-                    <TableCell className="px-6 py-4 flex justify-center gap-2">
-                      <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => handleViewQuestion(question)}>
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-amber-600 hover:bg-amber-50" onClick={() => handleEditQuestion(question)}>
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteQuestion(question._id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
+        <TableBody>
+          {filteredQuestions.map((question, index) => (
+            <TableRow
+              key={question._id}
+              className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+            >
+              <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{index + 1}</TableCell>
+              <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{question.questionText}</TableCell>
+              <TableCell className="px-6 py-4 text-slate-600 dark:text-slate-400">{question.position?.name}</TableCell>
+              <TableCell className="px-6 py-4 flex justify-center gap-2">
+                <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => handleViewQuestion(question)}>
+                  <Eye className="w-4 h-4" />
+                </Button>
+                <Button size="sm" variant="ghost" className="text-amber-600 hover:bg-amber-50" onClick={() => handleEditQuestion(question)}>
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+                <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteQuestion(question._id)}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    ) : (
+      <div className="py-12 text-center text-slate-600 dark:text-slate-400">
+        {selectedPosition
+          ? "No questions found for this position."
+          : "Please select a position to view questions."}
+      </div>
+    )}
+  </div>
+</div>
 
-       
       </div>
 
       {/* Create Question Dialog */}
@@ -488,15 +502,3 @@ export default function QuestionManagement() {
   );
 }
 
-function getDifficultyBadgeClass(difficulty) {
-  switch (difficulty) {
-    case 'Easy':
-      return 'bg-green-100 text-green-700 border-green-200';
-    case 'Medium':
-      return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    case 'Hard':
-      return 'bg-red-100 text-red-700 border-red-200';
-    default:
-      return 'bg-gray-100 text-gray-700 border-gray-200';
-  }
-}

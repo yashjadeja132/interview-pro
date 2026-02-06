@@ -7,22 +7,24 @@ const mongoose = require("mongoose");
 exports.submitTest = async (req, res) => {
   try {
     const { candidateId, positionId, timeTakenInSeconds, timeTakenFormatted } = req.body;
+    console.log('time taken in seconds:', timeTakenInSeconds)
+    console.log('time taken formatted:', timeTakenFormatted)
     const candidateRecording = req.file ? `${process.env.UploadLink}/candidateVideo/${req.file.filename}` : 'no video'
     const lastAttempt = await TestResult.find({ candidateId, positionId })
       .sort({ attemptNumber: -1 })
       .limit(1);
-    // console.log('lastAttempt',lastAttempt);
     const nextAttempt = lastAttempt.length > 0 ? lastAttempt[0].attemptNumber + 1 : 1;
-    // console.log('nextAttempt',nextAttempt);
     const answers = JSON.parse(req.body.answers)
     const candidate = await Candidate.findById(candidateId).populate('position');
+    console.log('candidate question count',candidate.questionsAskedToCandidate)
     if (!candidate) return res.status(404).json({ message: "Candidate not found" });
-    // const existingTest = await TestResult.findOne({ candidateId, positionId });
-    // if (existingTest) return res.status(400).json({ message: "Test already submitted" });
-    const questions = await Question.find({ position: positionId });
+    const questions = await Question.find({ position: positionId   
+      
+    });
     if (questions.length === 0)
       return res.status(400).json({ message: "No questions found for this position" });
     let correctCount = 0;
+    let incorrectCount = 0;
     const detailedAnswers = questions.map((q) => {
       const candidateAnswer = answers.find(a => a.questionId === q._id.toString());
       const correctOption = q.options.find(opt => opt.isCorrect);
@@ -40,12 +42,18 @@ exports.submitTest = async (req, res) => {
         if (correctOption && candidateAnswer.selectedOption === correctOption._id.toString()) {
           isCorrect = true;
           correctCount++;
+        } else if (candidateAnswer.selectedOption) {
+          incorrectCount++;
         }
       }
+      // console.log('isCorrect',isCorrect)
+      // console.log('incorrectCount',incorrectCount)
+          // console.log('correct count:', correctCount)
+
       return {
         questionId: q._id,
         question: q.questionText,
-         questionImage: q.questionImage || null,  // 👈 include question image,
+        questionImage: q.questionImage || null,  // 👈 include question image,
         selectedOption: candidateAnswer ? candidateAnswer.selectedOption : null,
         selectedOptionText,
         selectedOptionImage,
@@ -56,10 +64,17 @@ exports.submitTest = async (req, res) => {
         status
       };
     })
-    const score = (correctCount / questions.length) * 100;
-    console.log('corrected output', correctCount)
-    console.log('question length', questions.length)
-    console.log(score);
+
+    let finalScore = correctCount;
+    if (candidate.isNagativeMarking && candidate.negativeMarkingValue) {
+      finalScore -= (incorrectCount * candidate.negativeMarkingValue);
+    }
+    const score = (finalScore / candidate.questionsAskedToCandidate) * 100;
+
+    console.log('incorrect count:', incorrectCount)
+    // question length of position 
+    console.log('question length:', questions.length)
+    console.log('calculated score:', score) ;
     // 5. Save TestResult
     const testResult = new TestResult({
       candidateId,
@@ -67,7 +82,7 @@ exports.submitTest = async (req, res) => {
       answers: detailedAnswers,
       score,
       videoPath: candidateRecording,
-      totalQuestions: questions.length,
+      totalQuestions: candidate.questionsAskedToCandidate,
       timeTakenInSeconds: timeTakenInSeconds || 0,
       timeTakenFormatted: timeTakenFormatted || "",
       attemptNumber: nextAttempt,
@@ -124,7 +139,6 @@ exports.submitTest = async (req, res) => {
 }
 // controllers/testController.js
 exports.getAllResults = async (req, res) => {
-  console.log('getAllResults');
   try {
     const {
       page = 1,
@@ -211,7 +225,6 @@ exports.getAllResults = async (req, res) => {
       candidateId: result.candidateId,
       candidateName: result.candidate.name,
       candidateEmail: result.candidate.email,
-      candidateResume: result.candidate.resume,
       attemptNumber: result.attemptNumber,
       positionName: result.position.name,
       score: result.score,

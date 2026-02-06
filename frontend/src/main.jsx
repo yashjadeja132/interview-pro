@@ -21,15 +21,17 @@ import CandidateHistory from "./pages/admin/CandidateHistory.jsx";
 import PositionManagement from "./pages/hr/PositionManagement.jsx";
 import CandidateManagement from "./pages/hr/CandidateManagement.jsx";
 import CandidateMonitoring from "./pages/hr/CandidateMonitoring.jsx";
+import CandidateReportPage from "./pages/hr/CandidateReportPage.jsx";
 import StartButton from "./pages/candidate/StartButton.jsx";
 import CandidateDashboardWithAttempts from "./pages/candidate/CandidateDashboardWithAttempts.jsx";
 import QuizTest from "./pages/candidate/QuizTest";
 import QuizTestWithAttempts from "./pages/candidate/QuizTestWithAttempts";
-import ThankYou from "./pages/candidate/ThankYou.jsx";
+import ThankYou from "./pages/candidate/ThankYou.jsx";  
 import ThankYouWithAttempts from "./pages/candidate/ThankYouWithAttempts.jsx";
 import CandidateResult from './pages/candidate/CandidateResult.jsx'
 import ForgotPassword from "./pages/authpages/ForgotPassword.jsx";
 import ThemeProvider from "./context/ThemeContext";
+import TimesUpPage from "./pages/candidate/TimesUpPage.jsx";
 
 function Main() {
   const [streams, setStreams] = useState(null);
@@ -42,6 +44,7 @@ function Main() {
         <Route path="/candidate/StartTest" element={<StartButton setStreams={setStreams} />} />
         <Route path="/candidate/dashboard" element={<CandidateDashboardWithAttempts />} />
         <Route path="/candidate/Quiztest" element={<QuizTest streams={streams} />} />
+        <Route path="/TimesUpPage" element={<TimesUpPage />} />
         <Route path="/candidate/QuiztestWithAttempts" element={<QuizTestWithAttempts streams={streams} />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/thank-you-with-attempts" element={<ThankYouWithAttempts />} />
@@ -78,6 +81,9 @@ function Main() {
         <Route path="/candidate/:candidateId/position/:positionId/history" element={<AdminLayout />}>
           <Route index element={<CandidateHistory />} />
         </Route>
+        <Route path="/candidate-report/:candidateId" element={<AdminLayout />}>
+          <Route index element={<CandidateReportPage />} />
+        </Route>
       </Route>
     )
   );
@@ -86,14 +92,14 @@ function Main() {
 }
 
 createRoot(document.getElementById("root")).render(
- 
- <ThemeProvider >
- <StrictMode>
-    
+
+  <ThemeProvider >
+    <StrictMode>
+
       <Main />
-    
-  </StrictMode>
-  </ThemeProvider> 
+
+    </StrictMode>
+  </ThemeProvider>
 );
 
 

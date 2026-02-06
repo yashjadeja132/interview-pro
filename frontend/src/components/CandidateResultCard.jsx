@@ -26,6 +26,7 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
       selectedOptionImage: result.selectedOptionImage,
       correctOptionImage: result.correctOptionImage
     });
+
   });
   
   const getScoreColor = (score) => {
@@ -64,8 +65,8 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
       <Card className="border-2 shadow-sm">
         <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <User className="w-5 h-5" />
-            Candidate Information
+            <User className="w-5 h-5 dark:text-black" />
+           <span className="dark:text-black">Candidate Information</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -75,14 +76,14 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                 <User className="w-5 h-5 text-gray-500" />
                 <div>
                   <p className="text-sm text-gray-600">Full Name</p>
-                  <p className="font-semibold text-gray-900">{candidateData.candidateName}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{candidateData.candidateName}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-gray-500" />
                 <div>
                   <p className="text-sm text-gray-600">Email Address</p>
-                  <p className="font-semibold text-gray-900">{candidateData.candidateEmail}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{candidateData.candidateEmail}</p>
                 </div>
               </div>
             </div>
@@ -91,14 +92,14 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                 <FileText className="w-5 h-5 text-gray-500" />
                 <div>
                   <p className="text-sm text-gray-600">Position Applied</p>
-                  <p className="font-semibold text-gray-900">{candidateData.positionName}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{candidateData.positionName}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-gray-500" />
                 <div>
                   <p className="text-sm text-gray-600">Test Date</p>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-gray-900 dark:text-white">
                     {new Date(candidateData.createdAt).toLocaleDateString()}
                   </p>
                 </div>
@@ -112,8 +113,8 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
       <Card className="border-2 shadow-sm">
         <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Trophy className="w-5 h-5" />
-            Test Results Summary
+            <Trophy className="w-5 h-5 dark:text-black" />
+           <span className="dark:text-black">Test Results Summary</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -122,29 +123,29 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
               <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-3 ${getScoreColor(candidateData.score)}`}>
                 <span className="text-2xl font-bold">{Math.round(candidateData.score)}%</span>
               </div>
-              <h3 className="font-semibold text-gray-900">Overall Score</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Overall Score</h3>
               <p className="text-sm text-gray-600">{getScoreStatus(candidateData.score)}</p>
             </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
                 <CheckCircle className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-900">{correctAnswers}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{correctAnswers}</h3>
               <p className="text-sm text-gray-600">Correct Answers</p>
             </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-3">
                 <Clock className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="font-semibold text-gray-900">{candidateData.timeTakenFormatted || 'N/A'}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{candidateData.timeTakenFormatted || 'N/A'}</h3>
               <p className="text-sm text-gray-600">Time Taken</p>
             </div>
           </div>
           
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700">Performance Progress</span>
-              <span className="text-sm text-gray-600">{Math.round(candidateData.score)}%</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-white">Performance Progress</span>
+              <span className="text-sm text-gray-600 dark:text-white">{Math.round(candidateData.score)}%</span>
             </div>
             <Progress 
               value={candidateData.score} 
@@ -162,11 +163,11 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
       <Card className="border-2 shadow-sm">
         <CardHeader className="bg-gradient-to-r from-gray-50 to-slate-50">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Eye className="w-5 h-5" />
-            Detailed Question Analysis
+            <Eye className="w-5 h-5 dark:text-black" />
+            <span className="dark:text-black">Detailed Question Analysis</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-2">
           <div className="space-y-6">
             {testResults.map((result, index) => (
               <div 
@@ -189,7 +190,7 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="text-lg font-semibold text-gray-700">Question {index + 1}</span>
+                      <span className="text-lg font-semibold text-gray-700 dark:text-black">Question {index + 1}</span>
                       <Badge variant={result.isCorrect ? 'default' : 'destructive'} className="text-sm font-semibold">
                         {result.isCorrect ? 'Correct' : 'Incorrect'}
                       </Badge>

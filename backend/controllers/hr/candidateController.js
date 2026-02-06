@@ -118,9 +118,9 @@ exports.getCandidateById = async (req, res) => {
 // Update candidate
 exports.updateCandidate = async (req, res) => {
   try {
-    const { name, email, phone, experience, position,timeDurationForTest, questionsAskedToCandidate, technicalQuestions, logicalQuestions, } = req.body;
+    const { name, email, phone, experience, position,timeDurationForTest, questionsAskedToCandidate, technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue } = req.body;
     const timefortest = parseInt(timeDurationForTest);
-    const updateData = { name, email, phone, experience, position,timefortest, questionsAskedToCandidate, technicalQuestions, logicalQuestions };
+    const updateData = { name, email, phone, experience, position,timefortest, questionsAskedToCandidate, technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue };
     // Get existing candidate to use current values if fields aren't being updated
     const existingCandidate = await Candidate.findById(req.params.id);
     if (!existingCandidate) {
@@ -299,7 +299,7 @@ exports.bulkDeleteCandidates = async (req, res) => {
 
 exports.createCandidate=async(req,res)=>{
    try {
-          const { email,name, phone, position, experience, timeDurationForTest,questionsAskedToCandidate,technicalQuestions,logicalQuestions} = req.body;
+          const { email,name, phone, position, experience, timeDurationForTest,questionsAskedToCandidate,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue} = req.body;
             const timeforTest = parseInt(timeDurationForTest);
         
           // Check if position is provided
@@ -414,7 +414,7 @@ exports.createCandidate=async(req,res)=>{
          
           const candidate = new Candidate({
               name, email, password: hashedPassword,phone ,position, experience, schedule, questionsAskedToCandidate,
-              technicalQuestions, logicalQuestions ,timeforTest
+              technicalQuestions, logicalQuestions ,timeforTest, isNagativeMarking, negativeMarkingValue
           })
           console.log('candidate is ',candidate)
       const token = jwt.sign(

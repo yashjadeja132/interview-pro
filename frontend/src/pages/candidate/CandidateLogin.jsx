@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 // import { Info, Clock } from "lucide-react"; // COMMENTED OUT - not used anymore
 import api from "../../Api/axiosInstance";
-
+import sparrowLogo from "../../assets/sparrowlogo.svg";
 export function StudentLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -93,10 +93,8 @@ export function StudentLogin() {
         <Card className="bg-white shadow-lg border border-gray-200">
           <CardHeader className="text-center pb-6 pt-8">
             {/* Logo */}
-            <div className="mx-auto mb-4 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
+            <div className="mx-auto mb-4 w-12 h-12 rounded-lg flex items-center justify-center">
+            <img src={sparrowLogo} alt="Logo" className="w-12 h-12" />
             </div>
             <CardTitle className="text-2xl font-semibold text-gray-900 mb-1">Sign In</CardTitle>
             <CardDescription className="text-gray-600">
@@ -173,37 +171,6 @@ export function StudentLogin() {
                   </div>
                 )}
               </div>
-
-              {/* Retest Request Notification - COMMENTED OUT */}
-              {/* {showRetestNotification && retestRequestStatus?.hasRequest && retestRequestStatus?.isPending && (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="w-4 h-4 text-yellow-600" />
-                        <h3 className="text-sm font-semibold text-yellow-900">Retest Request Pending</h3>
-                      </div>
-                      <p className="text-sm text-yellow-800 mb-3">
-                        You have a pending retest request. Please wait for admin/HR approval before you can take the test again.
-                      </p>
-                      <p className="text-sm text-yellow-700 mb-3">
-                        Request submitted on: {new Date(retestRequestStatus.requestedAt).toLocaleDateString()}
-                      </p>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          setShowRetestNotification(false);
-                          setGeneralError("You cannot take the test until your retest request is approved by admin/HR.");
-                        }}
-                        className="mt-2 w-full bg-yellow-600 hover:bg-yellow-700 text-white text-sm h-9"
-                      >
-                        Understood
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )} */}
 
               {/* General Error */}
               {generalError && (

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import sparrowLogo from "../../assets/sparrowlogo.png";
+import sparrowLogo from "../../assets/sparrowlogo.svg";
 import { testAttemptService, progressService } from '../../services/testAttemptService';
 
 export default function QuizTestWithAttempts({ streams }) {
@@ -24,10 +24,10 @@ export default function QuizTestWithAttempts({ streams }) {
     const navigate = useNavigate();
     const location = useLocation();
     const storedData = JSON.parse(sessionStorage.getItem("candidateData"));
-    
+
     // Get attemptInfo from navigation state or session storage
     const attemptInfo = location.state?.attemptInfo || JSON.parse(sessionStorage.getItem("currentAttempt"));
-    
+
     console.log('🔍 QUIZ COMPONENT - Debug info:', {
         locationState: location.state,
         sessionStorageAttempt: sessionStorage.getItem("currentAttempt"),
@@ -41,7 +41,7 @@ export default function QuizTestWithAttempts({ streams }) {
 
     useEffect(() => {
         console.log('🔄 USEEFFECT - Setting candidateData:', { attemptInfo, storedData });
-        
+
         if (attemptInfo) {
             const newCandidateData = {
                 id: attemptInfo.candidateId,
@@ -100,7 +100,7 @@ export default function QuizTestWithAttempts({ streams }) {
             // Use questionsAskedToCandidate from storedData if available, otherwise default to 10
             const questionCount = storedData?.questionsAskedToCandidate || 10;
             const candidateId = candidateData?.id || storedData?.id || null;
-            const url = candidateId 
+            const url = candidateId
                 ? `http://localhost:5000/api/test/questions/random?positionId=${candidateData?.positionId}&count=${questionCount}&candidateId=${candidateId}`
                 : `http://localhost:5000/api/test/questions/random?positionId=${candidateData?.positionId}&count=${questionCount}`;
             const response = await fetch(url);
@@ -116,14 +116,14 @@ export default function QuizTestWithAttempts({ streams }) {
 
     const loadExistingProgress = async () => {
         if (!attemptInfo?.attemptId) return;
-        
+
         try {
             const response = await progressService.getProgress(attemptInfo.attemptId);
             if (response.data) {
                 const progress = response.data;
                 setCurrentQuestionIndex(progress.currentQuestionIndex || 0);
                 setTimeLeft(progress.timeLeft || 60 * 60);
-                
+
                 // Restore answers
                 const restoredAnswers = {};
                 progress.progress.forEach(q => {
@@ -132,13 +132,13 @@ export default function QuizTestWithAttempts({ streams }) {
                     }
                 });
                 setAnswers(restoredAnswers);
-                
+
                 // Restore visited questions
                 const visited = progress.progress
                     .map((q, index) => q.status === 2 ? index : null)
                     .filter(index => index !== null);
                 setVisitedQuestions(visited);
-                
+
                 console.log('Progress restored:', progress);
             }
         } catch (error) {
@@ -254,21 +254,21 @@ export default function QuizTestWithAttempts({ streams }) {
             setError("Please answer all questions before submitting!");
             return;
         }
-        
+
         if (!candidateData?.id || !candidateData?.positionId) {
             console.error("Missing candidate data:", candidateData);
             setError("Candidate data is missing. Please login again.");
             return;
         }
-        
+
         console.log(auto ? "Auto-submitting after timer ended" : "Submitting manually");
         console.log("Candidate data:", candidateData);
         console.log("Answers:", answers);
-        
+
         try {
             setSubmitting(true);
             setError(null);
-            
+
             const videoBlob = await stopRecordingAndDownload();
             const detailedAnswers = questions.map((q, index) => {
                 const candidateAnswer = answers[q._id];
@@ -297,11 +297,11 @@ export default function QuizTestWithAttempts({ streams }) {
 
             const response = await testAttemptService.submitTestWithAttempt(testData, attemptInfo);
             console.log("Submission response:", response);
-            
+
             if (response.message === "Test submitted successfully") {
                 stopAllStreams();
-                navigate('/thank-you', { 
-                    state: { 
+                navigate('/thank-you', {
+                    state: {
                         score: response.data.score,
                         attemptNumber: candidateData.attemptNumber,
                         totalQuestions: response.data.totalQuestions
@@ -324,17 +324,17 @@ export default function QuizTestWithAttempts({ streams }) {
             hasPositionId: !!candidateData?.positionId,
             hasAttemptId: !!candidateData?.attemptId
         });
-        
+
         // If we don't have attemptId, try to create a test attempt first
         if (!candidateData?.attemptId && candidateData?.id && candidateData?.positionId) {
             console.log('🔄 SAVE PROGRESS - No attemptId found, creating test attempt...');
             try {
                 const attemptResponse = await testAttemptService.createTestAttempt(
-                    candidateData.id, 
+                    candidateData.id,
                     candidateData.positionId
                 );
                 console.log('✅ SAVE PROGRESS - Test attempt created:', attemptResponse);
-                
+
                 // Update candidateData with the new attempt info
                 const updatedCandidateData = {
                     ...candidateData,
@@ -342,7 +342,7 @@ export default function QuizTestWithAttempts({ streams }) {
                     attemptNumber: attemptResponse.data.attemptNumber
                 };
                 setCandidateData(updatedCandidateData);
-                
+
                 // Use the updated data for the progress payload
                 const progressPayload = {
                     candidateId: updatedCandidateData.id,
@@ -369,7 +369,7 @@ export default function QuizTestWithAttempts({ streams }) {
                         }),
                     }
                 };
-                
+
                 await progressService.saveProgress(progressPayload);
                 setProgressSaved(true);
                 setTimeout(() => setProgressSaved(false), 2000);
@@ -380,12 +380,12 @@ export default function QuizTestWithAttempts({ streams }) {
                 return;
             }
         }
-        
+
         if (!candidateData?.id || !candidateData?.positionId || !candidateData?.attemptId) {
             console.log('❌ SAVE PROGRESS - Missing required candidateData, returning early');
             return;
         }
-        
+
         try {
             const progressPayload = {
                 candidateId: candidateData.id,
@@ -412,7 +412,7 @@ export default function QuizTestWithAttempts({ streams }) {
                     }),
                 }
             };
-            
+
             await progressService.saveProgress(progressPayload);
             setProgressSaved(true);
             setTimeout(() => setProgressSaved(false), 2000);
@@ -476,8 +476,8 @@ export default function QuizTestWithAttempts({ streams }) {
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
-                        <Button 
-                            onClick={() => navigate('/candidate-dashboard')} 
+                        <Button
+                            onClick={() => navigate('/candidate-dashboard')}
                             className="w-full mt-4"
                         >
                             Back to Dashboard
@@ -538,20 +538,19 @@ export default function QuizTestWithAttempts({ streams }) {
                                         const isAnswered = answers[questions[index]._id];
                                         const isVisited = visitedQuestions.includes(index);
                                         const isCurrent = index === currentQuestionIndex;
-                                        
+
                                         return (
                                             <button
                                                 key={index}
                                                 onClick={() => handleQuestionClick(index)}
-                                                className={`w-8 h-8 rounded-full text-xs font-medium transition-colors ${
-                                                    isCurrent
+                                                className={`w-8 h-8 rounded-full text-xs font-medium transition-colors ${isCurrent
                                                         ? 'bg-blue-600 text-white'
                                                         : isAnswered
-                                                        ? 'bg-green-100 text-green-800 border-2 border-green-300'
-                                                        : isVisited
-                                                        ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300'
-                                                        : 'bg-gray-100 text-gray-600 border-2 border-gray-300'
-                                                }`}
+                                                            ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                                                            : isVisited
+                                                                ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300'
+                                                                : 'bg-gray-100 text-gray-600 border-2 border-gray-300'
+                                                    }`}
                                             >
                                                 {index + 1}
                                             </button>
@@ -598,9 +597,9 @@ export default function QuizTestWithAttempts({ streams }) {
                                                 {currentQuestion.questionText}
                                             </h3>
                                             {currentQuestion.questionImage && (
-                                                <img 
-                                                    src={currentQuestion.questionImage} 
-                                                    alt="Question" 
+                                                <img
+                                                    src={currentQuestion.questionImage}
+                                                    alt="Question"
                                                     className="max-w-full h-auto rounded-lg mb-4"
                                                 />
                                             )}
@@ -613,12 +612,12 @@ export default function QuizTestWithAttempts({ streams }) {
                                         >
                                             {currentQuestion.options.map((option) => (
                                                 <div key={option._id} className="flex items-start space-x-3">
-                                                    <RadioGroupItem 
-                                                        value={option._id} 
+                                                    <RadioGroupItem
+                                                        value={option._id}
                                                         id={option._id}
                                                         className="mt-1"
                                                     />
-                                                    <label 
+                                                    <label
                                                         htmlFor={option._id}
                                                         className="flex-1 cursor-pointer"
                                                     >
@@ -628,9 +627,9 @@ export default function QuizTestWithAttempts({ streams }) {
                                                             </span>
                                                         </div>
                                                         {option.optionImage && (
-                                                            <img 
-                                                                src={option.optionImage} 
-                                                                alt="Option" 
+                                                            <img
+                                                                src={option.optionImage}
+                                                                alt="Option"
                                                                 className="mt-2 max-w-xs h-auto rounded"
                                                             />
                                                         )}
@@ -687,7 +686,7 @@ export default function QuizTestWithAttempts({ streams }) {
                         playsInline
                         muted
                         className="rounded-lg border-2 border-white shadow-lg object-cover"
-                        style={{ 
+                        style={{
                             width: '100px',
                             height: '75px'
                         }}

@@ -313,7 +313,7 @@ exports.sendResultMail = async (to, { score, totalQuestions, correctCount, candi
         <div class="email-container">
           <div class="header">
             <div class="logo">
-              <img src="${process.env.BackendUrl || 'http://localhost:5000'}/uploads/sparrowlogo.png" alt="SparrowSofttech Logo" />
+              <img src="${process.env.BackendUrl || 'http://localhost:5000'}/uploads/sparrowlogo.svg" alt="SparrowSofttech Logo" />
             </div>
             <h1 class="company-name">SparrowSofttech</h1>
             <p class="tagline">Innovation Through Technology</p>

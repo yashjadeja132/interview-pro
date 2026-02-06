@@ -81,7 +81,6 @@ const testGetLatestAttempt = async () => {
 };
 
 const testGetAllAttempts = async () => {
-  console.log('\n🧪 Testing: Get All Attempts');
   const result = await apiCall('GET', `/test-attempt/candidate/${TEST_CANDIDATE_ID}/position/${TEST_POSITION_ID}`);
 
   if (result.success) {
@@ -94,7 +93,6 @@ const testGetAllAttempts = async () => {
 };
 
 const testSaveProgress = async (attemptId) => {
-  console.log('\n🧪 Testing: Save Progress');
   const progressData = {
     candidateId: TEST_CANDIDATE_ID,
     positionId: TEST_POSITION_ID,

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../Api/axiosInstance";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,6 @@ import { CalendarIcon, Download, Eye, Filter, Search, Video, User, Clock, Trophy
 import axios from "axios";
 import { SidebarProvider } from "../../components/ui/sidebar";
 import { generateCandidateResultPDF, generatePDFFromHTML } from "../../utils/pdfGenerator";
-import CandidateResultCard from "../../components/CandidateResultCard";
 
 // Date formatting function with full timestamp
 const formatDate = (date) => {
@@ -28,7 +28,6 @@ const formatDate = (date) => {
   const timeStr = d.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
     hour12: true
   });
   return `${dateStr} ${timeStr}`;
@@ -41,6 +40,7 @@ const formatDateForAPI = (date) => {
 };
 
 export default function CandidateMonitoring() {
+  const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -62,11 +62,6 @@ export default function CandidateMonitoring() {
   });
   const [positions, setPositions] = useState([]);
   const [searchTimeout, setSearchTimeout] = useState(null);
-  const [selectedCandidateForDetails, setSelectedCandidateForDetails] = useState(null);
-  const [showCandidateDetails, setShowCandidateDetails] = useState(false);
-  const [candidateTestResults, setCandidateTestResults] = useState([]);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [isLoadingCandidateResults, setIsLoadingCandidateResults] = useState(false);
 
   const fetchResults = async () => {
     setLoading(true);
@@ -104,7 +99,7 @@ export default function CandidateMonitoring() {
 
       const { data } = await axiosInstance.get("/test", { params });
       setResults(data.data);
-      console.log('data.data',data.data);
+      console.log('data.data', data.data);
       setTotalPages(data.pagination.totalPages);
       setTotalResults(data.pagination.total);
     } catch (err) {
@@ -180,86 +175,7 @@ export default function CandidateMonitoring() {
     setSearchTimeout(timeout);
   };
 
-  const fetchCandidateTestResults = async (candidateId) => {
-    setIsLoadingCandidateResults(true);
-    try {
-      console.log('Fetching test results for candidate ID:', candidateId);
-      const { data } = await axiosInstance.get(`/test/${candidateId}`);
-      return data;
-    } catch (err) {
-      console.error("Failed to fetch candidate test results:", err.message);
-      console.error("Error details:", err.response?.data);
-      return [];
-    } finally {
-      setIsLoadingCandidateResults(false);
-    }
-  };
 
-  const handleViewCandidateDetails = async (candidate) => {
-    console.log('Viewing candidate details:', candidate);
-    setSelectedCandidateForDetails(candidate);
-    setShowCandidateDetails(true);
-
-    // Lock body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-
-    // Fetch detailed test results
-    const testResults = await fetchCandidateTestResults(candidate.candidateId);
-    console.log('Fetched test results:', testResults);
-
-    // Process the results to extract answers from the first test result
-    if (testResults && testResults.length > 0) {
-      const firstTestResult = testResults[0];
-      const answers = firstTestResult.answers || [];
-      console.log('Processed answers:', answers);
-      setCandidateTestResults(answers);
-    } else {
-      setCandidateTestResults([]);
-    }
-  };
-
-  const handleCloseCandidateDetails = () => {
-    setShowCandidateDetails(false);
-    setSelectedCandidateForDetails(null);
-    setCandidateTestResults([]);
-    // Restore body scroll
-    document.body.style.overflow = 'unset';
-  };
-
-  const handleDownloadCandidatePDF = async () => {
-    if (!selectedCandidateForDetails || candidateTestResults.length === 0) {
-      console.error("No candidate data or test results available for PDF generation");
-      return;
-    }
-
-    setIsGeneratingPDF(true);
-    try {
-      console.log("Generating PDF for:", selectedCandidateForDetails.candidateName);
-      console.log("Test results:", candidateTestResults);
-
-      const pdf = await generateCandidateResultPDF(selectedCandidateForDetails, candidateTestResults);
-      const filename = `${selectedCandidateForDetails.candidateName.replace(/\s+/g, '_')}_Assessment_Report.pdf`;
-
-      console.log("PDF generated successfully, saving as:", filename);
-      pdf.save(filename);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-
-      // Fallback to HTML to PDF conversion
-      try {
-        console.log("Trying fallback HTML to PDF conversion...");
-        const filename = `${selectedCandidateForDetails.candidateName.replace(/\s+/g, '_')}_Assessment_Report.pdf`;
-        const pdf = await generatePDFFromHTML('candidate-result-pdf', filename);
-        pdf.save(filename);
-        console.log("Fallback PDF generation successful");
-      } catch (fallbackError) {
-        console.error("Fallback PDF generation failed:", fallbackError);
-        alert("Failed to generate PDF. Please try again or contact support.");
-      }
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
 
   const getScoreColor = (score) => {
     if (score >= 80) return "text-green-600 bg-green-50";
@@ -336,7 +252,7 @@ export default function CandidateMonitoring() {
       </div>
 
       {/* Main Content */}
-      <div className="px-6 py-6">      
+      <div className="px-6 py-6">
 
         {/* Search and Filter Section */}
         <Card className="border-0 shadow-sm mb-6 dark:bg-slate-900">
@@ -525,10 +441,10 @@ export default function CandidateMonitoring() {
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Candidate</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Questions Asked</TableHead>
-                    <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Scheduled Time</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Score</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Time Taken</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center">Questions Asked</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center">Scheduled Time</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 ">Score</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 ">Time Taken</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -550,22 +466,15 @@ export default function CandidateMonitoring() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="font-medium text-slate-700 dark:text-white dark:border-slate-600 dark:bg-slate-800/50">
                             {r.positionName}
-                          </Badge>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="font-medium text-slate-700 dark:text-white dark:border-slate-600 dark:bg-slate-800/50">
+                        <TableCell className="text-center">
                             {r.questionsAskedToCandidate ? r.questionsAskedToCandidate : `N/A`}
-                          </Badge>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="font-medium text-slate-700 dark:text-white dark:border-slate-600 dark:bg-slate-800/50">
-                                {formatDate(r.createdAt)}
-                          </Badge>
-                        </TableCell>  
-                        <TableCell>
-                        
+                        <TableCell className="text-center">
+                            {formatDate(r.createdAt)}
+                        </TableCell>
+                        <TableCell >
                           <div className="space-y-2">
                             <div className="flex items-center space-x-2">
                               <Badge variant={getScoreBadgeVariant(r.score)} className="font-semibold">
@@ -615,7 +524,7 @@ export default function CandidateMonitoring() {
                               size="sm"
                               variant="outline"
                               title="View Details & Download PDF"
-                              onClick={() => handleViewCandidateDetails(r)}
+                              onClick={() => navigate(`/candidate-report/${r.candidateId}`)}
                               className="h-8 w-8 p-0 text-slate-600 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
                             >
                               <Eye className="h-4 w-4" />
@@ -749,80 +658,6 @@ export default function CandidateMonitoring() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Candidate Details Dialog - Custom Full Page Modal */}
-      {showCandidateDetails && (
-        <div className="fixed inset-0 w-screen h-screen bg-white dark:bg-slate-950 z-[9999] overflow-hidden" style={{ top: 0, left: 0, right: 0, bottom: 0 }}>
-          {/* Full Page Header */}
-          <div className="flex-shrink-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 px-6 py-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <Trophy className="h-7 w-7 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Candidate Assessment Report</h1>
-                  <p className="text-lg text-gray-600 dark:text-gray-400">{selectedCandidateForDetails?.candidateName}</p>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleCloseCandidateDetails}
-                className="h-12 w-12 p-0 hover:bg-red-50 hover:border-red-200 hover:text-red-600 dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-red-900/20"
-              >
-                <X className="h-6 w-6" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Content Area */}
-          {selectedCandidateForDetails && (
-            <div className="flex-1 overflow-y-auto px-6 py-6 h-[calc(100vh-80px)]">
-              {isLoadingCandidateResults ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-slate-600 dark:text-slate-400">Loading candidate results...</span>
-                  </div>
-                </div>
-              ) : candidateTestResults.length > 0 ? (
-                <CandidateResultCard
-                  candidateData={selectedCandidateForDetails}
-                  testResults={candidateTestResults}
-                  onDownloadPDF={handleDownloadCandidatePDF}
-                  onViewDetails={() => {
-                    // Scroll to top of content
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                    <FileText className="w-8 h-8 text-slate-400" />
-                  </div>
-                  <h3 className="text-lg font-medium text-slate-800 dark:text-white mb-2">No test results found</h3>
-                  <p className="text-slate-500 dark:text-slate-400 text-center max-w-sm">
-                    No detailed test results are available for this candidate.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* PDF Generation Overlay */}
-          {isGeneratingPDF && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                  <span className="text-gray-600 dark:text-gray-300">Generating PDF...</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

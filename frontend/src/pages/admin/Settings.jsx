@@ -21,7 +21,6 @@ export default function Settings() {
     const [settings, setSettings] = useState({});
     const [loading, setLoading] = useState(false);
     const [globalMessage, setGlobalMessage] = useState(null);
-
     // Update localStorage whenever activeTab changes
     useEffect(() => {
         localStorage.setItem('settingsActiveTab', activeTab);
@@ -66,9 +65,7 @@ export default function Settings() {
 
             // Actually my backend controller does: Settings.findOneAndUpdate({}, updates)
             // So I can just send the partial object!
-
             const response = await axiosInstance.put('/settings', data);
-
             if (response.data && response.data.settings) {
                 setSettings(response.data.settings);
                 setGlobalMessage({ type: 'success', text: 'Settings updated successfully!' });

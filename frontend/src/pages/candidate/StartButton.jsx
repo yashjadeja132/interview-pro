@@ -2,105 +2,84 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
-
-
-
-import { 
-  Play, 
-  Camera, 
-  Mic, 
-  Monitor, 
-  Shield, 
-  Clock, 
+import {
+  Play,
+  Camera,
+  Mic,
+  Monitor,
+  Shield,
+  Clock,
   Trophy,
   CheckCircle,
   AlertCircle,
   Sparkles
 } from "lucide-react";
-import sparrowLogo from "../../assets/sparrowlogo.png";
+import sparrowLogo from "../../assets/sparrowlogo.svg";
 export default function StartButton({ setStreams }) {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-   
-const handleStartTest = async () => {
-  setErrorMessage("");
-   
-  try {
-  const testpage = () => {
-    useEffect(() => {
-      const disabledKeyboard = (e) => {
-        if (e.key === "F12" || e.key === "F5" || e.key === "F11" || (e.ctrlKey && e.key === "r") || (e.ctrlKey && e.shiftKey && e.key === "i")) {
-          e.preventDefault();
-          console.log("Keyboard  blocked");
+
+  const handleStartTest = async () => {
+    setErrorMessage("");
+    try {
+      const testpage = () => {
+        useEffect(() => {
+          const disabledKeyboard = (e) => {
+            if (e.key === "F12" || e.key === "F5" || e.key === "F11" || (e.ctrlKey && e.key === "r") || (e.ctrlKey && e.shiftKey && e.key === "i")) {
+              e.preventDefault();
+              console.log("Keyboard  blocked");
+            }
+          };
+          window.addEventListener("keydown", disabledKeyboard);
+          return () => window.removeEventListener("keydown", disabledKeyboard);
+        }, []);
+      };
+      const enter = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => { });
         }
       };
-      window.addEventListener("keydown", disabledKeyboard);
-      return () => window.removeEventListener("keydown", disabledKeyboard);
-    }, []);
-  };
-
-
-
-  const enter = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    }
-  };
-
-  // initial enter
-  enter();
-
-  // store handlers globally (clean remove ke liye)
-  window.__fsEnter = enter;
-
-  // agar user ESC se bahar nikle → wapas fullscreen
-  window.__fsChange = () => {
-    if (!document.fullscreenElement) {
+      // initial enter
       enter();
+      // store handlers globally (clean remove ke liye)
+      window.__fsEnter = enter;
+
+      // agar user ESC se bahar nikle → wapas fullscreen
+      window.__fsChange = () => {
+        if (!document.fullscreenElement) {
+          enter();
+        }
+      };
+      document.addEventListener("fullscreenchange", window.__fsChange);
+      setIsLoading(true);
+      // request screen + camera
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setStreams({ screenStream, camStream });
+      // Disable keyboard after starting
+      // keyboardAllowed.current = false;
+      // Navigate and fullscreen
+      navigate("/candidate/Quiztest");
+      setTimeout(() => {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => { });
+        }
+      }, 300);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  document.addEventListener("fullscreenchange", window.__fsChange);
-  // /////////////////////////////////
-
-    setIsLoading(true);
-
-    // request screen + camera
-    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-    const camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    setStreams({ screenStream, camStream });
-
-    // Disable keyboard after starting
-    // keyboardAllowed.current = false;
-
-    // Navigate and fullscreen
-    navigate("/candidate/Quiztest");
-    setTimeout(() => {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      }
-    }, 300);
-
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header with Logo */}
       <div className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-center">
-          <img 
-            src={sparrowLogo} 
-            alt="Sparrow Softtech Innovation Unlimited" 
+          <img
+            src={sparrowLogo}
+            alt="Sparrow Softtech Innovation Unlimited"
             className="h-16 w-auto"
             style={{ imageRendering: 'high-quality' }}
           />
@@ -141,7 +120,7 @@ const handleStartTest = async () => {
                       <p className="text-sm text-slate-600">Approximately 30-45 minutes</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                     <Shield className="w-5 h-5 text-green-600" />
                     <div>
@@ -149,7 +128,7 @@ const handleStartTest = async () => {
                       <p className="text-sm text-slate-600">Your session is monitored for integrity</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
                     <Trophy className="w-5 h-5 text-purple-600" />
                     <div>
@@ -192,10 +171,10 @@ const handleStartTest = async () => {
                   <p className="text-blue-100 mb-6">
                     Click the button below to start your assessment. Make sure you're in a quiet environment with good internet connection.
                   </p>
-                  
-                  <Button 
+
+                  <Button
                     onClick={handleStartTest}
-                   
+
                     disabled={isLoading}
                     className="w-full bg-white text-blue-600 hover:bg-blue-50 text-lg font-semibold py-6 h-auto"
                     size="lg"

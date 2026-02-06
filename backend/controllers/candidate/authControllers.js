@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const Candidate = require('../../models/Candidate');
 const testResult = require('../../models/Test');
-const RetestRequest = require('../../models/RetestRequest');
 module.exports.registerCandidate = async (req, res) => {
     try {
         const { email } = req.tokenData;
@@ -45,6 +44,11 @@ module.exports.loginCandidate = async (req, res) => {
         const { email, password } = req.body;
         
         const candidate = await Candidate.findOne({ email }).populate('position', '_id name')
+        // if (candidate.email === email) {
+        //     return res.status(403).json({
+        //         message: "You are not authorized to login.",
+        //     });
+        // }
         if (!candidate) {
             return res.status(404).json({ message: 'User not found' })
         }
@@ -55,9 +59,6 @@ module.exports.loginCandidate = async (req, res) => {
         const now = new Date();
         if (candidate.schedule) {
             const scheduleTime = new Date(candidate.schedule);
-            
-            // Get Admin Configured Login Time
-            // Get Admin Configured Login Time
             
              // Get Admin Configured Login Time
             const LoginTime = require('../../models/logintime');

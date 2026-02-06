@@ -3,21 +3,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Loader2,
-  Clock,
-  CheckCircle,
-  Circle,
-  AlertCircle,
-  Trophy,
-  Target,
-  Award,
-  XCircle,
-} from "lucide-react";
+import { Loader2, Clock, CheckCircle, AlertCircle, Trophy, Target, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import sparrowLogo from "../../assets/sparrowlogo.png";
+import sparrowLogo from "../../assets/sparrowlogo.svg";
 
 export default function QuizTest({ streams }) {
   const [questions, setQuestions] = useState([]);
@@ -26,14 +16,18 @@ export default function QuizTest({ streams }) {
   const [submitting, setSubmitting] = useState(false);
   const [candidateData, setCandidateData] = useState(null);
   const candidateDataRef = useRef(null); // Ref to access latest data in timer closure
-
   const storedData = JSON.parse(sessionStorage.getItem("candidateData"));
-  // Use timeforTest from stored data or default to 60 minutes
   const initialTime = storedData?.timeforTest ? storedData.timeforTest * 60 : 60 * 60;
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [visitedQuestions, setVisitedQuestions] = useState([]);
   const navigate = useNavigate();
+useEffect(() => {
+  const testSubmitted = sessionStorage.getItem("testSubmitted");
+  if (testSubmitted) {
+    navigate("/thank-you", { replace: true }); // or TimesUpPage if you prefer
+  }
+}, [navigate]);
 
   useEffect(() => {
     if (candidateData) {
@@ -57,7 +51,6 @@ export default function QuizTest({ streams }) {
   useEffect(() => {
     timeLeftRef.current = timeLeft;
   }, [timeLeft]);
-
 
   const stopAllStreams = () => {
     if (streams) {
@@ -88,7 +81,6 @@ export default function QuizTest({ streams }) {
       handleSubmit(true);
       return;
     }
-
     const timerId = setInterval(() => {
       setTimeLeft((prev) => {
         const newValue = prev - 1;
@@ -132,16 +124,13 @@ export default function QuizTest({ streams }) {
 
     function drawFrame() {
       ctx.drawImage(screenVideo, 0, 0, canvas.width, canvas.height);
-
       // Draw camera overlay - reduced size to avoid blocking content
       const camWidth = canvas.width / 4; // Reduced from /2 to /6 (approximately 213px for 1280px canvas)
       const camHeight = (camWidth * 9) / 16;
       const camX = canvas.width - camWidth - 20;
       const camY = canvas.height - camHeight - 20;
-
       ctx.fillStyle = "rgba(0,0,0,0.25)";
       ctx.fillRect(camX - 5, camY - 5, camWidth + 10, camHeight + 10);
-
       const radius = 20;
       ctx.save();
       ctx.beginPath();
@@ -183,12 +172,10 @@ export default function QuizTest({ streams }) {
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
       ctx.restore();
-
       requestAnimationFrame(drawFrame);
     }
 
     drawFrame();
-
     const combinedStream = canvas.captureStream(30);
     camStream
       .getAudioTracks()
@@ -300,68 +287,51 @@ export default function QuizTest({ streams }) {
     };
   }, []);
 
-
   const handleSubmit = async (auto = false) => {
-    // 🔴 KEYBOARD OFF (sabse pehle)
-    // keyboardAllowed.current = true;
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => { });
     }
-
+      console.log(" Auto1", auto);
     if (window.__fsChange) {
       document.removeEventListener("fullscreenchange", window.__fsChange);
       window.__fsChange = null;
     }
-
     window.__fsEnter = null;
-
-    // ============================
-
     if (document.fullscreenElement) {
       await document.exitFullscreen().catch(() => { });
     }
-
-    // Prevent duplicate submissions
     if (submitting) {
       console.log("Already submitting...");
       return;
     }
-
     const dataToUse = candidateData || candidateDataRef.current;
-
-    // Use Refs if in auto-mode (stale closure protection)
-    // If manual (click), state is fine, but refs are always safer/latest in this component structure
     const currentQuestions = questionsRef.current.length > 0 ? questionsRef.current : questions;
     const currentAnswers = Object.keys(answersRef.current).length > 0 ? answersRef.current : answers;
-
-    // If not auto and not all answered, ask for confirmation
-    if (!auto && Object.keys(currentAnswers).length !== currentQuestions.length) {
-      const proceed = window.confirm(
-        "You have unanswered questions. Do you want to submit anyway?"
-      );
-      if (!proceed) return;
-    }
-
     try {
-      setSubmitting(true); // START LOADING UI
-
-
+      setSubmitting(true); 
+      console.log("Submitting test for candidate:",candidateData);
       if (!dataToUse?.id || !dataToUse?.positionId) {
         console.error("Missing candidate data:", dataToUse);
         alert("Candidate data is missing. Please login again.");
         return;
       }
-
+      console.log('auto3',auto)
       const finalAnswers = answersRef.current; // Use Ref for latest answers
       const finalQuestions = questionsRef.current; // Use Ref for latest questions
       const finalTimeLeft = timeLeftRef.current;
+      // const secondforTest = candidateData.timeforTest*60-finalTimeLeft;
+      const totalTimeInSeconds = dataToUse.timeforTest * 60;
+    const secondsTaken = totalTimeInSeconds - finalTimeLeft;
+    const minutes = Math.floor(secondsTaken / 60);
+    const seconds = secondsTaken % 60;
+    const timeTakenFormatted = `${minutes} min ${seconds} sec`;
 
+    console.log("Final time left (seconds):", finalTimeLeft);
+    console.log("Time taken (seconds):", secondsTaken);
+    console.log("Time taken formatted:", timeTakenFormatted);
       console.log(
-        auto ? "Auto-submitting after timer ended" : "Submitting manually"
+        auto ? "1st  Auto-submitting after timer ended" : "Submitting manually"
       );
-      console.log("Candidate data:", dataToUse);
-      console.log("Answers:", finalAnswers);
-
       const videoBlob = await stopRecordingAndDownload();
       const formdata = new FormData();
       const detailedAnswers = finalQuestions.map((q, index) => {
@@ -379,8 +349,8 @@ export default function QuizTest({ streams }) {
       formdata.append("candidateId", dataToUse.id);
       formdata.append("positionId", dataToUse.positionId);
       formdata.append("answers", JSON.stringify(detailedAnswers));
-      formdata.append("timeTakenInSeconds", 60 * 60 - finalTimeLeft);
-      formdata.append("timeTakenFormatted", formatTime(60 * 60 - finalTimeLeft));
+      formdata.append("timeTakenInSeconds", secondsTaken);
+      formdata.append("timeTakenFormatted", timeTakenFormatted);
       const response = await axios.post(
         `http://localhost:5000/api/test`,
         formdata,
@@ -391,7 +361,16 @@ export default function QuizTest({ streams }) {
       console.log("Submission response:", response);
       if (response.status === 200) {
         stopAllStreams();
-        navigate("/thank-you");
+        sessionStorage.setItem("testSubmitted", "true");
+        sessionStorage.removeItem ("candidateData");
+        // navigate("/thank-you");
+        if (auto) {
+          console.log("2nd Auto-submitting after timer ended");
+          navigate("/TimesUpPage",{replace:true});
+        } else {
+          console.log("2nd Submitting manually");
+          navigate("/thank-you",{replace:true});
+        }
       }
     } catch (err) {
       console.error("Error submitting test:", err);
@@ -436,7 +415,6 @@ export default function QuizTest({ streams }) {
           }),
         },
       };
-      console.log(progressPayload);
       await axios.post(
         "http://localhost:5000/api/test-progress/save",
         progressPayload
@@ -468,12 +446,6 @@ export default function QuizTest({ streams }) {
         event.stopImmediatePropagation();
         return false;
       }
-
-      // Block ALL other keys as well
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      return false;
     };
 
     // Use capture phase to catch events early, before they reach other handlers
@@ -686,26 +658,11 @@ export default function QuizTest({ streams }) {
     // Set new current question
     setCurrentQuestionIndex(index);
   };
+    
 
+// console.log('submitting ',submitting)
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
-
-      {/* 🟢 FULL SCREEN LOADING OVERLAY FOR SUBMISSION */}
-      {submitting && (
-        <div className="fixed inset-0 z-[9999] bg-white/95 backdrop-blur-md flex flex-col items-center justify-center">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-xl animate-pulse">
-            <Loader2 className="w-12 h-12 text-white animate-spin" />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Time's Up!</h2>
-          <p className="text-lg text-gray-600 max-w-md text-center">
-            We are wrapping up your test and saving your answers. This may take a few seconds...
-          </p>
-          <div className="mt-8 w-64">
-            <Progress value={100} className="h-2 animate-pulse" />
-          </div>
-        </div>
-      )}
-
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
@@ -962,7 +919,7 @@ export default function QuizTest({ streams }) {
 
                 {currentQuestionIndex === questions.length - 1 ? (
                   <Button
-                    onClick={handleSubmit}
+                    onClick={() => handleSubmit(false)}
                     disabled={submitting}
                     className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                   >

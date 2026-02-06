@@ -161,7 +161,7 @@ const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
             <Card className="border-0 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-green-600" />
+                  <Target className="w-5 h-5 text-orange-600" />
                   Position Distribution
                 </CardTitle>
                 <CardDescription>
@@ -172,12 +172,12 @@ const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
                 <div className="space-y-3">
                   {Object.keys(dashboardData.vacanciesDistribution).length > 0 ? (
                     Object.entries(dashboardData.vacanciesDistribution).map(([position, count]) => (
-                      <div key={position} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                      <div key={position} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <div className="w-3 h-3 rounded-full bg-orange-500"></div>
                           <span className="text-sm font-medium text-slate-700">{position}</span>
                         </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        <Badge variant="outline" className="bg-orange-100 text-orange-700">
                           {count} Vacancies
                         </Badge>
                       </div>
@@ -215,11 +215,11 @@ const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
               </CardContent>
             </Card>
 
-            {/* Candidate Applied */}
+            {/* Candidate Applied*/}
             <Card className="border-0 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-green-600" />
+                  <Target className="w-5 h-5 text-blue-600" />
                   Candidate Applied
                 </CardTitle>
                 <CardDescription>
@@ -230,12 +230,12 @@ const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
                 <div className="space-y-3">
                   {Object.keys(dashboardData.appliedCandidates).length > 0 ? (
                     Object.entries(dashboardData.appliedCandidates).map(([position, count]) => (
-                      <div key={position} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                      <div key={position} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                           <span className="text-sm font-medium text-slate-700">{position}</span>
                         </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                           {count} candidates
                         </Badge>
                       </div>
@@ -254,45 +254,6 @@ const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
                 </div>
               </CardContent>
             </Card> 
-            {/* Candidate Applied */}
-            {/* <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-green-600" />
-                  Candidate Applied
-                </CardTitle>
-                <CardDescription>
-                  Candidates applied for each position
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {Object.keys(dashboardData.positionDistribution).length > 0 ? (
-                    Object.entries(dashboardData.positionDistribution).map(([position, count]) => (
-                      <div key={position} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                          <span className="text-sm font-medium text-slate-700">{position}</span>
-                        </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
-                          {count} candidates
-                        </Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Target className="w-8 h-8 text-slate-400" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Data Available</h3>
-                      <p className="text-gray-600">
-                        {loading ? 'Loading position distribution...' : 'No position distribution data found.'}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card> */}
           </div>
         </div>
 

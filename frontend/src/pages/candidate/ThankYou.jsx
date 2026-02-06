@@ -1,31 +1,26 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import Lottie from "lottie-react";
 import Success from "../../assets/Success.json";
 import { 
   CheckCircle, 
   Clock, 
   Mail, 
-  Home, 
-  ArrowRight,
   Star,
   Award,
   Users
 } from "lucide-react";
+import { useEffect } from "react";
 
 const ThankYou = () => {
-  const navigate = useNavigate();
-
-  const handleGoHome = () => {
-    navigate("/");
+  useEffect(() => {
+  const disableBack = () => {
+    window.history.pushState(null, "", window.location.href);
   };
-
-  const handleViewResults = () => {
-    // Navigate to results page if available
-    navigate("/");
-  };
+  window.history.pushState(null, "", window.location.href);
+  window.addEventListener("popstate", disableBack);
+  return () => window.removeEventListener("popstate", disableBack);
+}, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -125,21 +120,7 @@ const ThankYou = () => {
               </div>
             </div>
 
-            {/* Action Buttons
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-              <Button 
-                onClick={handleGoHome}
-                size="lg"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                <Home className="w-5 h-5 mr-2" />
-                Return to Home
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-              
-            </div> */}
-
-            {/* Additional Information */}
+       
             <div className="text-center pt-6 border-t border-gray-100">
               <p className="text-sm text-gray-500 mb-2">
                 Need help or have questions?

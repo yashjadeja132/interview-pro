@@ -4,7 +4,7 @@ exports.saveProgress = async (req, res) => {
   try {
     const { candidateId, positionId, progress } = req.body;
     // console.log(' SAVE PROGRESS - Updated progress');
-console.log(candidateId, positionId)
+// console.log(candidateId, positionId)
     if (!candidateId || !positionId  || !progress) {
       return res.status(400).json({ message: "Missing required fields" });
     }

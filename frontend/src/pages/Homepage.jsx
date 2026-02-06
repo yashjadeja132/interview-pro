@@ -18,7 +18,7 @@ import {
   Star,
   CheckCircle2,
 } from "lucide-react";
-import sparrowLogo from "../assets/sparrowlogo.png";
+import sparrowLogo from "../assets/sparrowlogo.svg";
 
 export function Homepage() {
   const navigate = useNavigate();
@@ -112,8 +112,8 @@ export function Homepage() {
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
               <Button
-             
-              
+
+
                 className="bg-slate-900 hover:bg-slate-800 text-white text-sm md:text-base px-4 md:px-6"
                 onClick={() => navigate("/admin/login")}
               >
@@ -149,10 +149,10 @@ export function Homepage() {
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4"></div>
           </div>
         </div>
-    </section>
+      </section>
 
       {/* Stats Section */}
-     <section className="bg-slate-50 px-4 sm:px-6 lg:px-8 pt-12 md:pt-16">
+      <section className="bg-slate-50 px-4 sm:px-6 lg:px-8 pt-12 md:pt-16">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, index) => (
@@ -276,7 +276,7 @@ export function Homepage() {
             </p>
           </div>
 
-       
+
           {/* Support */}
           <div>
             <h4 className="text-white font-semibold mb-4">Support</h4>

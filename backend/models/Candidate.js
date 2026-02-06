@@ -6,6 +6,8 @@ const CandidateSchema = new mongoose.Schema({
   password :{type:String},
   phone: { type: String},
   experience: { type: String, required: true },
+  isNagativeMarking: { type: Boolean, default: false },
+  negativeMarkingValue: { type: Number },
    schedule: { type: Date },
   technicalQuestions: { type: Number }, // Number of technical questions
   logicalQuestions: { type: Number }, // Number of logical question
