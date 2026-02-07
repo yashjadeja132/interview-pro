@@ -61,7 +61,7 @@ exports.getCandidates = async (req, res) => {
     // Get candidates with pagination
     let candidates = await Candidate.find(query, '-password -createdAt -updatedAt')
       .sort({ createdAt: -1 })
-      .populate('position', 'name -_id')
+      .populate('position', 'name')
       .skip(skip)
       .limit(limit);
     // Get total count for pagination
@@ -79,6 +79,8 @@ exports.getCandidates = async (req, res) => {
       schedule: c.schedule,
       timeforTest: c.timeforTest,
       questionsAskedToCandidate: c.questionsAskedToCandidate, // Include questionsAskedToCandidate
+      technicalQuestions: c.technicalQuestions,
+      logicalQuestions: c.logicalQuestions,
       isSubmitted: c.isSubmitted || 0 // Include isSubmitted field
     }));
 
@@ -416,7 +418,6 @@ exports.createCandidate=async(req,res)=>{
               name, email, password: hashedPassword,phone ,position, experience, schedule, questionsAskedToCandidate,
               technicalQuestions, logicalQuestions ,timeforTest, isNagativeMarking, negativeMarkingValue
           })
-          console.log('candidate is ',candidate)
       const token = jwt.sign(
         { id: candidate._id, role: "Candidate" ,schedule:candidate.schedule},
         process.env.JWT_SECRET,

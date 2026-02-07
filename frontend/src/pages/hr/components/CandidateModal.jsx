@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit2, AlertCircle } from "lucide-react";
-import {  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {  Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import api from '../../../Api/axiosInstance';
 
-export default function CandidateModal({isOpen,onClose,initialData,positions,onSuccess}) {
+export default function CandidateModal({ isOpen, onClose, initialData, positions, onSuccess }) {
     const [form, setForm] = useState({});
     const [fieldErrors, setFieldErrors] = useState({});
     const [generalError, setGeneralError] = useState("");
@@ -16,12 +16,15 @@ export default function CandidateModal({isOpen,onClose,initialData,positions,onS
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                setForm({
-                    ...initialData,
-                    timeDurationForTest: initialData.timeforTest || initialData.timeDurationForTest
-                });
-                // Handle position question count
+                // Handle position - extract _id if it's an object
                 const positionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
+                const formData = {
+                    ...initialData,
+                    position: positionId, // Use the extracted position ID
+                    timeDurationForTest: initialData.timeforTest || initialData.timeDurationForTest
+                };
+                setForm(formData);
+                // Handle position question count
                 const pos = positions.find(p => p._id === positionId);
                 setSelectedPositionQuestionCount(pos?.questionCount || 0);
             } else {
@@ -32,6 +35,10 @@ export default function CandidateModal({isOpen,onClose,initialData,positions,onS
             setGeneralError("");
         }
     }, [isOpen, initialData, positions]);
+
+    // Debug: Log form state whenever it changes
+    useEffect(() => {
+    }, [form]);
 
     const validateField = (name, value) => {
         let message = "";
@@ -106,7 +113,6 @@ export default function CandidateModal({isOpen,onClose,initialData,positions,onS
 
         setIsSubmitting(true);
         setGeneralError("");
-
         try {
             if (initialData?._id) {
                 await api.put(`/hr/${initialData._id}`, form);
@@ -284,7 +290,7 @@ export default function CandidateModal({isOpen,onClose,initialData,positions,onS
                                 <Input
                                     name="technicalQuestions"
                                     type="number"
-                                    value={form.technicalQuestions || ""}
+                                    value={form.technicalQuestions ?? ""}
                                     onChange={handleChange}
                                     className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                 />
@@ -294,7 +300,7 @@ export default function CandidateModal({isOpen,onClose,initialData,positions,onS
                                 <Input
                                     name="logicalQuestions"
                                     type="number"
-                                    value={form.logicalQuestions || ""}
+                                    value={form.logicalQuestions ?? ""}
                                     onChange={handleChange}
                                     className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                 />

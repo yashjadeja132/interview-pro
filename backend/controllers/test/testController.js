@@ -94,6 +94,10 @@ exports.submitTest = async (req, res) => {
       marksObtained: totalMarks, // Save total marks in marksObtained field
       timeTakenInSeconds: timeTakenInSeconds || 0,
       timeTakenFormatted: timeTakenFormatted || "",
+      correctCount,
+      incorrectCount,
+      totalMarks,
+      score,
       attemptNumber: nextAttempt,
       isSubmitted: 1
     });

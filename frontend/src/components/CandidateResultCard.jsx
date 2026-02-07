@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { 
-  User, 
-  Mail, 
-  Calendar, 
-  Clock, 
-  Trophy, 
-  CheckCircle, 
-  XCircle, 
+import {
+  User,
+  Mail,
+  Calendar,
+  Clock,
+  Trophy,
+  CheckCircle,
+  XCircle,
   Download,
   Eye,
   FileText
@@ -18,17 +18,17 @@ import {
 
 const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onViewDetails }) => {
   console.log('CandidateResultCard received data:', { candidateData, testResults });
-  
-  // Debug image data
-  testResults.forEach((result, index) => {
-    console.log(`Question ${index + 1} image data:`, {
-      questionImage: result.questionImage,
-      selectedOptionImage: result.selectedOptionImage,
-      correctOptionImage: result.correctOptionImage
-    });
 
-  });
-  
+  // Debug image data
+  // testResults.forEach((result, index) => {
+  //   console.log(`Question ${index + 1} image data:`, {
+  //     questionImage: result.questionImage,
+  //     selectedOptionImage: result.selectedOptionImage,
+  //     correctOptionImage: result.correctOptionImage
+  //   });
+
+  // });
+
   const getScoreColor = (score) => {
     if (score >= 80) return 'text-green-600 bg-green-50 border-green-200';
     if (score >= 60) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
@@ -66,7 +66,7 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
         <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
           <CardTitle className="flex items-center gap-2 text-lg">
             <User className="w-5 h-5 dark:text-black" />
-           <span className="dark:text-black">Candidate Information</span>
+            <span className="dark:text-black">Candidate Information</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -114,7 +114,7 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
         <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Trophy className="w-5 h-5 dark:text-black" />
-           <span className="dark:text-black">Test Results Summary</span>
+            <span className="dark:text-black">Test Results Summary</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -141,18 +141,18 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
               <p className="text-sm text-gray-600">Time Taken</p>
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-700 dark:text-white">Performance Progress</span>
               <span className="text-sm text-gray-600 dark:text-white">{Math.round(candidateData.score)}%</span>
             </div>
-            <Progress 
-              value={candidateData.score} 
+            <Progress
+              value={candidateData.score}
               className="h-3"
               style={{
-                backgroundColor: candidateData.score >= 80 ? '#dcfce7' : 
-                                candidateData.score >= 60 ? '#fef3c7' : '#fee2e2'
+                backgroundColor: candidateData.score >= 80 ? '#dcfce7' :
+                  candidateData.score >= 60 ? '#fef3c7' : '#fee2e2'
               }}
             />
           </div>
@@ -170,18 +170,16 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
         <CardContent className="p-2">
           <div className="space-y-6">
             {testResults.map((result, index) => (
-              <div 
-                key={index} 
-                className={`p-6 rounded-xl border-2 shadow-sm ${
-                  result.isCorrect 
-                    ? 'bg-green-50 border-green-200' 
+              <div
+                key={index}
+                className={`p-6 rounded-xl border-2 shadow-sm ${result.isCorrect
+                    ? 'bg-green-50 border-green-200'
                     : 'bg-red-50 border-red-200'
-                }`}
+                  }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                    result.isCorrect ? 'bg-green-100' : 'bg-red-100'
-                  }`}>
+                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${result.isCorrect ? 'bg-green-100' : 'bg-red-100'
+                    }`}>
                     {result.isCorrect ? (
                       <CheckCircle className="w-5 h-5 text-green-600" />
                     ) : (
@@ -196,15 +194,15 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                       </Badge>
                     </div>
                     <p className="font-semibold text-gray-900 mb-4 text-lg leading-relaxed">{result.question}</p>
-                    
+
                     {/* Question Image */}
                     {result.questionImage && result.questionImage !== 'null' && result.questionImage.trim() !== '' && (
                       <div className="mb-6">
                         <p className="text-lg font-bold text-gray-800 mb-4">Question Image:</p>
                         <div className="border-2 border-gray-300 rounded-xl p-6 bg-gray-50 shadow-lg">
-                          <img 
-                            src={result.questionImage.startsWith('http') ? result.questionImage : `http://localhost:5000/${result.questionImage}`} 
-                            alt="Question Image" 
+                          <img
+                            src={result.questionImage.startsWith('http') ? result.questionImage : `http://localhost:5000/${result.questionImage}`}
+                            alt="Question Image"
                             className="max-w-full h-auto max-h-96 mx-auto rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
                             onError={(e) => {
                               console.error('Question image failed to load:', result.questionImage);
@@ -219,21 +217,20 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                       <div>
                         <p className="text-lg font-bold text-gray-800 mb-3">Your Answer:</p>
-                        <div className={`p-4 rounded-xl font-medium ${
-                          result.isCorrect ? 'bg-green-100 text-green-800 border-2 border-green-200' : 'bg-red-100 text-red-800 border-2 border-red-200'
-                        }`}>
+                        <div className={`p-4 rounded-xl font-medium ${result.isCorrect ? 'bg-green-100 text-green-800 border-2 border-green-200' : 'bg-red-100 text-red-800 border-2 border-red-200'
+                          }`}>
                           <p className="mb-2">{result.selectedOptionText || 'Not answered'}</p>
                           {result.selectedOptionImage && result.selectedOptionImage !== 'null' && result.selectedOptionImage.trim() !== '' && (
                             <div className="mt-4">
                               <p className="text-sm font-semibold text-gray-700 mb-2">Selected Answer Image:</p>
                               <div className="border-2 border-gray-200 rounded-lg p-3 bg-white">
-                                <img 
-                                  src={result.selectedOptionImage.startsWith('http') ? result.selectedOptionImage : `http://localhost:5000/${result.selectedOptionImage}`} 
-                                  alt="Selected Answer Image" 
+                                <img
+                                  src={result.selectedOptionImage.startsWith('http') ? result.selectedOptionImage : `http://localhost:5000/${result.selectedOptionImage}`}
+                                  alt="Selected Answer Image"
                                   className="max-w-full h-auto max-h-48 mx-auto rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
                                   onError={(e) => {
                                     console.error('Selected answer image failed to load:', result.selectedOptionImage);
@@ -254,9 +251,9 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                             <div className="mt-4">
                               <p className="text-sm font-semibold text-gray-700 mb-2">Correct Answer Image:</p>
                               <div className="border-2 border-gray-200 rounded-lg p-3 bg-white">
-                                <img 
-                                  src={result.correctOptionImage.startsWith('http') ? result.correctOptionImage : `http://localhost:5000/${result.correctOptionImage}`} 
-                                  alt="Correct Answer Image" 
+                                <img
+                                  src={result.correctOptionImage.startsWith('http') ? result.correctOptionImage : `http://localhost:5000/${result.correctOptionImage}`}
+                                  alt="Correct Answer Image"
                                   className="max-w-full h-auto max-h-48 mx-auto rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
                                   onError={(e) => {
                                     console.error('Correct answer image failed to load:', result.correctOptionImage);
@@ -280,14 +277,14 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-center gap-6 pt-8 border-t-2 border-gray-200">
-        <Button 
+        <Button
           onClick={onDownloadPDF}
           className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-12 py-4 text-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
         >
           <Download className="w-7 h-7 mr-4" />
           Download PDF Report
         </Button>
-        <Button 
+        <Button
           variant="outline"
           onClick={onViewDetails}
           className="px-12 py-4 text-xl font-bold border-2 hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"

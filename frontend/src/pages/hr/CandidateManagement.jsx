@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CandidateTable from "./components/CandidateTable";
 import CandidateModal from "./components/CandidateModal";
-
+import api from "../../Api/axiosInstance";
 export default function CandidateManagement() {
   const [positions, setPositions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,7 +14,7 @@ export default function CandidateManagement() {
   useEffect(() => {
     const fetchPositions = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/position");
+        const res = await api.get("/position");
         setPositions(res.data.data || []);
       } catch (err) {
         console.error("Failed to load positions", err);

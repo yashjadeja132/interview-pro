@@ -32,6 +32,10 @@ const TestResultSchema = new mongoose.Schema({
     type: String, // e.g., "12:45"
     required: false
   },
+  correctCount: { type: Number, default: 0 },
+  incorrectCount: { type: Number, default: 0 },
+  totalMarks: { type: Number, default: 0 },
+  score: { type: Number, default: 0 },
   attemptNumber: { type: Number, default: 1 },
   isSubmitted: { type: Number, default: 0 }, // 0 = not submitted, 1 = submitted
   createdAt: { type: Date, default: Date.now }
