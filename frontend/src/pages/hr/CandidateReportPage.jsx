@@ -34,9 +34,11 @@ export default function CandidateReportPage() {
                         positionName: result.positionId?.name || "Unknown Position",
                         score: result.score,
                         timeTakenFormatted: result.timeTakenFormatted,
-                        createdAt: result.createdAt
+                        createdAt: result.createdAt,
+                        isNagativeMarking: result.candidateId?.isNagativeMarking,
+                        negativeMarkingValue: result.candidateId?.negativeMarkingValue
                     };
-
+                    console.log('candidateInfo',candidateInfo)
                     setCandidateData(candidateInfo);
                     setTestResults(result.answers || []);
                 } else {

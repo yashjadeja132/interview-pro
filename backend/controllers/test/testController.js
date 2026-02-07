@@ -269,7 +269,7 @@ exports.getResultByCandidate = async (req, res) => {
   try {
     const results = await TestResult.find({ candidateId: req.params.candidateId }).
     sort({ attemptNumber:1 })
-      .populate("candidateId", "name email ")
+      .populate("candidateId", "name email isNagativeMarking negativeMarkingValue")
       .populate("positionId", "name -_id")
       .sort({ attemptNumber:1 });
     res.status(200).json(results);

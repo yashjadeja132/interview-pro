@@ -94,12 +94,8 @@ export default function CandidateMonitoring() {
       if (filters.endDate) {
         params.endDate = formatDateForAPI(filters.endDate);
       }
-
-      console.log('Fetching with params:', params); // Debug log
-
       const { data } = await axiosInstance.get("/test", { params });
       setResults(data.data);
-      console.log('data.data', data.data);
       setTotalPages(data.pagination.totalPages);
       setTotalResults(data.pagination.total);
     } catch (err) {

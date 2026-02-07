@@ -13,21 +13,12 @@ import {
   XCircle,
   Download,
   Eye,
-  FileText
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 
 const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onViewDetails }) => {
   console.log('CandidateResultCard received data:', { candidateData, testResults });
-
-  // Debug image data
-  // testResults.forEach((result, index) => {
-  //   console.log(`Question ${index + 1} image data:`, {
-  //     questionImage: result.questionImage,
-  //     selectedOptionImage: result.selectedOptionImage,
-  //     correctOptionImage: result.correctOptionImage
-  //   });
-
-  // });
 
   const getScoreColor = (score) => {
     if (score >= 80) return 'text-green-600 bg-green-50 border-green-200';
@@ -118,28 +109,46 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className={`grid grid-cols-2 ${candidateData.isNagativeMarking ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-6 mb-6`}>
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-3">
+                <Trophy className="w-8 h-8 text-indigo-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{correctAnswers}/{totalQuestions}</h3>
+              <p className="text-sm text-gray-600">Marks</p>
+            </div>
             <div className="text-center">
               <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-3 ${getScoreColor(candidateData.score)}`}>
                 <span className="text-2xl font-bold">{Math.round(candidateData.score)}%</span>
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Overall Score</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Score</h3>
               <p className="text-sm text-gray-600">{getScoreStatus(candidateData.score)}</p>
             </div>
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
-                <CheckCircle className="w-8 h-8 text-blue-600" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-3">
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">{correctAnswers}</h3>
-              <p className="text-sm text-gray-600">Correct Answers</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{correctAnswers}</h3>
+              <p className="text-sm text-gray-600">Correct</p>
             </div>
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-3">
-                <Clock className="w-8 h-8 text-purple-600" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-3">
+                <XCircle className="w-8 h-8 text-red-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">{candidateData.timeTakenFormatted || 'N/A'}</h3>
-              <p className="text-sm text-gray-600">Time Taken</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{totalQuestions - correctAnswers}</h3>
+              <p className="text-sm text-gray-600">Incorrect</p>
             </div>
+            {candidateData.isNagativeMarking && (
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-3">
+                  <AlertCircle className="w-8 h-8 text-orange-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 dark:text-white text-xl">
+                  {candidateData.negativeMarkingValue}
+                </h3>
+                <p className="text-sm text-gray-600">Negative Marking</p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -173,8 +182,8 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
               <div
                 key={index}
                 className={`p-6 rounded-xl border-2 shadow-sm ${result.isCorrect
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-red-50 border-red-200'
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-red-50 border-red-200'
                   }`}
               >
                 <div className="flex items-start gap-4">
