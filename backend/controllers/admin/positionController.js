@@ -30,8 +30,12 @@ exports.addPosition = async (req, res) => {
 
 exports.getPositions = async (req, res) => {
   try {
-    // Extract query parameters for filtering
+    // Extract query parameters for filtering and pagination
     const { vacancy, jobType, salary, shift, search, experience } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     // Build filter object
     let filter = {};
     
@@ -94,8 +98,16 @@ if (experience && experience !== 'all') {
     filter.experience = { $regex: experience, $options: "i" };
   }
 }
-    // Fetch positions with filters
-    let positions = await Position.find(filter).sort({ createdAt: -1 }).select('-updatedAt -__v');
+    // Get total count for pagination
+    const total = await Position.countDocuments(filter);
+
+    // Fetch positions with filters and pagination
+    let positions = await Position.find(filter)
+      .sort({ createdAt: -1 })
+      .select('-updatedAt -__v')
+      .skip(skip)
+      .limit(limit);
+
     // Get question counts for each position
     const positionsWithCounts = await Promise.all(
       positions.map(async (position) => {
@@ -106,7 +118,21 @@ if (experience && experience !== 'all') {
         };
       })
     );
-    res.json({ success: true, data: positionsWithCounts, total: positionsWithCounts.length });
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({ 
+      success: true, 
+      data: positionsWithCounts, 
+      pagination: {
+        currentPage: page,
+        totalPages,
+        total,
+        limit,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

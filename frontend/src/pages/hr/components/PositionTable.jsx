@@ -7,6 +7,8 @@ import {
     Trash2,
     Edit3,
     AlertTriangle,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react";
 import {
     Table,
@@ -19,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
@@ -41,6 +44,11 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [showFilters, setShowFilters] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalPositions, setTotalPositions] = useState(0);
+
     const [filters, setFilters] = useState({
         vacancy: "",
         jobType: "all",
@@ -53,16 +61,28 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
     const fetchPositions = async () => {
         try {
             setLoading(true);
-            const params = new URLSearchParams();
-            if (searchTerm) params.append('search', searchTerm);
-            if (filters.vacancy) params.append('vacancy', filters.vacancy);
-            if (filters.jobType !== 'all') params.append('jobType', filters.jobType);
-            if (filters.salary) params.append('salary', filters.salary);
-            if (filters.shift !== 'all') params.append('shift', filters.shift);
-            if (filters.experience !== 'all') params.append('experience', filters.experience);
+            const params = {
+                page: currentPage,
+                limit: rowsPerPage,
+                search: searchTerm.trim(),
+                ...filters
+            };
 
-            const res = await axios.get(`http://localhost:5000/api/position?${params.toString()}`);
-            setPositions(res.data.data || []);
+            // Clean up filters to match backend expectations (remove 'all' values)
+            const cleanFilters = {};
+            if (params.search) cleanFilters.search = params.search;
+            if (params.vacancy) cleanFilters.vacancy = params.vacancy;
+            if (params.jobType !== 'all') cleanFilters.jobType = params.jobType;
+            if (params.salary) cleanFilters.salary = params.salary;
+            if (params.shift !== 'all') cleanFilters.shift = params.shift;
+            if (params.experience !== 'all') cleanFilters.experience = params.experience;
+            cleanFilters.page = params.page;
+            cleanFilters.limit = params.limit;
+
+            const { data } = await axiosInstance.get("/position", { params: cleanFilters });
+            setPositions(data.data || []);
+            setTotalPages(data.pagination?.totalPages || 1);
+            setTotalPositions(data.pagination?.total || 0);
         } catch (err) {
             console.error("Error fetching positions", err);
             toast.error("Failed to load positions");
@@ -73,7 +93,12 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
 
     useEffect(() => {
         fetchPositions();
-    }, [searchTerm, filters, refreshTrigger]);
+    }, [searchTerm, filters, refreshTrigger, currentPage, rowsPerPage]);
+
+    const handlePageSizeChange = (newPageSize) => {
+        setRowsPerPage(parseInt(newPageSize));
+        setCurrentPage(1);
+    };
 
     const deletePosition = async (id) => {
         try {
@@ -125,7 +150,7 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
                             )}
                         </div>
                         <div className="text-sm text-slate-500 dark:text-slate-400">
-                            Showing {positions.length} position{positions.length !== 1 ? 's' : ''}
+                            Showing {positions.length} of {totalPositions} positions
                         </div>
                     </div>
 
@@ -204,8 +229,31 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
             {/* Positions Table */}
             <Card className="border-0 shadow-sm dark:bg-slate-900">
                 <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-semibold dark:text-white">All Jobs</CardTitle>
-                    <CardDescription className="dark:text-slate-400">Manage and organize job positions in your organization</CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="text-xl font-semibold dark:text-white">All Jobs</CardTitle>
+                            <CardDescription className="dark:text-slate-400">Manage and organize job positions in your organization</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">Show:</Label>
+                                <Select
+                                    value={rowsPerPage.toString()}
+                                    onValueChange={handlePageSizeChange}
+                                >
+                                    <SelectTrigger className="w-20 h-8 dark:bg-slate-800 dark:border-slate-700">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="5">5</SelectItem>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="15">15</SelectItem>
+                                        <SelectItem value="20">20</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent className="p-0">
                     {loading ? (
@@ -241,7 +289,7 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
                                 <TableBody>
                                     {positions.map((pos, index) => (
                                         <TableRow key={pos._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
-                                            <TableCell>{index + 1}</TableCell>
+                                            <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center space-x-3">
                                                     <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -285,6 +333,51 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
                         </div>
                     )}
                 </CardContent>
+
+                {/* Pagination UI */}
+                {positions.length > 0 && (
+                    <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex justify-end items-center">
+                        <div className="flex items-center space-x-1">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+
+                            <div className="flex items-center space-x-1">
+                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                    const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                                    if (pageNum > totalPages || pageNum < 1) return null;
+                                    return (
+                                        <Button
+                                            key={pageNum}
+                                            variant={pageNum === currentPage ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => setCurrentPage(pageNum)}
+                                            className={`w-8 h-8 p-0 ${pageNum === currentPage ? "" : "dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"}`}
+                                        >
+                                            {pageNum}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </Card>
 
             {/* Delete Order Confirmation Dialog */}
