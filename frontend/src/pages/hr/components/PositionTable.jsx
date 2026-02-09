@@ -108,7 +108,7 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
                             <Button
                                 variant="outline"
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''}`}
+                                className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' : ''}`}
                             >
                                 <Filter className="w-4 h-4 mr-2" />
                                 Filter

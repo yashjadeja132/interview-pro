@@ -87,7 +87,7 @@ export default function EditQuestion({ question, onQuestionUpdated }) {
       const newOptions = [...form.options];
       newOptions[index] = { ...newOptions[index], optionImage: file };
       setForm((prev) => ({ ...prev, options: newOptions }));
-      
+
       setOptionImagePreviews(prev => ({
         ...prev,
         [index]: URL.createObjectURL(file)
@@ -107,7 +107,7 @@ export default function EditQuestion({ question, onQuestionUpdated }) {
     const newOptions = [...form.options];
     newOptions[index] = { ...newOptions[index], optionImage: null };
     setForm((prev) => ({ ...prev, options: newOptions }));
-    
+
     setOptionImagePreviews(prev => {
       const newPreviews = { ...prev };
       delete newPreviews[index];
@@ -130,7 +130,7 @@ export default function EditQuestion({ question, onQuestionUpdated }) {
     if (form.options.length > 2) {
       const newOptions = form.options.filter((_, i) => i !== index);
       setForm((prev) => ({ ...prev, options: newOptions }));
-      
+
       setOptionImagePreviews(prev => {
         const newPreviews = { ...prev };
         delete newPreviews[index];
@@ -180,6 +180,55 @@ export default function EditQuestion({ question, onQuestionUpdated }) {
     });
   };
 
+  const hasChanges = () => {
+    if (!question) return false;
+
+    // Check Position
+    if (form.positionId !== (question.position?._id || "")) return true;
+
+    // Check Question Text
+    if (form.questionText !== (question.questionText || "")) return true;
+
+    // Check Question Image
+    // If a new file is selected, it's a change
+    if (form.questionImage instanceof File) return true;
+    // If original had an image but preview is gone (removed), it's a change
+    // Note: form.questionImage is strictly for NEW file. Removal is tracked via preview state in this implementation or explicitly nulling it.
+    // However, removeQuestionImage sets form.questionImage = null. Original question.questionImage is string.
+    // Wait, form.questionImage is null initially.
+    // If I remove image, form.questionImage is null. Original is string.
+    // If I don't touch it, form.questionImage is null. Original is string.
+    // So for removal, we need to check if original existed AND preview is gone.
+    if (question.questionImage && !questionImagePreview) return true;
+
+
+    // Check Options
+    if (form.options.length !== (question.options?.length || 0)) return true;
+
+    for (let i = 0; i < form.options.length; i++) {
+      const current = form.options[i];
+      const original = question.options[i];
+
+      // New option added
+      if (!original) return true;
+
+      if (current.optionText !== original.optionText) return true;
+      if (current.isCorrect !== original.isCorrect) return true;
+
+      // Option Image
+      // If current is File -> Changed
+      if (current.optionImage instanceof File) return true;
+
+      // If original existed but current is null (removed)
+      // Original optionImage is URL string. Current starts as URL string (from init).
+      // If removed, current becomes null.
+      // If unchanged, current === original (string === string)
+      if (current.optionImage !== original.optionImage) return true;
+    }
+
+    return false;
+  };
+
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -195,14 +244,41 @@ export default function EditQuestion({ question, onQuestionUpdated }) {
         formData.append("questionImage", form.questionImage);
       }
 
-      // Option images
+
+
+      // Send options array as JSON string
+      // We need to be careful with sending existing URLs vs nulls vs File objects
+      // The backend likely expects file uploads in 'optionImages' array and maps them based on index or something?
+      // Or maybe it just updates text/bools and handles images separately if new?
+      // Re-reading submit logic: 
+      // formData.append("optionImages", opt.optionImage); if it exists.
+      // If it is a string (existing URL), it appends string? Multer might ignore strings or treat as text field. 
+      // Usually backend needs to know if image is REMOVED.
+      // Current implementation:
+      /*
+        // Option images
+        form.options.forEach((opt) => {
+            if (opt.optionImage) {
+            formData.append("optionImages", opt.optionImage);
+            }
+        });
+      */
+      // If opt.optionImage is a URL string, it appends it.
+      // If it is null, it skips.
+      // If it is File, it appends.
+
+      // Let's stick to existing logic for submission to avoid breaking backend, 
+      // but wrap it to ensure we don't send strings as files if that was the intent.
+      // However, the original code blindly appended `opt.optionImage` if truthy.
+      // If it was a URL string, it appended it.
+      // If it was a File, it appended it.
+
       form.options.forEach((opt) => {
         if (opt.optionImage) {
           formData.append("optionImages", opt.optionImage);
         }
       });
 
-      // Send options array as JSON string
       formData.append("options", JSON.stringify(form.options));
 
       // Send request
@@ -226,11 +302,7 @@ export default function EditQuestion({ question, onQuestionUpdated }) {
 
   return (
     <div className="space-y-6">
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">Edit Question</CardTitle>
-        </CardHeader>
-
+      <Card className="border-0 shadow-sm dark:bg-slate-900 dark:border-slate-800">
         <CardContent className="space-y-6">
           {/* Position Selection */}
           <div className="space-y-2">
@@ -421,8 +493,8 @@ export default function EditQuestion({ question, onQuestionUpdated }) {
             <Button
               type="button"
               onClick={handleSubmit}
-              disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700"
+              disabled={isLoading || !hasChanges()}
+              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Updating..." : "Update Question"}
             </Button>

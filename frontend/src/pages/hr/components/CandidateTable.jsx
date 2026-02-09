@@ -202,7 +202,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                         setCurrentPage(1);
                                     }}
                                 >
-                                    <SelectTrigger className={`w-40 sm:w-48 h-10 ${filters.position ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'dark:bg-slate-800 dark:border-slate-700 dark:text-white'}`}>
+                                    <SelectTrigger className={`w-40 sm:w-48 h-10 ${filters.position ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:border-blue-400 dark:text-white' : 'dark:bg-slate-800 dark:border-slate-700 dark:text-white'}`}>
                                         <SelectValue placeholder="All Positions" />
                                     </SelectTrigger>
                                     <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
@@ -284,6 +284,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                             )}
                         </div>
                     </div>
+
                 </CardHeader>
                 <CardContent>
                     {loading ? (
@@ -402,28 +403,44 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                             </div>
 
                             {/* Pagination UI */}
-                            <div className="flex items-center justify-between mt-6">
-                                <p className="text-sm text-slate-500 dark:text-slate-400">
-                                    Page {currentPage} of {totalPages}
-                                </p>
-                                <div className="flex items-center gap-2">
+                            <div className="flex justify-end items-center mt-6">
+                                <div className="flex items-center space-x-1">
                                     <Button
                                         variant="outline"
-                                        size="icon"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                         disabled={currentPage === 1}
-                                        onClick={() => setCurrentPage(prev => prev - 1)}
-                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
                                     >
-                                        <ChevronLeft className="w-4 h-4" />
+                                        <ChevronLeft className="h-4 w-4" />
                                     </Button>
+
+                                    <div className="flex items-center space-x-1">
+                                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                            const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                                            if (pageNum > totalPages) return null;
+                                            return (
+                                                <Button
+                                                    key={pageNum}
+                                                    variant={pageNum === currentPage ? "default" : "outline"}
+                                                    size="sm"
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                    className={`w-8 h-8 p-0 ${pageNum === currentPage ? "" : "dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"}`}
+                                                >
+                                                    {pageNum}
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+
                                     <Button
                                         variant="outline"
-                                        size="icon"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                         disabled={currentPage === totalPages}
-                                        onClick={() => setCurrentPage(prev => prev + 1)}
-                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
                                     >
-                                        <ChevronRight className="w-4 h-4" />
+                                        <ChevronRight className="h-4 w-4" />
                                     </Button>
                                 </div>
                             </div>
@@ -463,6 +480,6 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }

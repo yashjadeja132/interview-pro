@@ -102,7 +102,7 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-    //   toast.error("Please fix validation errors");
+      //   toast.error("Please fix validation errors");
       return;
     }
 
@@ -128,11 +128,24 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
       onSuccess();
       onClose();
     } catch (err) {
-    //   setGeneralError(err.response?.data?.message || "Failed to save position");
+      //   setGeneralError(err.response?.data?.message || "Failed to save position");
       toast.error("Failed to save position");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const hasChanges = () => {
+    if (!initialData) return true; // Always allow adding new
+
+    return (
+      form.name !== (initialData.name || "") ||
+      String(form.salary) !== String(initialData.salary || "") ||
+      form.jobType !== (initialData.jobType || "") ||
+      form.experience !== (initialData.experience || "") ||
+      String(form.vacancies) !== String(initialData.vacancies || "") ||
+      form.shift !== (initialData.shift || "Day Shift")
+    );
   };
 
   return (
@@ -160,9 +173,8 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
               placeholder="e.g., Software Engineer"
               value={form.name}
               onChange={handleChange}
-              className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${
-                fieldErrors.name ? "border-red-500" : ""
-              }`}
+              className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.name ? "border-red-500" : ""
+                }`}
             />
             {fieldErrors.name && (
               <p className="text-xs text-red-600 flex items-center gap-1">
@@ -184,9 +196,8 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
                 placeholder="e.g., 50000"
                 value={form.salary}
                 onChange={handleChange}
-                className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${
-                  fieldErrors.salary ? "border-red-500" : ""
-                }`}
+                className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.salary ? "border-red-500" : ""
+                  }`}
               />
               {fieldErrors.salary && (
                 <p className="text-xs text-red-600 flex items-center gap-1">
@@ -204,9 +215,8 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
                 placeholder="e.g., 2+ years"
                 value={form.experience}
                 onChange={handleChange}
-                className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${
-                  fieldErrors.experience ? "border-red-500" : ""
-                }`}
+                className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.experience ? "border-red-500" : ""
+                  }`}
               />
               {fieldErrors.experience && (
                 <p className="text-xs text-red-600 flex items-center gap-1">
@@ -229,9 +239,8 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
                 placeholder="e.g., 1"
                 value={form.vacancies}
                 onChange={handleChange}
-                className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${
-                  fieldErrors.vacancies ? "border-red-500" : ""
-                }`}
+                className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.vacancies ? "border-red-500" : ""
+                  }`}
               />
               {fieldErrors.vacancies && (
                 <p className="text-xs text-red-600 flex items-center gap-1">
@@ -250,9 +259,8 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
                 onValueChange={(v) => handleSelectChange("jobType", v)}
               >
                 <SelectTrigger
-                  className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${
-                    fieldErrors.jobType ? "border-red-500" : ""
-                  }`}
+                  className={`w-full h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.jobType ? "border-red-500" : ""
+                    }`}
                 >
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -314,12 +322,12 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
           )}
         </div>
 
-       <DialogFooter className="gap-2">
-                    <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="dark:bg-slate-800 dark:text-white dark:border-slate-700">Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700">
-                        {isSubmitting ? "Saving..." : (initialData ? "Update Job Post" : "Add Job Post")}
-                    </Button>
-                </DialogFooter>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="dark:bg-slate-800 dark:text-white dark:border-slate-700">Cancel</Button>
+          <Button onClick={handleSubmit} disabled={isSubmitting || !hasChanges()} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            {isSubmitting ? "Saving..." : (initialData ? "Update Job Post" : "Add Job Post")}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

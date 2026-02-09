@@ -128,6 +128,34 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
         }
     };
 
+    const hasChanges = () => {
+        if (!initialData) return true; // Always allow adding new
+
+        // Helper to compare dates (handling potential TZ/format differences)
+        const areDatesEqual = (d1, d2) => {
+            if (!d1 || !d2) return d1 === d2;
+            return new Date(d1).getTime() === new Date(d2).getTime();
+        };
+
+        const initialPositionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
+        const initialTimeDuration = initialData.timeforTest || initialData.timeDurationForTest;
+
+        return (
+            form.name !== initialData.name ||
+            form.email !== initialData.email ||
+            form.phone !== initialData.phone ||
+            form.experience !== initialData.experience ||
+            form.position !== initialPositionId ||
+            !areDatesEqual(form.schedule, initialData.schedule) ||
+            parseInt(form.questionsAskedToCandidate) !== parseInt(initialData.questionsAskedToCandidate) ||
+            parseInt(form.timeDurationForTest) !== parseInt(initialTimeDuration) ||
+            parseInt(form.technicalQuestions || 0) !== parseInt(initialData.technicalQuestions || 0) ||
+            parseInt(form.logicalQuestions || 0) !== parseInt(initialData.logicalQuestions || 0) ||
+            !!form.isNagativeMarking !== !!initialData.isNagativeMarking ||
+            String(form.negativeMarkingValue || "") !== String(initialData.negativeMarkingValue || "")
+        );
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl dark:bg-slate-900 border-slate-200 dark:border-slate-800">
@@ -193,7 +221,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                     validateField("experience", val);
                                 }}
                             >
-                                <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.experience ? "border-red-500" : ""}`}>
+                                <SelectTrigger className={`w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.experience ? "border-red-500" : ""}`}>
                                     <SelectValue placeholder="Select experience" />
                                 </SelectTrigger>
                                 <SelectContent className="dark:bg-slate-800 border-slate-700">
@@ -218,7 +246,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                     validateField("position", val);
                                 }}
                             >
-                                <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.position ? "border-red-500" : ""}`}>
+                                <SelectTrigger className={`w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.position ? "border-red-500" : ""}`}>
                                     <SelectValue placeholder="Select position" />
                                 </SelectTrigger>
                                 <SelectContent className="dark:bg-slate-800 border-slate-700">
@@ -371,7 +399,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                 </div>
                 <DialogFooter className="gap-2">
                     <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="dark:bg-slate-800 dark:text-white dark:border-slate-700">Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={handleSubmit} disabled={isSubmitting || !hasChanges()} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
                         {isSubmitting ? "Saving..." : (initialData ? "Update Candidate" : "Add Candidate")}
                     </Button>
                 </DialogFooter>

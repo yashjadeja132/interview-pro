@@ -266,7 +266,7 @@ export default function CandidateMonitoring() {
                 </div>
                 <Button
                   variant="outline"
-                  className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''}`}
+                  className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' : ''}`}
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <Filter className="w-4 h-4 mr-2" />
@@ -409,10 +409,28 @@ export default function CandidateMonitoring() {
         {/* Candidates Table */}
         <Card className="border-0 shadow-sm dark:bg-slate-900">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold dark:text-white">Candidate Monitoring</CardTitle>
-            <CardDescription className="dark:text-slate-400">
-              Monitor and track candidate interview performance and results
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-semibold dark:text-white">Candidate Monitoring</CardTitle>
+                <CardDescription className="dark:text-slate-400">
+                  Monitor and track candidate interview performance and results
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">Show:</span>
+                <Select value={limit.toString()} onValueChange={(value) => setLimit(Number(value))}>
+                  <SelectTrigger className="w-20 h-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                    <SelectItem value="5" className="dark:text-white dark:focus:bg-slate-700">5</SelectItem>
+                    <SelectItem value="10" className="dark:text-white dark:focus:bg-slate-700">10</SelectItem>
+                    <SelectItem value="20" className="dark:text-white dark:focus:bg-slate-700">20</SelectItem>
+                    <SelectItem value="50" className="dark:text-white dark:focus:bg-slate-700">50</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
 
           <CardContent className="p-0">
@@ -542,66 +560,45 @@ export default function CandidateMonitoring() {
 
         {/* Pagination */}
         {results.length > 0 && (
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-4 mt-6">
-            <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
-              <span>Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, totalResults)} of {totalResults} results</span>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-600 dark:text-slate-400">Show:</span>
-                <Select value={limit.toString()} onValueChange={(value) => setLimit(Number(value))}>
-                  <SelectTrigger className="w-20 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                    <SelectItem value="5" className="dark:text-white dark:focus:bg-slate-700">5</SelectItem>
-                    <SelectItem value="10" className="dark:text-white dark:focus:bg-slate-700">10</SelectItem>
-                    <SelectItem value="20" className="dark:text-white dark:focus:bg-slate-700">20</SelectItem>
-                    <SelectItem value="50" className="dark:text-white dark:focus:bg-slate-700">50</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="flex justify-end items-center mt-6">
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
 
               <div className="flex items-center space-x-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-
-                <div className="flex items-center space-x-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = Math.max(1, Math.min(totalPages - 4, page - 2)) + i;
-                    if (pageNum > totalPages) return null;
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={pageNum === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setPage(pageNum)}
-                        className={`w-8 h-8 p-0 ${pageNum === page ? "" : "dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"}`}
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum = Math.max(1, Math.min(totalPages - 4, page - 2)) + i;
+                  if (pageNum > totalPages) return null;
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={pageNum === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPage(pageNum)}
+                      className={`w-8 h-8 p-0 ${pageNum === page ? "" : "dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"}`}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
               </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         )}

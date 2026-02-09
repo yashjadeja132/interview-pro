@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
@@ -19,7 +19,8 @@ import {
   Filter,
   CheckCircle,
   XCircle,
-  Edit2
+  Edit2,
+  AlertTriangle
 } from "lucide-react";
 import api from "../../Api/axiosInstance";
 import CreateQuestion from "./CreateQuestion";
@@ -37,6 +38,7 @@ export default function QuestionManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   // Fetch positions on component mount
   useEffect(() => {
@@ -89,18 +91,22 @@ export default function QuestionManagement() {
     }
   };
 
-  const handleDeleteQuestion = async (questionId) => {
-    if (window.confirm("Are you sure you want to delete this question? This action cannot be undone.")) {
-      try {
-        await api.delete(`/question/${questionId}`);
-        toast.success("Question deleted successfully");
-        if (selectedPosition) {
-          fetchQuestionsByPosition(selectedPosition);
-        }
-      } catch (err) {
-        console.error("Failed to delete question", err);
-        toast.error("Failed to delete question");
+  const handleDeleteQuestion = (questionId) => {
+    setDeleteId(questionId);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await api.delete(`/question/${deleteId}`);
+      toast.success("Question deleted successfully");
+      setDeleteId(null);
+      if (selectedPosition) {
+        fetchQuestionsByPosition(selectedPosition);
       }
+    } catch (err) {
+      console.error("Failed to delete question", err);
+      toast.error("Failed to delete question");
     }
   };
 
@@ -206,9 +212,9 @@ export default function QuestionManagement() {
             </div>
           ) : null}
 
-         <h1 className="text-base font-semibold text-gray-900 dark:text-white mb-3 leading-relaxed border border-slate-300 dark:border-slate-700 rounded-lg p-3 bg-white dark:bg-gray-900 shadow-sm">
-                   {question.questionText || "No question text provided"}
-            </h1>
+          <h1 className="text-base font-semibold text-gray-900 dark:text-white mb-3 leading-relaxed border border-slate-300 dark:border-slate-700 rounded-lg p-3 bg-white dark:bg-gray-900 shadow-sm">
+            {question.questionText || "No question text provided"}
+          </h1>
 
         </div>
 
@@ -253,15 +259,15 @@ export default function QuestionManagement() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">Question Management</h1>
-            <div className="flex justify-between gap-5">
+          <div className="flex justify-between gap-5">
             <p className="text-slate-600 dark:text-slate-400">Organize and manage questions by position for your interviews</p>
-<Button 
-  onClick={() => setShowCreateDialog(true)} 
-  className="bg-primary hover:bg-primary/90 text-white px-6 py-2"
->
-            + Add Question
-          </Button>
-        </div>
+            <Button
+              onClick={() => setShowCreateDialog(true)}
+              className="bg-primary hover:bg-primary/90 text-white px-6 py-2"
+            >
+              + Add Question
+            </Button>
+          </div>
         </div>
 
         {/* Select Position & Search */}
@@ -310,56 +316,56 @@ export default function QuestionManagement() {
         </div>
 
         {/* Table Section */}
-      <div className="bg-slate-50 dark:bg-slate-900 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
-  <div className="overflow-x-auto">
-    {isLoading ? (
-      <div className="py-10 text-center text-slate-500 dark:text-slate-400">
-        Loading questions...
-      </div>
-    ) : filteredQuestions.length > 0 ? (
-      <Table>
-        <TableHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-          <TableRow>
-            <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
-            <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Question</TableHead>
-            <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
-            <TableHead className="px-6 py-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            {isLoading ? (
+              <div className="py-10 text-center text-slate-500 dark:text-slate-400">
+                Loading questions...
+              </div>
+            ) : filteredQuestions.length > 0 ? (
+              <Table>
+                <TableHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                  <TableRow>
+                    <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
+                    <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Question</TableHead>
+                    <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
+                    <TableHead className="px-6 py-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
 
-        <TableBody>
-          {filteredQuestions.map((question, index) => (
-            <TableRow
-              key={question._id}
-              className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-            >
-              <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{index + 1}</TableCell>
-              <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{question.questionText}</TableCell>
-              <TableCell className="px-6 py-4 text-slate-600 dark:text-slate-400">{question.position?.name}</TableCell>
-              <TableCell className="px-6 py-4 flex justify-center gap-2">
-                <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => handleViewQuestion(question)}>
-                  <Eye className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="ghost" className="text-amber-600 hover:bg-amber-50" onClick={() => handleEditQuestion(question)}>
-                  <Edit2 className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteQuestion(question._id)}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    ) : (
-      <div className="py-12 text-center text-slate-600 dark:text-slate-400">
-        {selectedPosition
-          ? "No questions found for this position."
-          : "Please select a position to view questions."}
-      </div>
-    )}
-  </div>
-</div>
+                <TableBody>
+                  {filteredQuestions.map((question, index) => (
+                    <TableRow
+                      key={question._id}
+                      className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                    >
+                      <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{index + 1}</TableCell>
+                      <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{question.questionText}</TableCell>
+                      <TableCell className="px-6 py-4 text-slate-600 dark:text-slate-400">{question.position?.name}</TableCell>
+                      <TableCell className="px-6 py-4 flex justify-center gap-2">
+                        <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => handleViewQuestion(question)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-amber-600 hover:bg-amber-50" onClick={() => handleEditQuestion(question)}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteQuestion(question._id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="py-12 text-center text-slate-600 dark:text-slate-400">
+                {selectedPosition
+                  ? "No questions found for this position."
+                  : "Please select a position to view questions."}
+              </div>
+            )}
+          </div>
+        </div>
 
       </div>
 
@@ -494,6 +500,27 @@ export default function QuestionManagement() {
               onQuestionUpdated={handleQuestionUpdated}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <DialogContent className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800">
+          <DialogHeader>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <DialogTitle className="text-xl font-semibold dark:text-white">Confirm Delete</DialogTitle>
+            </div>
+          </DialogHeader>
+          <div className="space-y-4 mt-4 text-slate-600 dark:text-slate-300">
+            <p>Are you sure you want to delete this question? This action cannot be undone.</p>
+          </div>
+          <DialogFooter className="flex justify-end space-x-3">
+            <Button variant="outline" onClick={() => setDeleteId(null)} className="dark:bg-slate-800 dark:text-white dark:border-slate-700">Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete Question</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

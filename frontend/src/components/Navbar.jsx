@@ -172,19 +172,19 @@ export default function Navbar({ heading = "Admin Dashboard" }) {
                   asChild
                   onClick={() => setIsProfileOpen(false)}
                 >
-                  <Link to="/admin/profile">
+                  <Link to="/admin/settings">
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Link>
                 </Button>
-                <Button
+                {/* <Button
                   variant="ghost"
                   className="w-full justify-start text-sm dark:text-slate-300 dark:hover:bg-slate-800"
                   onClick={() => setIsProfileOpen(false)}
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
-                </Button>
+                </Button> */}
                 <div className="border-t border-slate-200 dark:border-slate-800 my-1"></div>
                 <Button
                   variant="ghost"
