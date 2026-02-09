@@ -111,7 +111,7 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
                                 className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''}`}
                             >
                                 <Filter className="w-4 h-4 mr-2" />
-                                Filter {showFilters ? '▲' : '▼'}
+                                Filter
                             </Button>
                             {(filters.vacancy || filters.jobType !== 'all' || filters.salary || filters.shift !== 'all' || filters.experience !== 'all') && (
                                 <Button

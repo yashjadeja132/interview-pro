@@ -266,15 +266,22 @@ export default function CandidateMonitoring() {
                 </div>
                 <Button
                   variant="outline"
-                  className="h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
+                  className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''}`}
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <Filter className="w-4 h-4 mr-2" />
                   Filter
-                  {(filters.position || filters.minScore || filters.maxScore || filters.startDate || filters.endDate) && (
-                    <span className="ml-2 w-2 h-2 bg-blue-600 rounded-full"></span>
-                  )}
                 </Button>
+                {(filters.position || filters.minScore || filters.maxScore || filters.startDate || filters.endDate) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="h-10 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
               </div>
               <div className="text-sm text-slate-500 dark:text-slate-400">
                 Showing {results.length} of {totalResults} candidates
@@ -290,9 +297,6 @@ export default function CandidateMonitoring() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200">Filter Options</h3>
-                  <Button variant="outline" size="sm" onClick={clearFilters} className="dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700">
-                    Clear All Filters
-                  </Button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -462,13 +466,13 @@ export default function CandidateMonitoring() {
                           </div>
                         </TableCell>
                         <TableCell>
-                            {r.positionName}
+                          {r.positionName}
                         </TableCell>
                         <TableCell className="text-center">
-                            {r.questionsAskedToCandidate ? r.questionsAskedToCandidate : `N/A`}
+                          {r.questionsAskedToCandidate ? r.questionsAskedToCandidate : `N/A`}
                         </TableCell>
                         <TableCell className="text-center">
-                            {formatDate(r.createdAt)}
+                          {formatDate(r.createdAt)}
                         </TableCell>
                         <TableCell >
                           <div className="space-y-2">
