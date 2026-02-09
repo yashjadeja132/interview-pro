@@ -293,14 +293,7 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
           <Download className="w-7 h-7 mr-4" />
           Download PDF Report
         </Button>
-        <Button
-          variant="outline"
-          onClick={onViewDetails}
-          className="px-12 py-4 text-xl font-bold border-2 hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
-        >
-          <Eye className="w-7 h-7 mr-4" />
-          Scroll to Top
-        </Button>
+       
       </div>
     </div>
   );

@@ -95,7 +95,7 @@ export default function AppSidebar() {
                   {/* <Shield className="w-5 h-5 text-white" /> */}
                   <img src={logo} alt="Logo" className="w-32 h-15" />
                 </div>
-                <div className="flex flex-col items-start">
+                <div className="flex flex-col items-start" onClick={() => navigate("/admin/dashboard")}>
                   <span className="font-bold text-slate-800 dark:text-slate-100">
                     InterviewPro
                   </span>
@@ -131,15 +131,15 @@ export default function AppSidebar() {
                   >
                     <item.icon
                       className={`w-5 h-5 ${isActive
-                          ? "text-primary"
-                          : "text-slate-600 dark:text-slate-400"
+                        ? "text-primary"
+                        : "text-slate-600 dark:text-slate-400"
                         }`}
                     />
                     <div className="flex flex-col items-start">
                       <span
                         className={`font-medium ${isActive
-                            ? "text-primary"
-                            : "text-slate-800 dark:text-slate-200"
+                          ? "text-primary"
+                          : "text-slate-800 dark:text-slate-200"
                           }`}
                       >
                         {item.title}

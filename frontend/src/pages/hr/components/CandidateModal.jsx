@@ -399,7 +399,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                 </div>
                 <DialogFooter className="gap-2">
                     <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="dark:bg-slate-800 dark:text-white dark:border-slate-700">Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={isSubmitting || !hasChanges()} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <Button onClick={handleSubmit} disabled={isSubmitting || !hasChanges()} className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed">
                         {isSubmitting ? "Saving..." : (initialData ? "Update Candidate" : "Add Candidate")}
                     </Button>
                 </DialogFooter>
