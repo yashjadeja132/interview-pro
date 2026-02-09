@@ -8,9 +8,9 @@ import { ThemeContext } from '@/context/ThemeContext';
 // Import Components
 import ProfileSettings from '@/components/admin/settings/ProfileSettings';
 import SecuritySettings from '@/components/admin/settings/SecuritySettings';
-import SystemSettings from '@/components/admin/settings/SystemSettings';
-import EmailSettings from '@/components/admin/settings/EmailSettings';
-import RoleSettings from '@/components/admin/settings/RoleSettings';
+// import SystemSettings from '@/components/admin/settings/SystemSettings';
+// import EmailSettings from '@/components/admin/settings/EmailSettings';
+// import RoleSettings from '@/components/admin/settings/RoleSettings';
 import InterviewRules from '@/components/admin/settings/InterviewRules';
 import ThemeSettings from '@/components/admin/settings/ThemeSettings';
 import AuditLogs from '@/components/admin/settings/AuditLogs';
@@ -37,12 +37,12 @@ export default function Settings() {
             if (response.data && response.data.settings) {
                 const fetchedSettings = response.data.settings;
                 setSettings(fetchedSettings);
-                
+
                 // Sync theme and primaryColor from backend settings to ThemeContext
                 if (updateTheme) {
-                    updateTheme({ 
+                    updateTheme({
                         darkMode: fetchedSettings.darkMode,
-                        primaryColor: fetchedSettings.primaryColor 
+                        primaryColor: fetchedSettings.primaryColor
                     });
                 }
             }
@@ -82,9 +82,9 @@ export default function Settings() {
     const tabs = [
         { id: 'profile', label: 'Profile', icon: User, component: ProfileSettings },
         { id: 'security', label: 'Security', icon: Shield, component: SecuritySettings },
-        { id: 'system', label: 'System', icon: SettingsIcon, component: SystemSettings },
-        { id: 'email', label: 'Email', icon: Mail, component: EmailSettings },
-        { id: 'roles', label: 'Roles', icon: Users, component: RoleSettings },
+        // { id: 'system', label: 'System', icon: SettingsIcon, component: SystemSettings },
+        // { id: 'email', label: 'Email', icon: Mail, component: EmailSettings },
+        // { id: 'roles', label: 'Roles', icon: Users, component: RoleSettings },
         { id: 'rules', label: 'Rules', icon: FileText, component: InterviewRules },
         { id: 'theme', label: 'Theme', icon: Palette, component: ThemeSettings },
         { id: 'logs', label: 'Audit Logs', icon: Activity, component: AuditLogs }, // Logs fetch their own data

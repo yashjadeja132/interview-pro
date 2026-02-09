@@ -1,19 +1,44 @@
-import React, { useState } from 'react';
-import { Save, FileText, Repeat, CheckCircle, AlertOctagon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, FileText } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import api from '../../../Api/axiosInstance';
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 export default function InterviewRules() {
     const [formData, setFormData] = useState({
         timeDurationForTest: '',
     });
+    const [initialData, setInitialData] = useState({
+        timeDurationForTest: '',
+    });
 
     const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+
+    const fetchLoginTime = async () => {
+        try {
+            const res = await api.get("/admin/login-time");
+            if (res.data.success && res.data.data) {
+                const fetchedData = {
+                    timeDurationForTest: res.data.data.timeDurationForTest || '',
+                };
+                setFormData(fetchedData);
+                setInitialData(fetchedData);
+            }
+        } catch (err) {
+            console.error("Failed to fetch login time", err.message);
+        }
+    };
+
+    useEffect(() => {
+        fetchLoginTime();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         const newValue = type === 'checkbox' ? checked : value;
-      
+
         if (name === 'timeDurationForTest') {
             if (value < 0 || value > 120) {
                 setErrors((prev) => ({ ...prev, [name]: 'Time must be between 0 and 120 minutes' }));
@@ -28,32 +53,43 @@ export default function InterviewRules() {
         });
     };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const hasChanges = () => {
+        return formData.timeDurationForTest !== initialData.timeDurationForTest;
+    };
 
-    let newErrors = {};
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        let newErrors = {};
+        // Required field check
+        if (!formData.timeDurationForTest) {
+            newErrors.timeDurationForTest = 'Time is required';
+        }
+        // Range check
+        else if (formData.timeDurationForTest < 0 || formData.timeDurationForTest > 120) {
+            newErrors.timeDurationForTest = 'Time must be between 0 and 120 minutes';
+        }
 
-    // ✅ Required field check
-    if (!formData.timeDurationForTest) {
-        newErrors.timeDurationForTest = 'Time is required';
-    } 
-    // ✅ Range check
-    else if (formData.timeDurationForTest < 0 || formData.timeDurationForTest > 120) {
-        newErrors.timeDurationForTest = 'Time must be between 0 and 120 minutes';
-    }
+        setErrors(newErrors);
 
-    setErrors(newErrors);
+        // Stop submission if any error
+        if (Object.keys(newErrors).length > 0) return;
 
-    // ✅ Stop submission if any error
-    if (Object.keys(newErrors).length > 0) return;
-
-    try {
-        const res = await api.post("/admin/login-time", formData);
-        console.log(res.data);
-    } catch (err) {
-        console.error("Failed to set login time", err);
-    }
-};
+        setIsLoading(true);
+        try {
+            const res = await api.post("/admin/login-time", formData);
+            if (res.data.success) {
+                toast.success("Login time updated successfully");
+                setInitialData(formData);
+            } else {
+                toast.warning("Something went wrong");
+            }
+        } catch (err) {
+            console.error("Failed to set login time", err);
+            toast.error("Failed to update login time");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
 
     return (
@@ -93,13 +129,14 @@ export default function InterviewRules() {
             <div className="flex justify-end pt-4">
                 <button
                     type="submit"
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                    disabled={!!errors.timeDurationForTest}
+                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading || !!errors.timeDurationForTest || !hasChanges()}
                 >
                     <Save size={18} />
-                    Save Changes
+                    {isLoading ? "Saving..." : "Save Changes"}
                 </button>
             </div>
+            <Toaster />
         </form>
     );
 }

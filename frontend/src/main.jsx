@@ -26,18 +26,19 @@ import StartButton from "./pages/candidate/StartButton.jsx";
 import CandidateDashboardWithAttempts from "./pages/candidate/CandidateDashboardWithAttempts.jsx";
 import QuizTest from "./pages/candidate/QuizTest";
 import QuizTestWithAttempts from "./pages/candidate/QuizTestWithAttempts";
-import ThankYou from "./pages/candidate/ThankYou.jsx";  
+import ThankYou from "./pages/candidate/ThankYou.jsx";
 import ThankYouWithAttempts from "./pages/candidate/ThankYouWithAttempts.jsx";
 import CandidateResult from './pages/candidate/CandidateResult.jsx'
 import ForgotPassword from "./pages/authpages/ForgotPassword.jsx";
 import ThemeProvider from "./context/ThemeContext";
 import TimesUpPage from "./pages/candidate/TimesUpPage.jsx";
+import ThemeApplier from "./components/ThemeApplier.jsx";
 
 function Main() {
   const [streams, setStreams] = useState(null);
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route>
+      <Route element={<ThemeApplier />}>
         {/* Public Routes - No Layout */}
         <Route path="/" element={<Homepage />} />
         <Route path="/candidate/login" element={<StudentLogin />} />

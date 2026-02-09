@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Save, User, Mail, Phone, Camera } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, User, Mail, Phone } from 'lucide-react';
 import axiosInstance from '@/Api/axiosInstance';
 
 export default function ProfileSettings() {
-    const fileInputRef = useRef(null);
-
     const [loading, setLoading] = useState(false);
-    const [imageError, setImageError] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -25,41 +22,12 @@ export default function ProfileSettings() {
                 phone: user.phone || '',
                 image: user.image || '',
             });
-            setImageError(false);
         }
     }, []);
 
-    // 🔹 Image error fallback
-    const handleImageError = () => {
-        setImageError(true);
-    };
-
-    // 🔹 Input change
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
-
-    // 🔹 Image upload + preview
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
-            alert('Please select a valid image');
-            return;
-        }
-
-        const imageURL = URL.createObjectURL(file);
-
-        setFormData((prev) => ({
-            ...prev,
-            image: imageURL, // preview
-        }));
-
-        setImageError(false);
-    };
-
-    // 🔹 Submit profile
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);

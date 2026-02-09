@@ -2,6 +2,48 @@ import React, { useState } from "react";
 import { Save, Lock, Key, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import axiosInstance from "@/Api/axiosInstance";
 
+const PasswordInput = ({
+  label,
+  name,
+  value,
+  icon,
+  showKey,
+  show,
+  setShow,
+  onChange,
+}) => (
+  <div className="space-y-2">
+    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+      {icon} {label}
+    </label>
+
+    <div className="relative">
+      <input
+        type={show[showKey] ? "text" : "password"}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full p-2 pr-16 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+        required
+        minLength={6}
+      />
+
+      {/* Small left icon */}
+      <div className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400">
+        {icon}
+      </div>
+
+      {/* Eye icon */}
+      <div
+        onClick={() => setShow({ ...show, [showKey]: !show[showKey] })}
+        className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-blue-500"
+      >
+        {show[showKey] ? <EyeOff size={16} /> : <Eye size={16} />}
+      </div>
+    </div>
+  </div>
+);
+
 export default function SecuritySettings() {
   const [loading, setLoading] = useState(false);
 
@@ -55,39 +97,6 @@ export default function SecuritySettings() {
     }
   };
 
-  const PasswordInput = ({ label, name, value, icon, showKey }) => (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-        {icon} {label}
-      </label>
-
-      <div className="relative">
-        <input
-          type={show[showKey] ? "text" : "password"}
-          name={name}
-          value={value}
-          onChange={handleChange}
-          className="w-full p-2 pr-16 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-          required
-          minLength={6}
-        />
-
-        {/* Small left icon */}
-        <div className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400">
-          {icon}
-        </div>
-
-        {/* Eye icon */}
-        <div
-          onClick={() => setShow({ ...show, [showKey]: !show[showKey] })}
-          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-blue-500"
-        >
-          {show[showKey] ? <EyeOff size={16} /> : <Eye size={16} />}
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -110,6 +119,9 @@ export default function SecuritySettings() {
           value={passwords.currentPassword}
           icon={<Lock size={14} />}
           showKey="current"
+          show={show}
+          setShow={setShow}
+          onChange={handleChange}
         />
 
         <PasswordInput
@@ -118,6 +130,9 @@ export default function SecuritySettings() {
           value={passwords.newPassword}
           icon={<Key size={14} />}
           showKey="new"
+          show={show}
+          setShow={setShow}
+          onChange={handleChange}
         />
 
         <PasswordInput
@@ -126,17 +141,19 @@ export default function SecuritySettings() {
           value={passwords.confirmPassword}
           icon={<Key size={14} />}
           showKey="confirm"
+          show={show}
+          setShow={setShow}
+          onChange={handleChange}
         />
 
       </div>
 
       {message.text && (
         <div
-          className={`p-3 rounded-md text-sm ${
-            message.type === "success"
-              ? "bg-green-50 text-green-600"
-              : "bg-red-50 text-red-600"
-          }`}
+          className={`p-3 rounded-md text-sm ${message.type === "success"
+            ? "bg-green-50 text-green-600"
+            : "bg-red-50 text-red-600"
+            }`}
         >
           {message.text}
         </div>
@@ -155,4 +172,3 @@ export default function SecuritySettings() {
     </form>
   );
 }
- 

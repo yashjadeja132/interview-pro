@@ -46,6 +46,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use('/uploads', express.static('uploads'));
+app.use('/api/admin/login-time', loginTimeRoutes)
 app.use('/api/admin/change-password', passwordRoutes)
 app.use('/api/admin', profileRoutes)
 app.use('/api/admin', adminRoutes)
@@ -64,7 +65,6 @@ app.use('/api/recording', recordingRoutes)
 app.use('/api/test-progress', TestProgressRoutes)
 app.use('/api/candidates/retest', candidateRetestRequestRoutes)
 app.use('/api/admin/retest-requests', adminRetestRequestRoutes)
-app.use('/api/admin/login-time', loginTimeRoutes)
 // app.use('/api/admin/change-password', passwordRoutes) - Removed duplicate
 const server = http.createServer(app);
 const io = new Server(server, {

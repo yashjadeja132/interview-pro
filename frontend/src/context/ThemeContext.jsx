@@ -26,10 +26,10 @@ const ThemeProvider = ({ children }) => {
       document.documentElement.style.setProperty('--primary-color', color);
       document.documentElement.style.setProperty('--primary', color);
       document.documentElement.style.setProperty('--color-primary', color);
-      
+
       // Also update ring color for focus states
       document.documentElement.style.setProperty('--ring', color);
-      
+
       // Convert hex to RGB for opacity variants
       const hex = color.replace('#', '');
       const r = parseInt(hex.substring(0, 2), 16);
@@ -42,12 +42,6 @@ const ThemeProvider = ({ children }) => {
   // Save theme to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("theme", theme);
-    // Apply theme class to document root for global dark mode
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
   }, [theme]);
 
   // Apply primary color whenever it changes

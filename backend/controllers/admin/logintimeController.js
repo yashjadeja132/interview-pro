@@ -20,6 +20,7 @@ exports.getLoginTime = async (req, res) => {
         const loginTime = await LoginTime.findOne();
         res.status(200).json({ success: true, data: loginTime });
     } catch (err) {
+        console.error(err.message);
         res.status(500).json({ success: false, message: "Failed to fetch login time" });
     }
 };

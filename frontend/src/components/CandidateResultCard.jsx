@@ -115,28 +115,28 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                 <Trophy className="w-8 h-8 text-indigo-600" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{correctAnswers}/{totalQuestions}</h3>
-              <p className="text-sm text-gray-600">Marks</p>
+              <p className="text-sm text-gray-600 dark:text-white">Marks</p>
             </div>
             <div className="text-center">
               <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-3 ${getScoreColor(candidateData.score)}`}>
-                <span className="text-2xl font-bold">{Math.round(candidateData.score)}%</span>
+                <span className="text-2xl font-bold ">{Math.round(candidateData.score)}%</span>
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">Score</h3>
-              <p className="text-sm text-gray-600">{getScoreStatus(candidateData.score)}</p>
+              <p className="text-sm text-gray-600 dark:text-white">{getScoreStatus(candidateData.score)}</p>
             </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-3">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{correctAnswers}</h3>
-              <p className="text-sm text-gray-600">Correct</p>
+              <p className="text-sm text-gray-600 dark:text-white">Correct</p>
             </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-3">
                 <XCircle className="w-8 h-8 text-red-600" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{totalQuestions - correctAnswers}</h3>
-              <p className="text-sm text-gray-600">Incorrect</p>
+              <p className="text-sm text-gray-600 dark:text-white">Incorrect</p>
             </div>
             {candidateData.isNagativeMarking && (
               <div className="text-center">
@@ -146,7 +146,7 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                 <h3 className="font-semibold text-gray-900 dark:text-white text-xl">
                   {candidateData.negativeMarkingValue}
                 </h3>
-                <p className="text-sm text-gray-600">Negative Marking</p>
+                <p className="text-sm text-gray-600 dark:text-white">Negative Marking</p>
               </div>
             )}
           </div>

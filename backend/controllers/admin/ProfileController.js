@@ -29,7 +29,7 @@ const changePassword = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
-        const { name, email } = req.body;
+        const { name, email, phone } = req.body;
         const userId = req.user.id;
 
         // Validation
@@ -50,6 +50,7 @@ const updateProfile = async (req, res) => {
 
         user.name = name;
         user.email = email;
+        user.phone = phone;
         await user.save();
 
         res.status(200).json({
@@ -58,6 +59,7 @@ const updateProfile = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
                 role: user.role
             }
         });
