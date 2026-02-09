@@ -68,9 +68,7 @@ const ThemeProvider = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={{ theme, primaryColor, toggleTheme, updateTheme }}>
-      <div className={theme === "dark" ? "dark" : ""}>
-        {children}
-      </div>
+      {children}
     </ThemeContext.Provider>
   );
 };

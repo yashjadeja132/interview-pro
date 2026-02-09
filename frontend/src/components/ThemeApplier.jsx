@@ -12,11 +12,13 @@ export default function ThemeApplier() {
         const excludedPaths = [
             "/candidate/login",
             "/admin/login",
+            "/admin/forgot-password",
         ];
 
         // Check if current path matches any excluded path or candidate result pattern
         const isCandidateResult = location.pathname.startsWith("/candidate/result/");
-        const isExcluded = excludedPaths.includes(location.pathname) || isCandidateResult;
+        const isResetPassword = location.pathname.startsWith("/admin/reset-password/");
+        const isExcluded = excludedPaths.includes(location.pathname) || isCandidateResult || isResetPassword;
 
         if (theme === "dark" && !isExcluded) {
             document.documentElement.classList.add("dark");

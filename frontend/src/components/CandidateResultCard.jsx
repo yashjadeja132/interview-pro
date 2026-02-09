@@ -66,14 +66,14 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
               <div className="flex items-center gap-3">
                 <User className="w-5 h-5 text-gray-500" />
                 <div>
-                  <p className="text-sm text-gray-600">Full Name</p>
+                  <p className="text-sm text-gray-600 dark:text-white">Full Name</p>
                   <p className="font-semibold text-gray-900 dark:text-white">{candidateData.candidateName}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-gray-500" />
                 <div>
-                  <p className="text-sm text-gray-600">Email Address</p>
+                  <p className="text-sm text-gray-600 dark:text-white">Email Address</p>
                   <p className="font-semibold text-gray-900 dark:text-white">{candidateData.candidateEmail}</p>
                 </div>
               </div>
@@ -82,14 +82,14 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
               <div className="flex items-center gap-3">
                 <FileText className="w-5 h-5 text-gray-500" />
                 <div>
-                  <p className="text-sm text-gray-600">Position Applied</p>
+                  <p className="text-sm text-gray-600 dark:text-white">Position Applied</p>
                   <p className="font-semibold text-gray-900 dark:text-white">{candidateData.positionName}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-gray-500" />
                 <div>
-                  <p className="text-sm text-gray-600">Test Date</p>
+                  <p className="text-sm text-gray-600 dark:text-white">Test Date</p>
                   <p className="font-semibold text-gray-900 dark:text-white">
                     {new Date(candidateData.createdAt).toLocaleDateString()}
                   </p>
