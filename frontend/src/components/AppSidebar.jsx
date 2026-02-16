@@ -49,6 +49,13 @@ const navigationItems = [
     icon: Monitor,
     description: "Monitor interviews",
   },
+  {
+    title: "Shortlisted Candidates",
+    url: "/select-for-interview",
+    icon: UserCheck,
+    description: "Candidates for interview",
+  },
+
 
   {
     title: "Question Management",

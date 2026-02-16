@@ -11,7 +11,9 @@ import {
     Check,
     Users,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    ChevronDown,
+    ChevronUp
 } from "lucide-react";
 import {
     Table,
@@ -64,6 +66,17 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
     const [showBulkDelete, setShowBulkDelete] = useState(false);
     const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
+    const [expandedRows, setExpandedRows] = useState(new Set());
+
+    const toggleRow = (id) => {
+        const newExpanded = new Set(expandedRows);
+        if (newExpanded.has(id)) {
+            newExpanded.delete(id);
+        } else {
+            newExpanded.add(id);
+        }
+        setExpandedRows(newExpanded);
+    };
 
     const fetchCandidates = async () => {
         setLoading(true);
@@ -178,9 +191,9 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
         <div className="space-y-6">
             <Card className="border-0 shadow-sm dark:bg-slate-900">
                 <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div className="flex items-center space-x-4 w-full md:w-auto">
-                            <div className="relative w-full md:w-80">
+                    <div className="pm-controls-container">
+                        <div className="pm-search-filter-group">
+                            <div className="pm-search-input-wrapper">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                     placeholder="Search candidates..."
@@ -189,11 +202,11 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                         setSearch(e.target.value);
                                         setCurrentPage(1);
                                     }}
-                                    className="pl-10 h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    className="pl-10 h-10 w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                 />
                             </div>
 
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center gap-2">
                                 <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap hidden sm:block">Position:</Label>
                                 <Select
                                     value={filters.position || "all"}
@@ -202,7 +215,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                         setCurrentPage(1);
                                     }}
                                 >
-                                    <SelectTrigger className={`w-40 sm:w-48 h-10 ${filters.position ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:border-blue-400 dark:text-white' : 'dark:bg-slate-800 dark:border-slate-700 dark:text-white'}`}>
+                                    <SelectTrigger className={`w-full sm:w-48 h-10 ${filters.position ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:border-blue-400 dark:text-white' : 'dark:bg-slate-800 dark:border-slate-700 dark:text-white'}`}>
                                         <SelectValue placeholder="All Positions" />
                                     </SelectTrigger>
                                     <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
@@ -220,15 +233,15 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                             setFilters(prev => ({ ...prev, position: "" }));
                                             setCurrentPage(1);
                                         }}
-                                        className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                        className="h-10 w-10 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                                     >
-                                        <XCircle className="w-4 h-4" />
+                                        <XCircle className="w-5 h-5" />
                                     </Button>
                                 )}
                             </div>
                         </div>
-                        <div className="text-sm text-slate-500 dark:text-slate-400">
-                            Showing {candidates.length} of {totalCandidates} candidates
+                        <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            Showing {candidates.length} of {totalCandidates}
                         </div>
                     </div>
                 </CardContent>
@@ -305,98 +318,163 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto">
+                            <div className="pm-table-wrapper">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                                            <TableHead className="w-12">
+                                        <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent pm-table-header-row">
+                                            <TableHead className="w-8 md:hidden p-0 text-center"></TableHead>
+                                            <TableHead className="w-8 p-0">
                                                 <Checkbox
                                                     checked={isAllSelected}
                                                     onCheckedChange={handleSelectAll}
-                                                    className="dark:border-slate-500"
+                                                    className="dark:border-slate-500 mx-auto"
                                                 />
                                             </TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300">#</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 hidden sm:table-cell">#</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300">Candidate</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300">Contact</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300">Experience</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300">Job Post</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300">Status</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300">Test Duration</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Contact</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Experience</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Job Post</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Status</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Test Duration</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-right pr-2 md:pr-6">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {candidates.map((candidate, idx) => (
-                                            <TableRow key={candidate._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
-                                                <TableCell>
-                                                    <Checkbox
-                                                        checked={selectedCandidates.includes(candidate._id)}
-                                                        onCheckedChange={() => handleSelectCandidate(candidate._id)}
-                                                        className="dark:border-slate-500"
-                                                    />
-                                                </TableCell>
-                                                <TableCell>{(currentPage - 1) * rowsPerPage + idx + 1}</TableCell>
-                                                <TableCell>
-                                                    <p className="font-medium text-slate-900 dark:text-white">{candidate.name || 'N/A'}</p>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="space-y-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <Mail className="w-3 h-3 text-slate-400" />
-                                                            <span className="text-sm text-slate-600 dark:text-slate-300">{candidate.email || 'N/A'}</span>
+                                            <>
+                                                <TableRow key={candidate._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
+                                                    <TableCell className="md:hidden w-8 p-0 text-center">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => toggleRow(candidate._id)}
+                                                            className="h-8 w-8 p-0"
+                                                        >
+                                                            {expandedRows.has(candidate._id) ? (
+                                                                <ChevronUp className="h-4 w-4" />
+                                                            ) : (
+                                                                <ChevronDown className="h-4 w-4" />
+                                                            )}
+                                                        </Button>
+                                                    </TableCell>
+                                                    <TableCell className="w-8 p-0 text-center">
+                                                        <Checkbox
+                                                            checked={selectedCandidates.includes(candidate._id)}
+                                                            onCheckedChange={() => handleSelectCandidate(candidate._id)}
+                                                            className="dark:border-slate-500 mx-auto"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell className="hidden sm:table-cell">{(currentPage - 1) * rowsPerPage + idx + 1}</TableCell>
+                                                    <TableCell>
+                                                        <p className="font-medium text-slate-900 dark:text-white break-words line-clamp-2">{candidate.name || 'N/A'}</p>
+                                                    </TableCell>
+                                                    <TableCell className="desktop-only">
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <Mail className="w-3 h-3 text-slate-400" />
+                                                                <span className="text-sm text-slate-600 dark:text-slate-300">{candidate.email || 'N/A'}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <Phone className="w-3 h-3 text-slate-400" />
+                                                                <span className="text-sm text-slate-600 dark:text-slate-300">{candidate.phone || 'N/A'}</span>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <Phone className="w-3 h-3 text-slate-400" />
-                                                            <span className="text-sm text-slate-600 dark:text-slate-300">{candidate.phone || 'N/A'}</span>
-                                                        </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant={getExperienceBadgeVariant(candidate.experience)} className="dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
-                                                        {getExperienceDisplayText(candidate.experience)}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className="text-sm text-slate-600 dark:text-slate-300">
-                                                        {candidate.positionName || positions.find(p => p._id === candidate.position)?.name || 'N/A'}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getScheduleStatus(candidate.isSubmitted).bg} ${getScheduleStatus(candidate.isSubmitted).color}`}>
-                                                        {getScheduleStatus(candidate.isSubmitted).status}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <Clock className="w-3 h-3 text-slate-400" />
+                                                    </TableCell>
+                                                    <TableCell className="desktop-only">
+                                                        <Badge variant={getExperienceBadgeVariant(candidate.experience)} className="dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+                                                            {getExperienceDisplayText(candidate.experience)}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="desktop-only">
                                                         <span className="text-sm text-slate-600 dark:text-slate-300">
-                                                            {candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time'}
+                                                            {candidate.positionName || positions.find(p => p._id === candidate.position)?.name || 'N/A'}
                                                         </span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
-                                                            disabled={candidate.isSubmitted === 1}
-                                                            onClick={() => onEdit(candidate)}
-                                                        >
-                                                            <Edit2 className="w-3 h-3" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="destructive"
-                                                            size="sm"
-                                                            className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-red-900/50"
-                                                            onClick={() => setDeleteId(candidate._id)}
-                                                        >
-                                                            <Trash2 className="w-3 h-3" />
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
+                                                    </TableCell>
+                                                    <TableCell className="desktop-only">
+                                                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getScheduleStatus(candidate.isSubmitted).bg} ${getScheduleStatus(candidate.isSubmitted).color}`}>
+                                                            {getScheduleStatus(candidate.isSubmitted).status}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="desktop-only">
+                                                        <div className="flex items-center gap-2">
+                                                            <Clock className="w-3 h-3 text-slate-400" />
+                                                            <span className="text-sm text-slate-600 dark:text-slate-300">
+                                                                {candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time'}
+                                                            </span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-2 md:pr-6">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
+                                                                disabled={candidate.isSubmitted === 1}
+                                                                onClick={() => onEdit(candidate)}
+                                                            >
+                                                                <Edit2 className="w-3 h-3" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-red-900/50"
+                                                                onClick={() => setDeleteId(candidate._id)}
+                                                            >
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                                {expandedRows.has(candidate._id) && (
+                                                    <TableRow className="md:hidden bg-slate-50/50 dark:bg-slate-800/20 border-none hover:bg-transparent">
+                                                        <TableCell colSpan={2} className="border-none p-0 w-16"></TableCell> {/* Skip Chevron & Checkbox */}
+                                                        <TableCell className="border-none hidden sm:table-cell p-0"></TableCell> 
+                                                        <TableCell className="p-2 pl-0 align-top border-none min-w-0">
+                                                            <div className="space-y-4 text-sm min-w-0">
+                                                                <div className="min-w-0">
+                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Contact</p>
+                                                                    <div className="mt-1.5 space-y-1.5 min-w-0">
+                                                                        <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 min-w-0">
+                                                                            <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                                            <span className="break-all">{candidate.email || 'N/A'}</span>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                                                                            <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                                            <span>{candidate.phone || 'N/A'}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Experience</p>
+                                                                    <p className="text-slate-800 dark:text-slate-200 mt-1 font-medium">{getExperienceDisplayText(candidate.experience)}</p>
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Applied for Position</p>
+                                                                    <p className="text-slate-800 dark:text-slate-200 mt-1 break-words">{candidate.positionName || positions.find(p => p._id === candidate.position)?.name || 'N/A'}</p>
+                                                                </div>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="p-2 align-top text-right border-none pr-4 md:pr-6 min-w-0">
+                                                            <div className="space-y-4 text-sm">
+                                                                <div>
+                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Application Status</p>
+                                                                    <div className={`mt-1.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${getScheduleStatus(candidate.isSubmitted).bg} ${getScheduleStatus(candidate.isSubmitted).color}`}>
+                                                                        {getScheduleStatus(candidate.isSubmitted).status}
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Test Duration</p>
+                                                                    <div className="mt-1.5 flex items-center justify-end gap-1.5 text-slate-800 dark:text-slate-200 font-medium">
+                                                                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                                                        <span>{candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time'}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </>
                                         ))}
                                     </TableBody>
                                 </Table>

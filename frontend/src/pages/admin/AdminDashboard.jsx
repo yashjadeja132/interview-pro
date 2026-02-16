@@ -15,6 +15,21 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Mail, Clock, ShieldCheck, AlertCircle } from "lucide-react";
 import axiosInstance from "@/Api/axiosInstance";
 
 export default function AdminDashboard() {
@@ -28,6 +43,11 @@ export default function AdminDashboard() {
     vacanciesDistribution: {},
     appliedCandidates: {}
   });
+  const [showCandidatesDialog, setShowCandidatesDialog] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState(null);
+  const [positionCandidates, setPositionCandidates] = useState([]);
+  const [candidatesLoading, setCandidatesLoading] = useState(false);
+  const [positions, setPositions] = useState([]);
 
   // Function to fetch dashboard stats from API
   const getDashboardStats = async () => {
@@ -39,10 +59,10 @@ export default function AdminDashboard() {
 
       if (response.data.success) {
         const data = response.data.data;
-const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
-    (sum, count) => sum + count,
-    0
-  );
+        const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
+          (sum, count) => sum + count,
+          0
+        );
         console.log(data.distributions);
         setDashboardData({
           totalCandidates: data.overview.totalCandidates,
@@ -70,9 +90,47 @@ const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
     }
   };
 
+  const fetchPositions = async () => {
+    try {
+      const { data } = await axiosInstance.get("/position");
+      setPositions(data.data || []);
+    } catch (err) {
+      console.error("Failed to fetch positions:", err);
+    }
+  };
+
+  const handlePositionClick = async (positionName) => {
+    setSelectedPosition(positionName);
+    setShowCandidatesDialog(true);
+    setCandidatesLoading(true);
+    try {
+      // Find position ID by name
+      let posId = "";
+      const pos = positions.find(p => p.name === positionName);
+      if (pos) {
+        posId = pos._id;
+      }
+
+      if (posId) {
+        const { data } = await axiosInstance.get("/hr", {
+          params: { position: posId, limit: 100 } // Get a reasonable number of candidates
+        });
+        setPositionCandidates(data.data || []);
+      } else {
+        setPositionCandidates([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch candidates for position:", err);
+      setPositionCandidates([]);
+    } finally {
+      setCandidatesLoading(false);
+    }
+  };
+
   // Call API on component mount
   useEffect(() => {
     getDashboardStats();
+    fetchPositions();
   }, []);
 
 
@@ -230,15 +288,19 @@ const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
                 <div className="space-y-3">
                   {Object.keys(dashboardData.appliedCandidates).length > 0 ? (
                     Object.entries(dashboardData.appliedCandidates).map(([position, count]) => (
-                      <div key={position} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <button
+                        key={position}
+                        onClick={() => handlePositionClick(position)}
+                        className="w-full flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors text-left"
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                          <span className="text-sm font-medium text-slate-700">{position}</span>
+                          <span className="text-sm font-medium text-slate-700 dark:text-black">{position}</span>
                         </div>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-100">
                           {count} candidates
                         </Badge>
-                      </div>
+                      </button>
                     ))
                   ) : (
                     <div className="text-center py-8">
@@ -253,11 +315,74 @@ const totalVacancies = Object.values(data.distributions.vacancies || {}).reduce(
                   )}
                 </div>
               </CardContent>
-            </Card> 
+            </Card>
           </div>
         </div>
 
       </div>
+
+      {/* Candidates Dialog */}
+      <Dialog open={showCandidatesDialog} onOpenChange={setShowCandidatesDialog}>
+        <DialogContent className="max-w-4xl dark:bg-slate-900 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold dark:text-white">
+              Candidates for {selectedPosition}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {candidatesLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="h-16 w-full dark:bg-slate-800" />
+                ))}
+              </div>
+            ) : positionCandidates.length === 0 ? (
+              <div className="text-center py-10 text-slate-500 dark:text-slate-400">
+                No candidates found for this position.
+              </div>
+            ) : (
+              <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/50 dark:bg-slate-800/50">
+                      <TableHead className="font-bold">#</TableHead>
+                      <TableHead className="font-bold">Name</TableHead>
+                      <TableHead className="font-bold">Experience</TableHead>
+                      <TableHead className="font-bold">Test Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {positionCandidates.map((candidate, idx) => (
+                      <TableRow key={candidate._id} className="dark:border-slate-800">
+                        <TableCell className="dark:text-slate-400">{idx + 1}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium dark:text-white">{candidate.name}</span>
+                            <span className="text-xs text-slate-500 flex items-center gap-1">
+                              <Mail className="w-3 h-3" /> {candidate.email}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="dark:text-slate-300">
+                          {candidate.experience || 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${candidate.isSubmitted === 1
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                            }`}>
+                            {candidate.isSubmitted === 1 ? 'Completed' : 'Pending'}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

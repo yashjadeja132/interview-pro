@@ -14,7 +14,9 @@ import {
   Download,
   Eye,
   FileText,
-  AlertCircle
+  AlertCircle,
+  HelpCircle,
+  Hash
 } from 'lucide-react';
 
 const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onViewDetails }) => {
@@ -39,6 +41,9 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
   };
 
   const correctAnswers = testResults.filter(result => result.isCorrect).length;
+  const unattemptedAnswers = testResults.filter(result => !result.selectedOption).length;
+  const visitedAnswers = testResults.filter(result => result.status === 2).length;
+  const incorrectAnswers = testResults.filter(result => !result.isCorrect && result.selectedOption).length;
   const totalQuestions = testResults.length;
 
   return (
@@ -109,7 +114,64 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div className={`grid grid-cols-2 ${candidateData.isNagativeMarking ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-6 mb-6`}>
+          <div className={`grid grid-cols-2 ${candidateData.isNagativeMarking ? 'md:grid-cols-4 lg:grid-cols-8' : 'md:grid-cols-4 lg:grid-cols-7'} gap-6 mb-6`}>
+            {/* <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
+                <Hash className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{totalQuestions}</h3>
+              <p className="text-sm text-gray-600 dark:text-white">Total Questions</p>
+            </div> */}
+            {/* <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-3">
+                <Trophy className="w-8 h-8 text-indigo-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{correctAnswers}/{totalQuestions}</h3>
+              <p className="text-sm text-gray-600 dark:text-white">Marks</p>
+            </div> */}
+            {/* <div className="text-center">
+              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-3 ${getScoreColor(candidateData.score)}`}>
+                <span className="text-2xl font-bold ">{Math.round(candidateData.score)}%</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Score</h3>
+              <p className="text-sm text-gray-600 dark:text-white">{getScoreStatus(candidateData.score)}</p>
+            </div> */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-3">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{correctAnswers}</h3>
+              <p className="text-sm text-gray-600 dark:text-white">Correct</p>
+            </div>
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-3">
+                <XCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{incorrectAnswers}</h3>
+              <p className="text-sm text-gray-600 dark:text-white">Incorrect</p>
+            </div>
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-3">
+                <HelpCircle className="w-8 h-8 text-gray-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{unattemptedAnswers}</h3>
+              <p className="text-sm text-gray-600 dark:text-white">Unattempted</p>
+            </div>
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
+                <Eye className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{visitedAnswers}</h3>
+              <p className="text-sm text-gray-600 dark:text-white">Visited</p>
+            </div>
+
+             <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
+                <Hash className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{totalQuestions}</h3>
+              <p className="text-sm text-gray-600 dark:text-white">Total Questions</p>
+            </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-3">
                 <Trophy className="w-8 h-8 text-indigo-600" />
@@ -123,20 +185,6 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">Score</h3>
               <p className="text-sm text-gray-600 dark:text-white">{getScoreStatus(candidateData.score)}</p>
-            </div>
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-3">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{correctAnswers}</h3>
-              <p className="text-sm text-gray-600 dark:text-white">Correct</p>
-            </div>
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-3">
-                <XCircle className="w-8 h-8 text-red-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{totalQuestions - correctAnswers}</h3>
-              <p className="text-sm text-gray-600 dark:text-white">Incorrect</p>
             </div>
             {candidateData.isNagativeMarking && (
               <div className="text-center">
@@ -183,7 +231,9 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                 key={index}
                 className={`p-6 rounded-xl border-2 shadow-sm ${result.isCorrect
                   ? 'bg-green-50 border-green-200'
-                  : 'bg-red-50 border-red-200'
+                  : !result.selectedOption
+                    ? 'bg-gray-50 border-gray-200'
+                    : 'bg-red-50 border-red-200'
                   }`}
               >
                 <div className="flex items-start gap-4">
@@ -198,8 +248,11 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <span className="text-lg font-semibold text-gray-700 dark:text-black">Question {index + 1}</span>
-                      <Badge variant={result.isCorrect ? 'default' : 'destructive'} className="text-sm font-semibold">
-                        {result.isCorrect ? 'Correct' : 'Incorrect'}
+                      <Badge
+                        variant={result.isCorrect ? 'default' : !result.selectedOption ? 'secondary' : 'destructive'}
+                        className="text-sm font-semibold"
+                      >
+                        {result.isCorrect ? 'Correct' : !result.selectedOption ? 'Unattempted' : 'Incorrect'}
                       </Badge>
                     </div>
                     <p className="font-semibold text-gray-900 mb-4 text-lg leading-relaxed">{result.question}</p>
@@ -293,7 +346,7 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
           <Download className="w-7 h-7 mr-4" />
           Download PDF Report
         </Button>
-       
+
       </div>
     </div>
   );

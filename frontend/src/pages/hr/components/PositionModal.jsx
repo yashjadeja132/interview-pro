@@ -81,7 +81,18 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+
+    // Restriction: Position Name - no numbers allowed
+    if (name === "name") {
+      value = value.replace(/[0-9]/g, "");
+    }
+
+    // Restriction: Salary and Vacancies - only numbers
+    if (["salary", "vacancies"].includes(name)) {
+      value = value.replace(/[^0-9]/g, "");
+    }
+
     setForm((prev) => ({ ...prev, [name]: value }));
     validateField(name, value);
   };
@@ -150,7 +161,7 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800">
+      <DialogContent className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800 pm-modal-content">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold dark:text-white flex items-center gap-2">
             {initialData ? (

@@ -38,7 +38,9 @@ const TestResultSchema = new mongoose.Schema({
   score: { type: Number, default: 0 },
   attemptNumber: { type: Number, default: 1 },
   isSubmitted: { type: Number, default: 0 }, // 0 = not submitted, 1 = submitted
+  isSelectedForInterview: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
+
 
 module.exports = mongoose.model("TestResult", TestResultSchema);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../Api/axiosInstance";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -11,10 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarIcon, Download, Eye, Filter, Search, Video, User, Clock, Trophy, FileText, ChevronLeft, ChevronRight, MoreHorizontal, FileDown, X } from "lucide-react";
-import axios from "axios";
-import { SidebarProvider } from "../../components/ui/sidebar";
+import { CalendarIcon, Download, Eye, Filter, Search, Video, User, Clock, Trophy, FileText, ChevronLeft, ChevronRight, MoreHorizontal, FileDown, X, ChevronUp, ChevronDown, CheckCircle2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+
 import { generateCandidateResultPDF, generatePDFFromHTML } from "../../utils/pdfGenerator";
+import "@/assets/css/CandidateMonitoring.css";
 
 // Date formatting function with full timestamp
 const formatDate = (date) => {
@@ -55,13 +56,22 @@ export default function CandidateMonitoring() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     position: "",
-    minScore: "",
-    maxScore: "",
     startDate: null,
     endDate: null
   });
   const [positions, setPositions] = useState([]);
   const [searchTimeout, setSearchTimeout] = useState(null);
+  const [expandedRows, setExpandedRows] = useState(new Set());
+
+  const toggleRow = (id) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedRows(newExpanded);
+  }
 
   const fetchResults = async () => {
     setLoading(true);
@@ -79,13 +89,6 @@ export default function CandidateMonitoring() {
         params.position = filters.position;
       }
 
-      // Add score filters
-      if (filters.minScore && filters.minScore.trim() !== '') {
-        params.minScore = Number(filters.minScore);
-      }
-      if (filters.maxScore && filters.maxScore.trim() !== '') {
-        params.maxScore = Number(filters.maxScore);
-      }
 
       // Add date filters
       if (filters.startDate) {
@@ -94,6 +97,7 @@ export default function CandidateMonitoring() {
       if (filters.endDate) {
         params.endDate = formatDateForAPI(filters.endDate);
       }
+      console.log('raw query ', filters.startDate, filters.endDate)
       const { data } = await axiosInstance.get("/test", { params });
       setResults(data.data);
       setTotalPages(data.pagination.totalPages);
@@ -150,8 +154,6 @@ export default function CandidateMonitoring() {
   const clearFilters = () => {
     setFilters({
       position: "",
-      minScore: "",
-      maxScore: "",
       startDate: null,
       endDate: null
     });
@@ -171,12 +173,19 @@ export default function CandidateMonitoring() {
     setSearchTimeout(timeout);
   };
 
-
-
-  const getScoreColor = (score) => {
-    if (score >= 80) return "text-green-600 bg-green-50";
-    if (score >= 60) return "text-yellow-600 bg-yellow-50";
-    return "text-red-600 bg-red-50";
+  const toggleSelection = async (resultId, currentStatus) => {
+    try {
+      await axiosInstance.put(`/test/${resultId}/toggle-selection`, {
+        isSelectedForInterview: !currentStatus
+      });
+      setResults(prevResults =>
+        prevResults.map(r =>
+          r._id === resultId ? { ...r, isSelectedForInterview: !currentStatus } : r
+        )
+      );
+    } catch (err) {
+      console.error("Failed to toggle selection:", err.message);
+    }
   };
 
   const getScoreBadgeVariant = (score) => {
@@ -209,13 +218,14 @@ export default function CandidateMonitoring() {
     link.click();
     document.body.removeChild(link);
   };
+
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
       {/* Header Section */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-6 transition-colors duration-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+        <div className="max-w-7xl mx-auto pm-header-container">
+          <div className="pm-header-info">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shrink-0">
               <Video className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -223,58 +233,55 @@ export default function CandidateMonitoring() {
               <p className="text-slate-600 dark:text-slate-400 mt-1">Monitor and track candidate interview performance</p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 w-full md:w-auto">
             <Button
               variant="outline"
               onClick={exportToCSV}
               disabled={results.length === 0}
-              className="flex items-center gap-2 text-black dark:text-white bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 "  >
+              className="flex items-center gap-2 text-black dark:text-white bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 w-full md:w-auto"  >
               <FileDown className="h-4 w-4 text-black dark:text-white" />
               Export CSV
             </Button>
-
           </div>
-
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="px-6 py-6">
-
+      <div className="p-2 sm:p-4 max-w-7xl mx-auto space-y-6">
         {/* Search and Filter Section */}
-        <Card className="border-0 shadow-sm mb-6 dark:bg-slate-900">
+        <Card className="border-0 shadow-sm dark:bg-slate-900">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="relative">
+            <div className="pm-controls-container">
+              <div className="pm-search-filter-group">
+                <div className="pm-search-input-wrapper">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                   <Input
                     placeholder="Search candidates..."
                     defaultValue={search}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-10 w-80 h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                    className="pl-10 h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full"
                   />
                 </div>
                 <Button
                   variant="outline"
-                  className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' : ''}`}
+                  className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 w-full sm:w-auto ${showFilters ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' : ''}`}
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <Filter className="w-4 h-4 mr-2" />
                   Filter
                 </Button>
-                {(filters.position || filters.minScore || filters.maxScore || filters.startDate || filters.endDate) && (
+                {(filters.position || filters.startDate || filters.endDate) && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={clearFilters}
-                    className="h-10 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    className="h-10 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 w-full sm:w-auto"
                   >
                     Clear Filters
                   </Button>
                 )}
               </div>
-              <div className="text-sm text-slate-500 dark:text-slate-400">
+              <div className="text-sm text-slate-500 dark:text-slate-400 mt-2 md:mt-0">
                 Showing {results.length} of {totalResults} candidates
               </div>
             </div>
@@ -283,14 +290,14 @@ export default function CandidateMonitoring() {
 
         {/* Filters */}
         {showFilters && (
-          <Card className="border-0 shadow-sm mb-6 dark:bg-slate-900">
+          <Card className="border-0 shadow-sm dark:bg-slate-900">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200">Filter Options</h3>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                <div className="pm-filter-grid">
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Position</label>
                     <Select
@@ -312,37 +319,6 @@ export default function CandidateMonitoring() {
                     </Select>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Min Score</label>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      min="0"
-                      max="100"
-                      value={filters.minScore}
-                      onChange={(e) => {
-                        setFilters(prev => ({ ...prev, minScore: e.target.value }));
-                        setPage(1);
-                      }}
-                      className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Max Score</label>
-                    <Input
-                      type="number"
-                      placeholder="100"
-                      min="0"
-                      max="100"
-                      value={filters.maxScore}
-                      onChange={(e) => {
-                        setFilters(prev => ({ ...prev, maxScore: e.target.value }));
-                        setPage(1);
-                      }}
-                      className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                    />
-                  </div>
 
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Start Date</label>
@@ -424,7 +400,7 @@ export default function CandidateMonitoring() {
             </div>
           </CardHeader>
 
-          <CardContent className="p-0">
+          <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center space-x-3">
@@ -443,156 +419,223 @@ export default function CandidateMonitoring() {
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Candidate</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center">Questions Asked</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center">Scheduled Time</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 ">Score</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 ">Time Taken</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {results.map((r, idx) => (
-                      <TableRow key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
-                        <TableCell className="font-medium text-slate-600 dark:text-slate-300">
-                          {idx + 1}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <div>
-                              <div className="font-medium text-slate-800 dark:text-white">{r.candidateName}</div>
-                              <div className="text-sm text-slate-500 dark:text-slate-400">{r.candidateEmail}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {r.positionName}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {r.questionsAskedToCandidate ? r.questionsAskedToCandidate : `N/A`}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {formatDate(r.createdAt)}
-                        </TableCell>
-                        <TableCell >
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <Badge variant={getScoreBadgeVariant(r.score)} className="font-semibold">
-                                {Math.round(r.score)}%
-                              </Badge>
-                            </div>
-                            <Progress
-                              value={r.score}
-                              className="w-20 h-2"
-                              style={{
-                                backgroundColor: r.score >= 80 ? '#dcfce7' : r.score >= 60 ? '#fef3c7' : '#fee2e2'
-                              }}
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-slate-500 dark:text-slate-400">
-                          <div className="flex items-center space-x-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{r.timeTakenFormatted || 'N/A'}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            {r.video && r.video !== 'no video' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleOpenVideo(r.video, r)}
-                                title="Watch Video"
-                                className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200 dark:border-blue-900/50 dark:bg-slate-800 dark:hover:bg-blue-900/20"
-                              >
-                                <Video className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {r.candidateResume && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDownloadResume(r.candidateResume, r.candidateName)}
-                                title="Download Resume"
-                                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 dark:border-green-900/50 dark:bg-slate-800 dark:hover:bg-green-900/20"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              title="View Details & Download PDF"
-                              onClick={() => navigate(`/candidate-report/${r.candidateId}`)}
-                              className="h-8 w-8 p-0 text-slate-600 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+              <>
+                <div className="pm-table-wrapper">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
+                        <TableHead className="w-10 md:hidden"></TableHead>
+                        <TableHead className="w-10 px-0 text-center"></TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:table-cell w-12">#</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 w-full">Candidate</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden md:table-cell">Position</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden lg:table-cell">Questions Asked</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden md:table-cell">Scheduled Time</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:table-cell">Score</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden lg:table-cell">Time Taken</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right pr-2 md:pr-6 w-[110px] sm:w-auto">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {results.map((r, idx) => (
+                        <React.Fragment key={idx}>
+                          <TableRow className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
+                            <TableCell className="md:hidden">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleRow(idx)}
+                                className="h-8 w-8 p-0"
+                              >
+                                {expandedRows.has(idx) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                              </Button>
+                            </TableCell>
+                            <TableCell className="w-10 px-0 text-center">
+                              <Checkbox
+                                checked={r.isSelectedForInterview}
+                                onCheckedChange={() => toggleSelection(r._id, r.isSelectedForInterview)}
+                                className="dark:border-slate-500 mx-auto"
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium text-slate-600 dark:text-slate-300 hidden sm:table-cell">
+                              {(page - 1) * limit + idx + 1}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-3 min-w-0">
+                                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0 pm-candidate-icon">
+                                  <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div className="min-w-0 flex-1 relative">
+                                  <div className="flex items-center gap-2">
+                                    <div className="font-medium text-slate-800 dark:text-white break-words">{r.candidateName}</div>
+                                    {r.isSelectedForInterview && (
+                                      <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" title="Selected for Interview" />
+                                    )}
+                                  </div>
+                                  <div className="text-sm text-slate-500 dark:text-slate-400 break-all desktop-only">{r.candidateEmail}</div>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {r.positionName}
+                            </TableCell>
+                            <TableCell className="text-center hidden lg:table-cell">
+                              {r.questionsAskedToCandidate ? r.questionsAskedToCandidate : `N/A`}
+                            </TableCell>
+                            <TableCell className="text-center hidden md:table-cell">
+                              {formatDate(r.createdAt)}
+                            </TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              <div className="space-y-2">
+                                <div className="flex items-center space-x-2">
+                                  <Badge variant={getScoreBadgeVariant(r.score)} className="font-semibold">
+                                    {Math.round(r.score)}%
+                                  </Badge>
+                                </div>
+                                <Progress
+                                  value={r.score}
+                                  className="w-20 h-2"
+                                  style={{
+                                    backgroundColor: r.score >= 80 ? '#dcfce7' : r.score >= 60 ? '#fef3c7' : '#fee2e2'
+                                  }}
+                                />
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-slate-500 dark:text-slate-400 hidden lg:table-cell">
+                              <div className="flex items-center space-x-1">
+                                <Clock className="h-4 w-4" />
+                                <span>{r.timeTakenFormatted || 'N/A'}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right pr-2 md:pr-6 whitespace-nowrap">
+                              <div className="flex items-center justify-end space-x-2">
+                                {r.video && r.video !== 'no video' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleOpenVideo(r.video, r)}
+                                    title="Watch Video"
+                                    className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200 dark:border-blue-900/50 dark:bg-slate-800 dark:hover:bg-blue-900/20"
+                                  >
+                                    <Video className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                {r.candidateResume && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDownloadResume(r.candidateResume, r.candidateName)}
+                                    title="Download Resume"
+                                    className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 dark:border-green-900/50 dark:bg-slate-800 dark:hover:bg-green-900/20"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  title="View Details & Download PDF"
+                                  onClick={() => navigate(`/candidate-report/${r.candidateId}`)}
+                                  className="h-8 w-8 p-0 text-slate-600 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          {expandedRows.has(idx) && (
+                            <TableRow className="md:hidden bg-slate-50/50 dark:bg-slate-800/20 border-none hover:bg-transparent">
+                              <TableCell colSpan={9} className="p-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+                                  <div className="md:hidden">
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Candidate Email</p>
+                                    <p className="text-slate-800 dark:text-white mt-1 font-medium break-all candidate">{r.candidateEmail}</p>
+                                  </div>
+                                  <div className="md:hidden">
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Position</p>
+                                    <p className="text-slate-800 dark:text-white mt-1 font-medium candidate">{r.positionName}</p>
+                                  </div>
+                                  <div className="lg:hidden">
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Questions Asked</p>
+                                    <p className="text-slate-800 dark:text-white mt-1 font-medium candidate ">{r.questionsAskedToCandidate || 'N/A'}</p>
+                                  </div>
+                                  <div className="md:hidden">
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Scheduled Time</p>
+                                    <p className="text-slate-800 dark:text-white mt-1 font-medium candidate">{formatDate(r.createdAt)}</p>
+                                  </div>
+                                  <div className="sm:hidden">
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Score</p>
+                                    <div className="mt-1 flex items-center gap-2 candidate">
+                                      <Badge variant={getScoreBadgeVariant(r.score)} className="font-semibold candidate">
+                                        {Math.round(r.score)}%
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <div className="lg:hidden">
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Time Taken</p>
+                                    <div className="mt-1 flex items-center gap-1.5 text-slate-800 dark:text-white font-medium candidate">
+                                      <Clock className="h-3.5 w-3.5 text-slate-400" />
+                                      <span>{r.timeTakenFormatted || 'N/A'}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Pagination */}
+                {results.length > 0 && (
+                  <div className="flex justify-end items-center mt-6">
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          const pageNum = Math.max(1, Math.min(totalPages - 4, page - 2)) + i;
+                          if (pageNum > totalPages) return null;
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={pageNum === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setPage(pageNum)}
+                              className={`w-8 h-8 p-0 ${pageNum === page ? "" : "dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"}`}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
-
-        {/* Pagination */}
-        {results.length > 0 && (
-          <div className="flex justify-end items-center mt-6">
-            <div className="flex items-center space-x-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-
-              <div className="flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const pageNum = Math.max(1, Math.min(totalPages - 4, page - 2)) + i;
-                  if (pageNum > totalPages) return null;
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={pageNum === page ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setPage(pageNum)}
-                      className={`w-8 h-8 p-0 ${pageNum === page ? "" : "dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"}`}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700 dark:disabled:opacity-50"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Enhanced Video Dialog */}

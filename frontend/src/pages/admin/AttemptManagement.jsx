@@ -6,15 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  Eye, 
-  RotateCcw, 
-  Trash2, 
-  Clock, 
-  CheckCircle, 
+import {
+  Search,
+  Filter,
+  Download,
+  Eye,
+  RotateCcw,
+  Trash2,
+  Clock,
+  CheckCircle,
   XCircle,
   TrendingUp,
   Users,
@@ -39,8 +39,6 @@ const AttemptManagement = () => {
     search: '',
     position: '',
     status: 'all',
-    minScore: '',
-    maxScore: '',
     startDate: '',
     endDate: '',
     sortBy: 'createdAt',
@@ -59,7 +57,7 @@ const AttemptManagement = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Filter out empty values and 'all' status
       const cleanFilters = { ...filters };
       if (cleanFilters.status === 'all') {
@@ -70,7 +68,7 @@ const AttemptManagement = () => {
           delete cleanFilters[key];
         }
       });
-      
+
       const params = {
         page: currentPage,
         limit: 10,
@@ -147,13 +145,13 @@ const AttemptManagement = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': 
+      case 'completed':
         return 'bg-green-100 text-green-800';
-      case 'in_progress': 
+      case 'in_progress':
         return 'bg-yellow-100 text-yellow-800';
-      case 'abandoned': 
+      case 'abandoned':
         return 'bg-red-100 text-red-800';
-      default: 
+      default:
         return 'bg-gray-100 text-gray-800';
     }
   };
@@ -316,25 +314,6 @@ const AttemptManagement = () => {
                 </Select>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Min Score</label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={filters.minScore}
-                  onChange={(e) => handleFilterChange('minScore', e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Max Score</label>
-                <Input
-                  type="number"
-                  placeholder="100"
-                  value={filters.maxScore}
-                  onChange={(e) => handleFilterChange('maxScore', e.target.value)}
-                />
-              </div>
 
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Start Date</label>

@@ -120,9 +120,26 @@ exports.getCandidateById = async (req, res) => {
 // Update candidate
 exports.updateCandidate = async (req, res) => {
   try {
-    const { name, email, phone, experience, position,timeDurationForTest, questionsAskedToCandidate, technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue } = req.body;
+    const { name, email, phone, experienceYears, experienceMonths, position,timeDurationForTest, questionsAskedToCandidate, technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue } = req.body;
     const timefortest = parseInt(timeDurationForTest);
-    const updateData = { name, email, phone, experience, position,timefortest, questionsAskedToCandidate, technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue };
+    
+    let finalExperience;
+    if (experienceYears !== undefined || experienceMonths !== undefined) {
+      const years = parseInt(experienceYears || 0);
+      const months = parseInt(experienceMonths || 0);
+      finalExperience = `${years} year ${months} month`;
+    }
+
+    const updateData = { 
+      name, email, phone, position,timefortest, questionsAskedToCandidate, 
+      technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue,
+      experienceYears: parseInt(experienceYears || 0),
+      experienceMonths: parseInt(experienceMonths || 0)
+    };
+    if (finalExperience !== undefined) {
+      updateData.experience = finalExperience;
+    }
+
     // Get existing candidate to use current values if fields aren't being updated
     const existingCandidate = await Candidate.findById(req.params.id);
     if (!existingCandidate) {
@@ -301,7 +318,7 @@ exports.bulkDeleteCandidates = async (req, res) => {
 
 exports.createCandidate=async(req,res)=>{
    try {
-          const { email,name, phone, position, experience, timeDurationForTest,questionsAskedToCandidate,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue} = req.body;
+          const { email,name, phone, position, experienceYears, experienceMonths, timeDurationForTest,questionsAskedToCandidate,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue} = req.body;
             const timeforTest = parseInt(timeDurationForTest);
         
           // Check if position is provided
@@ -309,6 +326,16 @@ exports.createCandidate=async(req,res)=>{
             return res.status(400).json({ message: "Position is required" });
           }
 
+          // Format experience
+          let experience;
+          if (experienceYears !== undefined || experienceMonths !== undefined) {
+            const years = parseInt(experienceYears || 0);
+            const months = parseInt(experienceMonths || 0);
+            experience = `${years} year ${months} month`;
+          } else {
+            experience = "0 year 0 month"; // Default if neither is provided
+          }
+            console.log(experience);
           // Count questions for the specific position
           const numberOfNonTechnicalQuestions = await Question.countDocuments({
             position: position,
@@ -415,7 +442,10 @@ exports.createCandidate=async(req,res)=>{
           const hashedPassword = await bcrypt.hash(plainPassword, 10);
          
           const candidate = new Candidate({
-              name, email, password: hashedPassword,phone ,position, experience, schedule, questionsAskedToCandidate,
+              name, email, password: hashedPassword,phone ,position, experience, 
+              experienceYears: parseInt(experienceYears || 0),
+              experienceMonths: parseInt(experienceMonths || 0),
+              schedule, questionsAskedToCandidate,
               technicalQuestions, logicalQuestions ,timeforTest, isNagativeMarking, negativeMarkingValue
           })
       const token = jwt.sign(

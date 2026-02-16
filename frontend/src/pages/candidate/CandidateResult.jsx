@@ -7,20 +7,23 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { 
-  CheckCircle2, 
-  XCircle, 
-  Download, 
-  User, 
-  Mail, 
-  Calendar, 
-  Clock, 
-  Trophy, 
+import {
+  CheckCircle2,
+  XCircle,
+  Download,
+  User,
+  Mail,
+  Calendar,
+  Clock,
+  Trophy,
   FileText,
   Award,
   Target,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  HelpCircle,
+  Eye,
+  Hash
 } from "lucide-react";
 import { generateCandidateResultPDF, generatePDFFromHTML } from "../../utils/pdfGenerator";
 
@@ -48,7 +51,7 @@ export default function CandidateResult() {
 
   const generatePDF = async () => {
     if (!result) return;
-    
+
     setIsGeneratingPDF(true);
     try {
       // Prepare candidate data for PDF generation
@@ -125,6 +128,9 @@ export default function CandidateResult() {
   };
 
   const correctAnswers = answers.filter(ans => ans.isCorrect).length;
+  const incorrectAnswers = answers.filter(ans => !ans.isCorrect && ans.selectedOption).length;
+  const unattemptedAnswers = answers.filter(ans => !ans.selectedOption).length;
+  const visitedAnswers = answers.filter(ans => ans.status === 2).length;
   const totalQuestions = answers.length;
 
   return (
@@ -225,7 +231,14 @@ export default function CandidateResult() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-8 mb-8">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                    <Hash className="w-10 h-10 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-lg">{totalQuestions}</h3>
+                  <p className="text-sm text-gray-600">Total Questions</p>
+                </div>
                 <div className="text-center">
                   <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${getScoreColor(score)}`}>
                     <span className="text-3xl font-bold">{Math.round(score)}%</span>
@@ -238,7 +251,28 @@ export default function CandidateResult() {
                     <CheckCircle className="w-10 h-10 text-green-600" />
                   </div>
                   <h3 className="font-semibold text-gray-900 text-lg">{correctAnswers}</h3>
-                  <p className="text-sm text-gray-600">Correct Answers</p>
+                  <p className="text-sm text-gray-600">Correct</p>
+                </div>
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
+                    <XCircle className="w-10 h-10 text-red-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-lg">{incorrectAnswers}</h3>
+                  <p className="text-sm text-gray-600">Incorrect</p>
+                </div>
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
+                    <HelpCircle className="w-10 h-10 text-gray-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-lg">{unattemptedAnswers}</h3>
+                  <p className="text-sm text-gray-600">Unattempted</p>
+                </div>
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                    <Eye className="w-10 h-10 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-lg">{visitedAnswers}</h3>
+                  <p className="text-sm text-gray-600">Visited</p>
                 </div>
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-purple-100 rounded-full mb-4">
@@ -248,18 +282,18 @@ export default function CandidateResult() {
                   <p className="text-sm text-gray-600">Time Taken</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-medium text-gray-700">Performance Progress</span>
                   <span className="text-lg text-gray-600">{Math.round(score)}%</span>
                 </div>
-                <Progress 
-                  value={score} 
+                <Progress
+                  value={score}
                   className="h-4"
                   style={{
-                    backgroundColor: score >= 80 ? '#dcfce7' : 
-                                    score >= 60 ? '#fef3c7' : '#fee2e2'
+                    backgroundColor: score >= 80 ? '#dcfce7' :
+                      score >= 60 ? '#fef3c7' : '#fee2e2'
                   }}
                 />
                 <div className="flex justify-between text-sm text-gray-500">
@@ -282,18 +316,18 @@ export default function CandidateResult() {
             <CardContent className="p-8">
               <div className="space-y-6">
                 {answers.map((ans, index) => (
-                  <div 
-                    key={ans._id} 
-                    className={`p-6 rounded-xl border-2 transition-all duration-300 ${
-                      ans.isCorrect 
-                        ? 'bg-green-50 border-green-200 hover:bg-green-100' 
+                  <div
+                    key={ans._id}
+                    className={`p-6 rounded-xl border-2 transition-all duration-300 ${ans.isCorrect
+                      ? 'bg-green-50 border-green-200 hover:bg-green-100'
+                      : !ans.selectedOption
+                        ? 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                         : 'bg-red-50 border-red-200 hover:bg-red-100'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start gap-4">
-                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                        ans.isCorrect ? 'bg-green-100' : 'bg-red-100'
-                      }`}>
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${ans.isCorrect ? 'bg-green-100' : 'bg-red-100'
+                        }`}>
                         {ans.isCorrect ? (
                           <CheckCircle className="w-6 h-6 text-green-600" />
                         ) : (
@@ -303,12 +337,12 @@ export default function CandidateResult() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
                           <span className="text-lg font-medium text-gray-600">Question {index + 1}</span>
-                          <Badge variant={ans.isCorrect ? 'default' : 'destructive'} className="text-sm">
-                            {ans.isCorrect ? 'Correct' : 'Incorrect'}
+                          <Badge variant={ans.isCorrect ? 'default' : !ans.selectedOption ? 'secondary' : 'destructive'} className="text-sm">
+                            {ans.isCorrect ? 'Correct' : !ans.selectedOption ? 'Unattempted' : 'Incorrect'}
                           </Badge>
                         </div>
                         <p className="font-medium text-gray-900 text-lg mb-4">{ans.question}</p>
-                        
+
                         {ans.questionImage && (
                           <img
                             src={ans.questionImage}
@@ -320,9 +354,8 @@ export default function CandidateResult() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
                             <p className="text-sm font-medium text-gray-600 mb-2">Your Answer:</p>
-                            <div className={`p-3 rounded-lg ${
-                              ans.isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
+                            <div className={`p-3 rounded-lg ${ans.isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
                               <p className="font-medium">
                                 {ans.selectedOptionText || 'Not answered'}
                               </p>

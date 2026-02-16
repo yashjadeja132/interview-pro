@@ -150,10 +150,14 @@ export const generateCandidateResultPDF = async (candidateData, testResults) => 
   // Score card with professional styling
   const score = Math.round(candidateData.score);
   const scoreColor = getScoreColor(score);
+  const correctCount = testResults.filter(r => r.isCorrect).length;
+  const unattemptedCount = testResults.filter(r => !r.selectedOption).length;
+  const visitedCount = testResults.filter(r => r.status === 2).length;
+  const incorrectCount = testResults.filter(r => !r.isCorrect && r.selectedOption).length;
   
   // Main score box
   pdf.setFillColor(...scoreColor);
-  pdf.rect(20, yPosition - 5, pageWidth - 40, 30, 'F');
+  pdf.rect(20, yPosition - 5, pageWidth - 40, 45, 'F');
   
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(20);
@@ -162,17 +166,21 @@ export const generateCandidateResultPDF = async (candidateData, testResults) => 
   
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(`Status: ${getScoreStatus(score)}`, 25, yPosition + 16);
+  pdf.text(`Status: ${getScoreStatus(score)}`, 25, yPosition + 18);
   
-  // Right side info
-  pdf.setFont('helvetica', 'bold');
+  // Right side info (Core metrics)
   pdf.setFontSize(10);
   pdf.text(`Time Taken: ${candidateData.timeTakenFormatted || 'N/A'}`, pageWidth - 25, yPosition + 8, { align: 'right' });
+  pdf.text(`Total Questions: ${testResults.length}`, pageWidth - 25, yPosition + 15, { align: 'right' });
   
-  pdf.setFont('helvetica', 'normal');
-  pdf.text(`Total Questions: ${testResults.length}`, pageWidth - 25, yPosition + 16, { align: 'right' });
+  // Bottom row metrics in the same box
+  pdf.setFontSize(9);
+  pdf.text(`Correct: ${correctCount}`, 25, yPosition + 32);
+  pdf.text(`Incorrect: ${incorrectCount}`, 70, yPosition + 32);
+  pdf.text(`Unattempted: ${unattemptedCount}`, 115, yPosition + 32);
+  pdf.text(`Visited: ${visitedCount}`, 160, yPosition + 32);
 
-  yPosition += 40;
+  yPosition += 55;
 
   // Detailed Question Analysis Section
   pdf.setTextColor(0, 0, 0);
@@ -205,7 +213,8 @@ export const generateCandidateResultPDF = async (candidateData, testResults) => 
   // Question rows with better formatting
   testResults.forEach((result, index) => {
     const isCorrect = result.isCorrect;
-    const rowColor = isCorrect ? successColor : dangerColor;
+    const isUnattempted = !result.selectedOption;
+    const rowColor = isCorrect ? successColor : isUnattempted ? grayColor : dangerColor;
     
     // Calculate text wrapping for all columns first
     pdf.setFontSize(8);

@@ -324,8 +324,6 @@ exports.getAllResultsWithAttempts = async (req, res) => {
       limit = 10,
       search = "",
       position,
-      minScore,
-      maxScore,
       startDate,
       endDate,
     } = req.query;
@@ -333,12 +331,6 @@ exports.getAllResultsWithAttempts = async (req, res) => {
     const skip = (page - 1) * limit;
     const match = {};
 
-    // Score filter
-    if (minScore || maxScore) {
-      match.score = {};
-      if (minScore) match.score.$gte = Number(minScore);
-      if (maxScore) match.score.$lte = Number(maxScore);
-    }
 
     // Date range filter
     if (startDate || endDate) {

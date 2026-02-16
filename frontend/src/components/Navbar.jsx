@@ -1,7 +1,7 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Bell, Settings, User, LogOut, Home, ChevronDown, Mail, Briefcase, RefreshCw, CheckCircle, XCircle, Clock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, matchPath } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -12,9 +12,41 @@ import {
 } from "@/components/ui/sheet";
 import axiosInstance from "@/Api/axiosInstance";
 
-export default function Navbar({ heading = "Admin Dashboard" }) {
+export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const getHeading = () => {
+    const path = location.pathname;
+
+    // Direct matches
+    const routes = {
+      "/admin/dashboard": "Admin Dashboard",
+      "/admin/settings": "Settings",
+      "/admin/profile": "Profile",
+      "/candidateManagement": "Candidate Management",
+      "/candidateMonitoring": "Candidate Monitoring",
+      "/select-for-interview": "Shortlisted Candidates",
+      "/questionManagement": "Question Management",
+      "/positionManagement": "Job Post Management",
+    };
+
+    if (routes[path]) return routes[path];
+
+    // Dynamic routes
+    if (matchPath("/candidate/:candidateId/position/:positionId/history", path)) {
+      return "Candidate History";
+    }
+    if (matchPath("/candidate-report/:candidateId", path)) {
+      return "Candidate Report";
+    }
+
+    return "Admin Dashboard"; // Default
+  };
+
+  const heading = getHeading();
+
   // const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   // const [retestRequests, setRetestRequests] = useState([]);
   // const [pendingCount, setPendingCount] = useState(0);
@@ -172,7 +204,7 @@ export default function Navbar({ heading = "Admin Dashboard" }) {
                   asChild
                   onClick={() => setIsProfileOpen(false)}
                 >
-                  <Link to="/admin/settings">
+                  <Link to="/admin/settings?tab=profile">
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Link>

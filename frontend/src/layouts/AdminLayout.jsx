@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) {
@@ -23,10 +23,10 @@ export default function AdminLayout() {
         {/* Main Content */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Navbar */}
-          <Navbar heading="Admin Dashboard" />
+          <Navbar />
 
           {/* Page Content */}
-          <main className="flex-1 overflow-auto bg-slate-50/50 dark:bg-background p-6">
+          <main className="flex-1 overflow-auto bg-slate-50/50 dark:bg-background p-3">
             <Outlet />
           </main>
         </div>

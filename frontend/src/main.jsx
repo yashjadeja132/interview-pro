@@ -21,7 +21,9 @@ import CandidateHistory from "./pages/admin/CandidateHistory.jsx";
 import PositionManagement from "./pages/hr/PositionManagement.jsx";
 import CandidateManagement from "./pages/hr/CandidateManagement.jsx";
 import CandidateMonitoring from "./pages/hr/CandidateMonitoring.jsx";
+import SelectForInterview from "./pages/hr/SelectForInterview.jsx";
 import CandidateReportPage from "./pages/hr/CandidateReportPage.jsx";
+
 import StartButton from "./pages/candidate/StartButton.jsx";
 import CandidateDashboardWithAttempts from "./pages/candidate/CandidateDashboardWithAttempts.jsx";
 import QuizTest from "./pages/candidate/QuizTest";
@@ -73,6 +75,10 @@ function Main() {
         <Route path="/candidateMonitoring" element={<AdminLayout />}>
           <Route index element={<CandidateMonitoring />} />
         </Route>
+        <Route path="/select-for-interview" element={<AdminLayout />}>
+          <Route index element={<SelectForInterview />} />
+        </Route>
+
         <Route path="/questionManagement" element={<AdminLayout />}>
           <Route index element={<QuestionManagement />} />
         </Route>

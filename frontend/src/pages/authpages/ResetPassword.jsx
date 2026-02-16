@@ -61,7 +61,7 @@ const ForgotPassword = () => {
 
         try {
             await axiosInstance.post("/auth/reset-password", { email,password });
-            navigate("/admin/login");
+            // navigate("/admin/login");
             setSuccess("Your password has been reset successfully");
         } catch (err) {
             setError("Something went wrong. Please try again.");

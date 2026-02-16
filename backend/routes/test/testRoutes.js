@@ -14,5 +14,7 @@ router.get("/:candidateId", testController.getResultByCandidate);
 // Fetch random questions for candidate (with shuffled options)
 router.get("/questions/random", testController.getRandomQuestionsByPosition);
 router.get("/result/:id", testController.getResultById);
+router.put("/:id/toggle-selection", testController.toggleInterviewSelection);
+
 
 module.exports=router

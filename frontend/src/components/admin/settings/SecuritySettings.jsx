@@ -80,7 +80,7 @@ export default function SecuritySettings() {
       await axiosInstance.put("/admin/change-password", passwords);
       setMessage({
         type: "success",
-        text: "Password changed successfully! Please login again.",
+        text: "Password changed successfully!",
       });
       setPasswords({
         currentPassword: "",
@@ -101,7 +101,7 @@ export default function SecuritySettings() {
     <form onSubmit={handleSubmit} className="space-y-6">
 
       {/* Info Card */}
-      <div className="bg-orange-50 p-4 rounded-lg flex items-start gap-3 border border-orange-100">
+      {/* <div className="bg-orange-50 p-4 rounded-lg flex items-start gap-3 border border-orange-100">
         <ShieldCheck className="text-orange-600 mt-1" size={20} />
         <div>
           <h4 className="font-semibold text-orange-900">Security Recommendations</h4>
@@ -109,7 +109,7 @@ export default function SecuritySettings() {
             Use a strong password with at least 8 characters, including numbers and symbols.
           </p>
         </div>
-      </div>
+      </div> */}
 
       <div className="space-y-4 max-w-md">
 

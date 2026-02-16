@@ -121,7 +121,7 @@ if (experience && experience !== 'all') {
 
     const totalPages = Math.ceil(total / limit);
 
-    res.json({ 
+    res.status(200).json({ 
       success: true, 
       data: positionsWithCounts, 
       pagination: {

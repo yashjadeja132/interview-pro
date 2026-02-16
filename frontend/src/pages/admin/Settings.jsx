@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import {
     User, Shield, Settings as SettingsIcon, Mail, Users, FileText, Palette, Activity
 } from 'lucide-react';
@@ -17,13 +18,32 @@ import AuditLogs from '@/components/admin/settings/AuditLogs';
 
 export default function Settings() {
     const { updateTheme } = useContext(ThemeContext);
-    const [activeTab, setActiveTab] = useState(() => localStorage.getItem('settingsActiveTab') || 'profile');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const location = useLocation();
+
+    const [activeTab, setActiveTab] = useState(() => {
+        const tab = searchParams.get('tab');
+        if (tab) return tab;
+        return localStorage.getItem('settingsActiveTab') || 'profile';
+    });
     const [settings, setSettings] = useState({});
     const [loading, setLoading] = useState(false);
     const [globalMessage, setGlobalMessage] = useState(null);
-    // Update localStorage whenever activeTab changes
+
+    // Sync activeTab with searchParams
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && tab !== activeTab) {
+            setActiveTab(tab);
+        }
+    }, [searchParams]);
+
+    // Update localStorage and searchParams whenever activeTab changes
     useEffect(() => {
         localStorage.setItem('settingsActiveTab', activeTab);
+        if (searchParams.get('tab') !== activeTab) {
+            setSearchParams({ tab: activeTab }, { replace: true });
+        }
     }, [activeTab]);
 
     useEffect(() => {

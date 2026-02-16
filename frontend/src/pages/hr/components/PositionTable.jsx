@@ -8,7 +8,9 @@ import {
     Edit3,
     AlertTriangle,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    ChevronDown,
+    ChevronUp
 } from "lucide-react";
 import {
     Table,
@@ -38,6 +40,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import axiosInstance from "@/Api/axiosInstance";
+import "@/assets/css/PositionManagement.css";
 
 export default function PositionTable({ onEdit, refreshTrigger }) {
     const [positions, setPositions] = useState([]);
@@ -57,6 +60,17 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
         experience: "all",
     });
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
+    const [expandedRows, setExpandedRows] = useState(new Set());
+
+    const toggleRow = (id) => {
+        const newExpanded = new Set(expandedRows);
+        if (newExpanded.has(id)) {
+            newExpanded.delete(id);
+        } else {
+            newExpanded.add(id);
+        }
+        setExpandedRows(newExpanded);
+    };
 
     const fetchPositions = async () => {
         try {
@@ -119,107 +133,107 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
             {/* Search and Filter Section */}
             <Card className="border-0 shadow-sm mb-6 dark:bg-slate-900">
                 <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-4">
-                            <div className="relative">
+                    <div className="pm-controls-container mb-4">
+                        <div className="pm-search-filter-group">
+                            <div className="pm-search-input-wrapper">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                     placeholder="Search positions..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 w-80 h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    className="pl-10 h-10 w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                 />
                             </div>
-                            <Button
-                                variant="outline"
-                                onClick={() => setShowFilters(!showFilters)}
-                                className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' : ''}`}
-                            >
-                                <Filter className="w-4 h-4 mr-2" />
-                                Filter
-                            </Button>
-                            {(filters.vacancy || filters.jobType !== 'all' || filters.salary || filters.shift !== 'all' || filters.experience !== 'all') && (
+                            <div className="flex items-center gap-2">
                                 <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setFilters({ vacancy: "", jobType: "all", salary: "", shift: "all", experience: "all" })}
-                                    className="h-10 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    variant="outline"
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className={`h-10 whitespace-nowrap dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 ${showFilters ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' : ''}`}
                                 >
-                                    Clear Filters
+                                    <Filter className="w-4 h-4 mr-2" />
+                                    Filter
                                 </Button>
-                            )}
+                                {(filters.vacancy || filters.jobType !== 'all' || filters.salary || filters.shift !== 'all' || filters.experience !== 'all') && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setFilters({ vacancy: "", jobType: "all", salary: "", shift: "all", experience: "all" })}
+                                        className="h-10 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 whitespace-nowrap"
+                                    >
+                                        Clear
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-                        <div className="text-sm text-slate-500 dark:text-slate-400">
-                            Showing {positions.length} of {totalPositions} positions
+                        <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            Showing {positions.length} of {totalPositions}
                         </div>
                     </div>
 
                     {showFilters && (
-                        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Vacancies</label>
-                                    <Input
-                                        type="number"
-                                        placeholder="Min vacancies"
-                                        value={filters.vacancy}
-                                        onChange={(e) => setFilters({ ...filters, vacancy: e.target.value })}
-                                        className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Job Type</label>
-                                    <Select value={filters.jobType} onValueChange={(v) => setFilters({ ...filters, jobType: v })}>
-                                        <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                                            <SelectValue placeholder="All" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All</SelectItem>
-                                            <SelectItem value="Full-time">Full-time</SelectItem>
-                                            <SelectItem value="Part-time">Part-time</SelectItem>
-                                            <SelectItem value="Freelancer">Freelancer</SelectItem>
-                                            <SelectItem value="Contract">Contract</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Experience</label>
-                                    <Select value={filters.experience} onValueChange={(v) => setFilters({ ...filters, experience: v })}>
-                                        <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                                            <SelectValue placeholder="All" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All</SelectItem>
-                                            <SelectItem value="0-1 years">0-1 years</SelectItem>
-                                            <SelectItem value="1-3 years">1-3 years</SelectItem>
-                                            <SelectItem value="3-5 years">3-5 years</SelectItem>
-                                            <SelectItem value="5+ years">5+ years</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Min Salary</label>
-                                    <Input
-                                        type="number"
-                                        placeholder="e.g., 50000"
-                                        value={filters.salary}
-                                        onChange={(e) => setFilters({ ...filters, salary: e.target.value })}
-                                        className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Shift</label>
-                                    <Select value={filters.shift} onValueChange={(v) => setFilters({ ...filters, shift: v })}>
-                                        <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                                            <SelectValue placeholder="All" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All</SelectItem>
-                                            <SelectItem value="Day Shift">Day Shift</SelectItem>
-                                            <SelectItem value="Night Shift">Night Shift</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                        <div className="pm-filter-grid">
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Vacancies</label>
+                                <Input
+                                    type="number"
+                                    placeholder="Min vacancies"
+                                    value={filters.vacancy}
+                                    onChange={(e) => setFilters({ ...filters, vacancy: e.target.value })}
+                                    className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Job Type</label>
+                                <Select value={filters.jobType} onValueChange={(v) => setFilters({ ...filters, jobType: v })}>
+                                    <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                        <SelectValue placeholder="All" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All</SelectItem>
+                                        <SelectItem value="Full-time">Full-time</SelectItem>
+                                        <SelectItem value="Part-time">Part-time</SelectItem>
+                                        <SelectItem value="Freelancer">Freelancer</SelectItem>
+                                        <SelectItem value="Contract">Contract</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Experience</label>
+                                <Select value={filters.experience} onValueChange={(v) => setFilters({ ...filters, experience: v })}>
+                                    <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                        <SelectValue placeholder="All" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All</SelectItem>
+                                        <SelectItem value="0-1 years">0-1 years</SelectItem>
+                                        <SelectItem value="1-3 years">1-3 years</SelectItem>
+                                        <SelectItem value="3-5 years">3-5 years</SelectItem>
+                                        <SelectItem value="5+ years">5+ years</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Min Salary</label>
+                                <Input
+                                    type="number"
+                                    placeholder="e.g., 50000"
+                                    value={filters.salary}
+                                    onChange={(e) => setFilters({ ...filters, salary: e.target.value })}
+                                    className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Shift</label>
+                                <Select value={filters.shift} onValueChange={(v) => setFilters({ ...filters, shift: v })}>
+                                    <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                        <SelectValue placeholder="All" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All</SelectItem>
+                                        <SelectItem value="Day Shift">Day Shift</SelectItem>
+                                        <SelectItem value="Night Shift">Night Shift</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     )}
@@ -271,62 +285,118 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
                             <h3 className="text-lg font-medium text-slate-800 dark:text-white mb-2">No positions found</h3>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="pm-table-wrapper">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
+                                    <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent pm-table-header-row">
+                                        <TableHead className="w-10 md:hidden"></TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position Name</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Salary</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Experience</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Vacancies</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Shift</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Job Type</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Created</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right">Actions</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Salary</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Experience</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Vacancies</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Shift</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Job Type</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Created</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right pr-6">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {positions.map((pos, index) => (
-                                        <TableRow key={pos._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
-                                            <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center space-x-3">
-                                                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                                        <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                        <>
+                                            <TableRow key={pos._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
+                                                <TableCell className="md:hidden">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => toggleRow(pos._id)}
+                                                        className="h-8 w-8 p-0"
+                                                    >
+                                                        {expandedRows.has(pos._id) ? (
+                                                            <ChevronUp className="h-4 w-4" />
+                                                        ) : (
+                                                            <ChevronDown className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
+                                                </TableCell>
+                                                <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
+                                                <TableCell className="min-w-0">
+                                                    <div className="flex items-center space-x-3 min-w-0">
+                                                        <div className="pm-job-icon w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
+                                                            <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                                        </div>
+                                                        <span className="font-medium text-slate-800 dark:text-slate-200 break-words line-clamp-2">{pos.name}</span>
                                                     </div>
-                                                    <span className="font-medium text-slate-800 dark:text-slate-200">{pos.name}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>{pos.salary || 0}</TableCell>
-                                            <TableCell>{pos.experience || 'N/A'}</TableCell>
-                                            <TableCell>{pos.vacancies || 0}</TableCell>
-                                            <TableCell>{pos.shift}</TableCell>
-                                            <TableCell>{pos.jobType}</TableCell>
-                                            <TableCell>
-                                                {pos.createdAt ? new Date(pos.createdAt).toLocaleDateString() : "N/A"}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end space-x-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => onEdit(pos)}
-                                                        className="h-8 w-8 p-0 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
-                                                    >
-                                                        <Edit3 className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => setDeleteConfirm({ open: true, id: pos._id })}
-                                                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:bg-slate-800 dark:border-red-900/50"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
+                                                </TableCell>
+                                                <TableCell className="desktop-only">{pos.salary || 0}</TableCell>
+                                                <TableCell className="desktop-only">{pos.experience || 'N/A'}</TableCell>
+                                                <TableCell className="desktop-only">{pos.vacancies || 0}</TableCell>
+                                                <TableCell className="desktop-only">{pos.shift}</TableCell>
+                                                <TableCell className="desktop-only">{pos.jobType}</TableCell>
+                                                <TableCell className="desktop-only">
+                                                    {pos.createdAt ? new Date(pos.createdAt).toLocaleDateString() : "N/A"}
+                                                </TableCell>
+                                                <TableCell className="text-right pr-6">
+                                                    <div className="flex items-center justify-end space-x-2">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => onEdit(pos)}
+                                                            className="h-8 w-8 p-0 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                                                        >
+                                                            <Edit3 className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => setDeleteConfirm({ open: true, id: pos._id })}
+                                                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:bg-slate-800 dark:border-red-900/50"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                            {expandedRows.has(pos._id) && (
+                                                <TableRow className="md:hidden bg-slate-50/50 dark:bg-slate-800/20 border-none">
+                                                    <TableCell colSpan={2} className="border-none"></TableCell>
+                                                    <TableCell className="p-4 align-top border-none">
+                                                        <div className="space-y-4 text-sm">
+                                                            <div>
+                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Salary</p>
+                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.salary || 0}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Vacancies</p>
+                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.vacancies || 0}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Job Type</p>
+                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.jobType}</p>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="p-4 align-top text-right border-none pr-6 ">
+                                                        <div className="space-y-4 text-sm">
+                                                            <div>
+                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Experience</p>
+                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.experience || 'N/A'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Shift</p>
+                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.shift}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Created</p>
+                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">
+                                                                    {pos.createdAt ? new Date(pos.createdAt).toLocaleDateString() : "N/A"}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </>
                                     ))}
                                 </TableBody>
                             </Table>
@@ -395,7 +465,7 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
                         </div>
                     </DialogHeader>
                     <div className="space-y-4 mt-4 dark:text-white">
-                        <p className="text-slate-600 dark:text-slate-300">Are you sure you want to delete this position? This action cannot be undone.</p>
+                        <p className="text-slate-600 dark:text-slate-300">Are you sure you want to delete this job post ? This action cannot be undone.</p>
                         <div className="flex justify-end space-x-3">
                             <Button variant="outline" onClick={() => setDeleteConfirm({ open: false, id: null })}>Cancel</Button>
                             <Button variant="destructive" onClick={() => deletePosition(deleteConfirm.id)}>Delete Position</Button>

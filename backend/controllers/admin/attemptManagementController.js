@@ -15,8 +15,6 @@ exports.getAllAttemptsForAdmin = async (req, res) => {
       search = "",
       position,
       status,
-      minScore,
-      maxScore,
       startDate,
       endDate,
       sortBy = "createdAt",
@@ -89,17 +87,6 @@ exports.getAllAttemptsForAdmin = async (req, res) => {
       });
     }
 
-    // Score filter (only for completed attempts)
-    if (minScore || maxScore) {
-      pipeline.push({
-        $match: {
-          "result.score": {
-            $gte: minScore ? Number(minScore) : 0,
-            $lte: maxScore ? Number(maxScore) : 100
-          }
-        }
-      });
-    }
 
     // Sort
     const sortObj = {};

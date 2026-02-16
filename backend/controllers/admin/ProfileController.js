@@ -12,7 +12,7 @@ const changePassword = async (req, res) => {
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         console.log(isMatch);
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid current password" });
+            return res.status(400).json({ message: "Invalid current password" });
         }
         if (newPassword !== confirmPassword) {
             return res.status(400).json({ message: "Passwords do not match" });

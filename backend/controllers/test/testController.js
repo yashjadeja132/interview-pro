@@ -160,22 +160,29 @@ exports.getAllResults = async (req, res) => {
       limit = 10,
       search = "",
       position,
-      minScore,maxScore,startDate,endDate,} = req.query;
+      startDate,endDate,isSelectedForInterview} = req.query;
     const skip = (page - 1) * limit;
     const match = {};
 
-    if (minScore || maxScore) {
-      match.score = {};
-      if (minScore) match.score.$gte = Number(minScore);
-      if (maxScore) match.score.$lte = Number(maxScore);
+
+    if (isSelectedForInterview !== undefined) {
+      match.isSelectedForInterview = isSelectedForInterview === 'true';
     }
 
-    if (startDate || endDate) {
-      match.createdAt = {};
-      if (startDate) match.createdAt.$gte = new Date(startDate);
-      if (endDate) match.createdAt.$lte = new Date(endDate);
-    }
-
+   if (startDate || endDate) {
+  match.createdAt = {};
+  if (startDate) {
+    const start = new Date(startDate);
+    console.log(start);
+    start.setHours(0, 0, 0, 0);
+    match.createdAt.$gte = start;
+  }
+  if (endDate) {
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    match.createdAt.$lte = end;
+  }
+}
     // Position filter
     if (position) {
       match["position.name"] = position;
@@ -237,7 +244,9 @@ exports.getAllResults = async (req, res) => {
     const totalResult = await TestResult.aggregate(countPipeline);
     const total = totalResult[0]?.count || 0;
     const simplifiedResults = results.map((result) => ({
+      _id: result._id,
       candidateId: result.candidateId,
+
       candidateName: result.candidate.name,
       candidateEmail: result.candidate.email,
       attemptNumber: result.attemptNumber,
@@ -246,6 +255,8 @@ exports.getAllResults = async (req, res) => {
       questionsAskedToCandidate: result.candidate.questionsAskedToCandidate,
       video: result.videoPath,
       timeTakenFormatted: result.timeTakenFormatted,
+      isSelectedForInterview: result.isSelectedForInterview,
+       experience: result.candidate.experience,
       createdAt: result.createdAt,
     }));
 
@@ -371,3 +382,20 @@ exports.getResultById = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.toggleInterviewSelection = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isSelectedForInterview } = req.body;
+    const result = await TestResult.findByIdAndUpdate(
+      id,
+      { isSelectedForInterview },
+      { new: true }
+    );
+    if (!result) return res.status(404).json({ message: "Result not found" });
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+

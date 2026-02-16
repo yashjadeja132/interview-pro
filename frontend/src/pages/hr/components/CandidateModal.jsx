@@ -51,7 +51,12 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             if (!value) message = "Phone is required";
             else if (!/^\d{10}$/.test(value)) message = "Enter a valid 10-digit phone";
         }
-        if (name === "experience" && !value) message = "Experience is required";
+        if (name === "experience") {
+            const years = parseInt(form.experienceYears || 0);
+            const months = parseInt(form.experienceMonths || 0);
+            if (isNaN(years) && isNaN(months)) message = "Experience is required";
+            else if (years === 0 && months === 0) message = "Experience cannot be 0";
+        }
         if (name === "position" && !value) message = "Position is required";
         if (name === "schedule") {
             if (!value) message = "Schedule is required";
@@ -85,7 +90,23 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        let { name, value } = e.target;
+
+        // Restriction: Full Name - only letters and spaces
+        if (name === "name") {
+            value = value.replace(/[^a-zA-Z\s]/g, "");
+        }
+
+        // Restriction: Phone Number - only numbers, max 10 digits
+        if (name === "phone") {
+            value = value.replace(/[^0-9]/g, "").slice(0, 10);
+        }
+
+        // Restriction: Question counts and Duration - only numbers
+        if (["questionsAskedToCandidate", "technicalQuestions", "logicalQuestions", "timeDurationForTest"].includes(name)) {
+            value = value.replace(/[^0-9]/g, "");
+        }
+
         setForm(prev => ({ ...prev, [name]: value }));
         validateField(name, value);
     };
@@ -213,26 +234,68 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
 
                         {/* Experience */}
                         <div className="space-y-2">
-                            <Label className="dark:text-slate-300">Experience Level *</Label>
-                            <Select
-                                value={form.experience || ""}
-                                onValueChange={(val) => {
-                                    setForm(prev => ({ ...prev, experience: val }));
-                                    validateField("experience", val);
-                                }}
-                            >
-                                <SelectTrigger className={`w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.experience ? "border-red-500" : ""}`}>
-                                    <SelectValue placeholder="Select experience" />
-                                </SelectTrigger>
-                                <SelectContent className="dark:bg-slate-800 border-slate-700">
-                                    <SelectItem value="fresher" className="dark:text-white">Fresher (0-1 years)</SelectItem>
-                                    <SelectItem value="1-2" className="dark:text-white">1-2 Years</SelectItem>
-                                    <SelectItem value="3-5" className="dark:text-white">3-5 Years</SelectItem>
-                                    <SelectItem value="5+" className="dark:text-white">5+ Years</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {fieldErrors.experience && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.experience}</p>}
+                            <Label className="dark:text-slate-300">Experience *</Label>
+                            <div className="flex gap-3">
+                                {/* Years dropdown */}
+                                <Select
+                                    value={form.experienceYears || ""}
+                                    onValueChange={(val) => {
+                                        setForm((prev) => ({ ...prev, experienceYears: val }));
+                                        validateField("experience", val);
+                                    }}
+                                >
+                                    <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full">
+                                        <SelectValue placeholder="Years" />
+                                    </SelectTrigger>
+                                    <SelectContent className="dark:bg-slate-800 border-slate-700">
+                                        <SelectItem value="0">0 Year</SelectItem>
+                                        <SelectItem value="1">1 Year</SelectItem>
+                                        <SelectItem value="2">2 Years</SelectItem>
+                                        <SelectItem value="3">3 Years</SelectItem>
+                                        <SelectItem value="4">4 Years</SelectItem>
+                                        <SelectItem value="5">5 Years</SelectItem>
+                                        <SelectItem value="6">6 Years</SelectItem>
+                                        <SelectItem value="7">7 Years</SelectItem>
+                                        <SelectItem value="8">8 Years</SelectItem>
+                                        <SelectItem value="9">9 Years</SelectItem>
+                                        <SelectItem value="10">10+ Years</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Months dropdown */}
+                                <Select
+                                    value={form.experienceMonths || ""}
+                                    onValueChange={(val) => {
+                                        setForm((prev) => ({ ...prev, experienceMonths: val }));
+                                        validateField("experience", val);
+                                    }}
+                                >
+                                    <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full">
+                                        <SelectValue placeholder="Months" />
+                                    </SelectTrigger>
+                                    <SelectContent className="dark:bg-slate-800 border-slate-700">
+                                        <SelectItem value="0">0 Month</SelectItem>
+                                        <SelectItem value="1">1 Month</SelectItem>
+                                        <SelectItem value="2">2 Months</SelectItem>
+                                        <SelectItem value="3">3 Months</SelectItem>
+                                        <SelectItem value="4">4 Months</SelectItem>
+                                        <SelectItem value="5">5 Months</SelectItem>
+                                        <SelectItem value="6">6 Months</SelectItem>
+                                        <SelectItem value="7">7 Months</SelectItem>
+                                        <SelectItem value="8">8 Months</SelectItem>
+                                        <SelectItem value="9">9 Months</SelectItem>
+                                        <SelectItem value="10">10 Months</SelectItem>
+                                        <SelectItem value="11">11 Months</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {fieldErrors.experience && (
+                                <p className="text-xs text-red-600 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />{fieldErrors.experience}
+                                </p>
+                            )}
                         </div>
+
 
                         {/* Position */}
                         <div className="space-y-2">
