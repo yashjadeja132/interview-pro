@@ -3,6 +3,7 @@ const Question = require("../../models/Question");
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const {sendCandidateMail} = require('../../services/hrEmailServices')
+const TestResult = require("../../models/Test");
 
 // Get all candidates with pagination, search, and filtering
 exports.getCandidates = async (req, res) => {
@@ -138,6 +139,33 @@ exports.updateCandidate = async (req, res) => {
     };
     if (finalExperience !== undefined) {
       updateData.experience = finalExperience;
+    }
+
+    // Check for duplicate candidate with same email and phone (excluding current candidate)
+    if (email && phone) {
+      const existingDuplicate = await Candidate.findOne({ 
+        email, 
+        phone, 
+        _id: { $ne: req.params.id } 
+      });
+
+      if (existingDuplicate) {
+        // Fetch latest test result for the duplicate candidate
+        const lastTest = await TestResult.findOne({ candidateId: existingDuplicate._id }).sort({ createdAt: -1 });
+        
+        return res.status(409).json({
+          message: "Candidate already exists with this email and phone number",
+          candidate: {
+            _id: existingDuplicate._id,
+            name: existingDuplicate.name,
+            email: existingDuplicate.email,
+            phone: existingDuplicate.phone,
+            schedule: existingDuplicate.schedule,
+            score: lastTest ? lastTest.score : null,
+            attemptNumber: lastTest ? lastTest.attemptNumber : 0
+          }
+        });
+      }
     }
 
     // Get existing candidate to use current values if fields aren't being updated
@@ -318,9 +346,10 @@ exports.bulkDeleteCandidates = async (req, res) => {
 
 exports.createCandidate=async(req,res)=>{
    try {
-          const { email,name, phone, position, experienceYears, experienceMonths, timeDurationForTest,questionsAskedToCandidate,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue} = req.body;
-            const timeforTest = parseInt(timeDurationForTest);
-        
+       const { email,name, phone, position, experienceYears, experienceMonths, timeDurationForTest,questionsAskedToCandidate,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue} = req.body;
+       const {allowDuplicate} = req.body; 
+       console.log(allowDuplicate)   
+       const timeforTest = parseInt(timeDurationForTest);
           // Check if position is provided
           if (!position) {
             return res.status(400).json({ message: "Position is required" });
@@ -335,7 +364,6 @@ exports.createCandidate=async(req,res)=>{
           } else {
             experience = "0 year 0 month"; // Default if neither is provided
           }
-            console.log(experience);
           // Count questions for the specific position
           const numberOfNonTechnicalQuestions = await Question.countDocuments({
             position: position,
@@ -403,11 +431,33 @@ exports.createCandidate=async(req,res)=>{
           }
           
           const schedule = req.body.schedule ? new Date(req.body.schedule) : null;  
-          const exist = await Candidate.findOne({ email })
-          if (exist) {
-              return res.status(400).json({ message: "Email already registered" })
-          }
-
+            // Check for duplicate with Email AND Phone
+            const previousExist = await Candidate.find({ email, phone }).populate('position');
+             console.log('previousExist',previousExist.length)
+            if (previousExist.length > 0 && !allowDuplicate) {
+                const candidateIds = previousExist.map(c => c._id);
+                 const existingResults = await TestResult.find({
+                    candidateId: { $in: candidateIds },
+                 }).sort({ createdAt: -1 });
+                   console.log('existingResults',existingResults.length)
+                   const scoreHistory = existingResults.map(result => ({
+                      score: result.score,
+                      date: result.createdAt,
+                      marks:result.totalMarks
+                    }));
+              return res.status(409).json({
+                message: "Candidate already exists with this email and phone number",
+                candidate: {
+                  name:previousExist[0].name,
+                  email:previousExist[0].email,
+                  phone:previousExist[0].phone,
+                  position:previousExist[0].position.name ,
+                  attemptNumber: existingResults.length,
+                  scoreHistory
+                }
+              }); 
+            }
+             
           // Validate questionsAskedToCandidate if provided
           if (questionsAskedToCandidate !== undefined && questionsAskedToCandidate !== null) {
             const questionCount = parseInt(questionsAskedToCandidate);

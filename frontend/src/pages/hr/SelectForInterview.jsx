@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { User, Mail, Briefcase, GraduationCap, ChevronLeft, ChevronRight, Filter, Search, UserCheck, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import "../../assets/css/ShortlistedCandidate.css";
 
@@ -171,6 +172,7 @@ export default function SelectForInterview() {
                                             <TableHead className="w-12 text-center font-bold">#</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300">Candidate Name</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Email Address</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Phone Number</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Experience</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center">Test Score</TableHead>
                                         </TableRow>
@@ -208,6 +210,12 @@ export default function SelectForInterview() {
                                                         <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                                                             <Mail className="w-4 h-4 text-slate-400" />
                                                             {r.candidateEmail}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="desktop-only">
+                                                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                                                            <Phone className="w-4 h-4 text-slate-400" />
+                                                            {r.phone}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="desktop-only">

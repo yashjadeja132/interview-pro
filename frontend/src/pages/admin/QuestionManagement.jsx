@@ -23,8 +23,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import api from "../../Api/axiosInstance";
-import CreateQuestion from "./CreateQuestion";
-import EditQuestion from "./EditQuestion";
+import QuestionModal from "./components/QuestionModal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function QuestionManagement() {
@@ -34,8 +33,7 @@ export default function QuestionManagement() {
   const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -112,7 +110,7 @@ export default function QuestionManagement() {
 
   const handleEditQuestion = (question) => {
     setSelectedQuestion(question);
-    setShowEditDialog(true);
+    setShowQuestionModal(true);
   };
 
   const handleViewQuestion = (question) => {
@@ -120,15 +118,9 @@ export default function QuestionManagement() {
     setShowViewDialog(true);
   };
 
-  const handleQuestionCreated = () => {
-    setShowCreateDialog(false);
-    if (selectedPosition) {
-      fetchQuestionsByPosition(selectedPosition);
-    }
-  };
-
-  const handleQuestionUpdated = () => {
-    setShowEditDialog(false);
+  const handleQuestionSuccess = () => {
+    setShowQuestionModal(false);
+    setSelectedQuestion(null);
     if (selectedPosition) {
       fetchQuestionsByPosition(selectedPosition);
     }
@@ -262,7 +254,10 @@ export default function QuestionManagement() {
           <div className="flex justify-between gap-5">
             <p className="text-slate-600 dark:text-slate-400">Organize and manage questions by position for your interviews</p>
             <Button
-              onClick={() => setShowCreateDialog(true)}
+              onClick={() => {
+                setSelectedQuestion(null);
+                setShowQuestionModal(true);
+              }}
               className="bg-primary hover:bg-primary/90 text-white px-6 py-2"
             >
               + Add Question
@@ -369,15 +364,17 @@ export default function QuestionManagement() {
 
       </div>
 
-      {/* Create Question Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto dark:bg-slate-900 dark:border-slate-800">
-          <DialogHeader>
-            <DialogTitle className="dark:text-white">Add Question</DialogTitle>
-          </DialogHeader>
-          <CreateQuestion onQuestionCreated={handleQuestionCreated} />
-        </DialogContent>
-      </Dialog>
+      {/* Question Modal (Add/Edit) */}
+      <QuestionModal
+        isOpen={showQuestionModal}
+        onClose={() => {
+          setShowQuestionModal(false);
+          setSelectedQuestion(null);
+        }}
+        initialData={selectedQuestion}
+        positions={positions}
+        onSuccess={handleQuestionSuccess}
+      />
 
       {/* View Question Dialog */}
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
@@ -484,21 +481,6 @@ export default function QuestionManagement() {
                 </div>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Question Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto dark:bg-slate-900 dark:border-slate-800">
-          <DialogHeader>
-            <DialogTitle className="dark:text-white">Edit Question</DialogTitle>
-          </DialogHeader>
-          {selectedQuestion && (
-            <EditQuestion
-              question={selectedQuestion}
-              onQuestionUpdated={handleQuestionUpdated}
-            />
           )}
         </DialogContent>
       </Dialog>

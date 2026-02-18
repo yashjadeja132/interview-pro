@@ -112,9 +112,14 @@ if (experience && experience !== 'all') {
     const positionsWithCounts = await Promise.all(
       positions.map(async (position) => {
         const questionCount = await Question.countDocuments({ position: position._id });
+        const technicalQuestionCount = await Question.countDocuments({ position: position._id, category: { $exists: false } });
+        const logicalQuestionCount = await Question.countDocuments({ position: position._id, category: { $exists: true } });
+        
         return {
           ...position.toObject(),
-          questionCount
+          questionCount,
+          technicalQuestionCount,
+          logicalQuestionCount
         };
       })
     );

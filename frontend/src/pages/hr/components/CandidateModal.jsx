@@ -6,33 +6,53 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import api from '../../../Api/axiosInstance';
-
+import { formatDateToIST } from "@/utils/dateHelper";
 export default function CandidateModal({ isOpen, onClose, initialData, positions, onSuccess }) {
     const [form, setForm] = useState({});
     const [fieldErrors, setFieldErrors] = useState({});
     const [generalError, setGeneralError] = useState("");
+    const [duplicateData, setDuplicateData] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedPositionQuestionCount, setSelectedPositionQuestionCount] = useState(null);
+    const [selectedPositionCounts, setSelectedPositionCounts] = useState(null);
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
                 // Handle position - extract _id if it's an object
                 const positionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
-                const formData = {
-                    ...initialData,
-                    position: positionId, // Use the extracted position ID
-                    timeDurationForTest: initialData.timeforTest || initialData.timeDurationForTest
-                };
+              // Extract years and months from "experience" string if available
+let years = "";
+let months = "";
+if (initialData.experience) {
+  const matchYears = initialData.experience.match(/(\d+)\s*year/);
+  const matchMonths = initialData.experience.match(/(\d+)\s*month/);
+  years = matchYears ? matchYears[1] : "0";
+  months = matchMonths ? matchMonths[1] : "0";
+}
+
+const formData = {
+  ...initialData,
+  position: positionId,
+  timeDurationForTest: initialData.timeforTest || initialData.timeDurationForTest,
+  experienceYears: years,
+  experienceMonths: months
+};
+
                 setForm(formData);
                 // Handle position question count
                 const pos = positions.find(p => p._id === positionId);
-                setSelectedPositionQuestionCount(pos?.questionCount || 0);
+                setSelectedPositionCounts(pos ? {
+                    total: pos.questionCount || 0,
+                    technical: pos.technicalQuestionCount || 0,
+                    logical: pos.logicalQuestionCount || 0
+                } : null);
             } else {
                 setForm({});
-                setSelectedPositionQuestionCount(null);
+                setSelectedPositionCounts(null);
             }
             setFieldErrors({});
+            setFieldErrors({});
             setGeneralError("");
+            setDuplicateData(null);
         }
     }, [isOpen, initialData, positions]);
 
@@ -51,11 +71,18 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             if (!value) message = "Phone is required";
             else if (!/^\d{10}$/.test(value)) message = "Enter a valid 10-digit phone";
         }
-        if (name === "experience") {
-            const years = parseInt(form.experienceYears || 0);
-            const months = parseInt(form.experienceMonths || 0);
-            if (isNaN(years) && isNaN(months)) message = "Experience is required";
-            else if (years === 0 && months === 0) message = "Experience cannot be 0";
+        if (name === "experience" || name === "experienceYears" || name === "experienceMonths") {
+            let years = parseInt(form.experienceYears || 0);
+            let months = parseInt(form.experienceMonths || 0);
+
+            if (name === "experienceYears") years = parseInt(value || 0);
+            if (name === "experienceMonths") months = parseInt(value || 0);
+
+            if (years === 0 && months === 0) message = "Experience cannot be 0";
+
+            // Set error on 'experience' key and return since this handles its own state update
+            setFieldErrors(prev => ({ ...prev, experience: message }));
+            return message;
         }
         if (name === "position" && !value) message = "Position is required";
         if (name === "schedule") {
@@ -67,8 +94,8 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             else {
                 const count = parseInt(value);
                 if (isNaN(count) || count < 0) message = "Must be a positive number";
-                else if (selectedPositionQuestionCount !== null && count > selectedPositionQuestionCount) {
-                    message = `Only ${selectedPositionQuestionCount} questions available for this position.`;
+                else if (selectedPositionCounts && count > selectedPositionCounts.total) {
+                    message = `Only ${selectedPositionCounts.total} questions available for this position.`;
                 }
             }
         }
@@ -140,10 +167,17 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             } else {
                 await api.post("/hr", form);
             }
+            console.log('duplicateData', duplicateData)
             onSuccess();
             onClose();
         } catch (err) {
-            setGeneralError(err.response?.data?.message || "Failed to save candidate");
+            console.log(err.response)
+            if (err.response?.status === 409 && err.response?.data?.candidate) {
+                setDuplicateData(err.response.data.candidate);
+                setGeneralError(err.response.data.message || "Candidate already exists");
+            } else {
+                setGeneralError(err.response?.data?.message || "Failed to save candidate");
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -160,7 +194,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
 
         const initialPositionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
         const initialTimeDuration = initialData.timeforTest || initialData.timeDurationForTest;
-
+        console.log('initialData', initialData)
         return (
             form.name !== initialData.name ||
             form.email !== initialData.email ||
@@ -177,9 +211,36 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
         );
     };
 
+    // Function to handle "Yes" click - proceed with updating existing candidate
+    const handleDuplicateProceed = async () => {
+        console.log('duplicateData')
+        if (!duplicateData) return;
+        setIsSubmitting(true);
+        setGeneralError("");
+        try {
+            // Use the duplicate candidate's ID to update
+            await api.post("/hr", { ...form ,allowDuplicate: true });
+            onSuccess();
+            onClose();
+        } catch (err) {
+            setGeneralError(err.response?.data?.message || "Failed to add candidate");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Function to handle "No" click - clear duplicate state
+    const handleDuplicateCancel = () => {
+        setDuplicateData(null);
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <DialogContent
+                onOpenAutoFocus={(e) => e.preventDefault()}
+                className="max-w-2xl max-h-[90vh] overflow-y-auto dark:bg-slate-900 border-slate-200 dark:border-slate-800 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800"
+            >
+
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 dark:text-white">
                         {initialData ? <Edit2 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
@@ -241,7 +302,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                     value={form.experienceYears || ""}
                                     onValueChange={(val) => {
                                         setForm((prev) => ({ ...prev, experienceYears: val }));
-                                        validateField("experience", val);
+                                        validateField("experienceYears", val);
                                     }}
                                 >
                                     <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full">
@@ -267,7 +328,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                     value={form.experienceMonths || ""}
                                     onValueChange={(val) => {
                                         setForm((prev) => ({ ...prev, experienceMonths: val }));
-                                        validateField("experience", val);
+                                        validateField("experienceMonths", val);
                                     }}
                                 >
                                     <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full">
@@ -304,7 +365,11 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                 value={form.position || ""}
                                 onValueChange={(val) => {
                                     const pos = positions.find(p => p._id === val);
-                                    setSelectedPositionQuestionCount(pos?.questionCount || 0);
+                                    setSelectedPositionCounts(pos ? {
+                                        total: pos.questionCount || 0,
+                                        technical: pos.technicalQuestionCount || 0,
+                                        logical: pos.logicalQuestionCount || 0
+                                    } : null);
                                     setForm(prev => ({ ...prev, position: val }));
                                     validateField("position", val);
                                 }}
@@ -352,8 +417,10 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                 onChange={handleChange}
                                 className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.questionsAskedToCandidate ? "border-red-500" : ""}`}
                             />
-                            {selectedPositionQuestionCount !== null && (
-                                <p className="text-[10px] text-slate-500">Available: {selectedPositionQuestionCount}</p>
+                            {selectedPositionCounts && (
+                                <h6 className="text-[10px] text-gray-500 dark:text-slate-300">
+                                    Available: {selectedPositionCounts.total} (Technical: {selectedPositionCounts.technical}, Logical: {selectedPositionCounts.logical})
+                                </h6>
                             )}
                             {fieldErrors.questionsAskedToCandidate && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.questionsAskedToCandidate}</p>}
                         </div>
@@ -454,17 +521,72 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                             </div>
                         )}
                     </div>
-                    {generalError && (
-                        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg">
-                            <p className="text-sm text-red-600 dark:text-red-400">{generalError}</p>
+                    {duplicateData && (
+                        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 rounded-lg space-y-2">
+                            <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400 font-medium">
+                                <AlertCircle className="w-5 h-5" />
+                                Candidate Already Exists
+                            </div>
+                            <div className="text-sm text-yellow-800 dark:text-yellow-300 grid grid-cols-2 gap-2 mt-2">
+                                <div><span className="font-semibold">Name:</span> {duplicateData.name}</div>
+                                <div><span className="font-semibold">Email:</span> {duplicateData.email}</div>
+                                <div><span className="font-semibold">Phone:</span> {duplicateData.phone}</div>
+                                <div><span className="font-semibold">Attempts:</span> {duplicateData.attemptNumber}</div>
+                                {duplicateData.scoreHistory && duplicateData.scoreHistory.length > 0 && (
+                                    <div className="mt-3 border-t border-yellow-200 dark:border-yellow-800 pt-2">
+                                        <div className="font-semibold text-yellow-700 dark:text-yellow-400 mb-1">
+                                            Previous Attempts:
+                                        </div>
+                                        <ul className="text-sm text-yellow-800 dark:text-yellow-300 space-y-1">
+                                            {duplicateData.scoreHistory.map((attempt, index) => (
+                                                <li key={index}>
+                                                    Attempt {index + 1}:{" "}
+                                                    <span className="font-semibold">
+                                                        {formatDateToIST(attempt.date)}
+                                                    </span><br/>
+                                                      Position: <span className="font-semibold">{duplicateData.position}</span> 
+                                                    <br />
+                                                    Score: <span className="font-semibold">{attempt.score.toFixed(2)} %</span> | Marks:{" "}
+                                                    <span className="font-semibold">{attempt.marks}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex justify-center items-center text-yellow-700 dark:text-yellow-400 font-medium py-2 rounded">
+                                Do you Add this candidate ?
+                            </div>
                         </div>
                     )}
                 </div>
                 <DialogFooter className="gap-2">
-                    <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="dark:bg-slate-800 dark:text-white dark:border-slate-700">Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={isSubmitting || !hasChanges()} className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed">
-                        {isSubmitting ? "Saving..." : (initialData ? "Update Candidate" : "Add Candidate")}
-                    </Button>
+                    {duplicateData ? (
+                        <>
+                            <Button
+                                variant="outline"
+                                onClick={handleDuplicateCancel}
+                                disabled={isSubmitting}
+                                className="dark:bg-slate-800 dark:text-white dark:border-slate-700 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+                            >
+                                No
+                            </Button>
+                            <Button
+                                onClick={handleDuplicateProceed}
+                                disabled={isSubmitting}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                                {isSubmitting ? "Adding..." : "Yes"}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="dark:bg-slate-800 dark:text-white dark:border-slate-700">Cancel</Button>
+                            <Button onClick={handleSubmit} disabled={isSubmitting || !hasChanges()} className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                                {isSubmitting ? "Saving..." : (initialData ? "Update Candidate" : "Add Candidate")}
+                            </Button>
+                        </>
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>

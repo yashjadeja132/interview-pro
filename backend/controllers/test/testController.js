@@ -172,17 +172,17 @@ exports.getAllResults = async (req, res) => {
    if (startDate || endDate) {
   match.createdAt = {};
   if (startDate) {
-    const start = new Date(startDate);
-    console.log(start);
-    start.setHours(0, 0, 0, 0);
+    const [year, month, day] = startDate.split('-').map(Number);
+    const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
     match.createdAt.$gte = start;
   }
   if (endDate) {
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+    const [year, month, day] = endDate.split('-').map(Number);
+    const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
     match.createdAt.$lte = end;
   }
 }
+
     // Position filter
     if (position) {
       match["position.name"] = position;
@@ -249,6 +249,7 @@ exports.getAllResults = async (req, res) => {
 
       candidateName: result.candidate.name,
       candidateEmail: result.candidate.email,
+      phone: result.candidate.phone,
       attemptNumber: result.attemptNumber,
       positionName: result.position.name,
       score: result.score,

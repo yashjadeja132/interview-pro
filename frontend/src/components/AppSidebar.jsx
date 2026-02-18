@@ -104,7 +104,7 @@ export default function AppSidebar() {
                 </div>
                 <div className="flex flex-col items-start" onClick={() => navigate("/admin/dashboard")}>
                   <span className="font-bold text-slate-800 dark:text-slate-100">
-                    InterviewPro
+                    Interview Pro
                   </span>
                   <span className="text-xs text-slate-500 dark:text-slate-400">
                     Admin Portal

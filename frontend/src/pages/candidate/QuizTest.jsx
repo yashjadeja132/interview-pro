@@ -22,12 +22,12 @@ export default function QuizTest({ streams }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [visitedQuestions, setVisitedQuestions] = useState([]);
   const navigate = useNavigate();
-useEffect(() => {
-  const testSubmitted = sessionStorage.getItem("testSubmitted");
-  if (testSubmitted) {
-    navigate("/thank-you", { replace: true }); // or TimesUpPage if you prefer
-  }
-}, [navigate]);
+  useEffect(() => {
+    const testSubmitted = sessionStorage.getItem("testSubmitted");
+    if (testSubmitted) {
+      navigate("/thank-you", { replace: true }); // or TimesUpPage if you prefer
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (candidateData) {
@@ -199,14 +199,14 @@ useEffect(() => {
   const stopRecordingAndDownload = () => {
     return new Promise((resolve) => {
       if (!mediaRecorderRef.current) return resolve(null);
-      
+
       // ✅ Add timeout to prevent hanging
       const timeoutId = setTimeout(() => {
         console.warn("Recording finalization timeout - proceeding with available chunks");
         const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
         resolve(blob);
       }, 5000); // 5 second timeout
-      
+
       mediaRecorderRef.current.stop();
 
       mediaRecorderRef.current.onstop = () => {
@@ -216,7 +216,7 @@ useEffect(() => {
         });
         resolve(blob);
       };
-      
+
       mediaRecorderRef.current.onerror = (error) => {
         clearTimeout(timeoutId);
         console.error("MediaRecorder error:", error);
@@ -309,7 +309,7 @@ useEffect(() => {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => { });
     }
-      console.log(" Auto1", auto);
+    console.log(" Auto1", auto);
     if (window.__fsChange) {
       document.removeEventListener("fullscreenchange", window.__fsChange);
       window.__fsChange = null;
@@ -322,27 +322,27 @@ useEffect(() => {
       console.log("Already submitting...");
       return;
     }
-    
+
     const dataToUse = candidateData || candidateDataRef.current;
     const currentQuestions = questionsRef.current.length > 0 ? questionsRef.current : questions;
     const currentAnswers = Object.keys(answersRef.current).length > 0 ? answersRef.current : answers;
-    
+
     try {
-      setSubmitting(true); 
-      console.log("Submitting test for candidate:",candidateData);
+      setSubmitting(true);
+      console.log("Submitting test for candidate:", candidateData);
       if (!dataToUse?.id || !dataToUse?.positionId) {
         console.error("Missing candidate data:", dataToUse);
         alert("Candidate data is missing. Please login again.");
         return;
       }
-      
+
       // ✅ IMMEDIATE NAVIGATION - Show Time's Up or Thank You page RIGHT NOW
       // This ensures the page is visible within milliseconds, not after processing
       const targetRoute = auto ? "/TimesUpPage" : "/thank-you";
       const navigateDeferred = Promise.resolve().then(() => {
         navigate(targetRoute, { replace: true });
       });
-      
+
       console.log('auto3', auto);
       const finalAnswers = answersRef.current; // Use Ref for latest answers
       const finalQuestions = questionsRef.current; // Use Ref for latest questions
@@ -359,14 +359,14 @@ useEffect(() => {
       console.log(
         auto ? "1st  Auto-submitting after timer ended" : "Submitting manually"
       );
-      
+
       // ✅ START background submission immediately (non-blocking)
       // This runs in parallel while the page is already navigated
       const backgroundSubmission = (async () => {
         try {
           // Stop streams and recording (this may take 1-2 seconds)
           const videoBlob = await stopRecordingAndDownload();
-          
+
           const formdata = new FormData();
           const detailedAnswers = finalQuestions.map((q, index) => {
             const candidateAnswer = finalAnswers[q._id];
@@ -379,14 +379,14 @@ useEffect(() => {
               status,
             };
           });
-          
+
           formdata.append("video", videoBlob, "candidate-test.webm");
           formdata.append("candidateId", dataToUse.id);
           formdata.append("positionId", dataToUse.positionId);
           formdata.append("answers", JSON.stringify(detailedAnswers));
           formdata.append("timeTakenInSeconds", secondsTaken);
           formdata.append("timeTakenFormatted", timeTakenFormatted);
-          
+
           // Send to backend (may take 2-4 seconds with network latency)
           const response = await axios.post(
             `http://localhost:5000/api/test`,
@@ -396,9 +396,9 @@ useEffect(() => {
               timeout: 30000, // 30 second timeout to prevent hanging
             }
           );
-          
+
           console.log("Submission response:", response);
-          
+
           if (response.status === 200) {
             stopAllStreams();
             sessionStorage.setItem("testSubmitted", "true");
@@ -413,16 +413,16 @@ useEffect(() => {
           stopAllStreams();
         }
       })();
-      
+
       // Wait for navigation to happen immediately, then let background submission continue
       await navigateDeferred;
-      
+
       // Don't wait for background submission - it can complete in the background
       // If needed, save submission status to sessionStorage so it can retry if needed
       backgroundSubmission.catch((err) => {
         console.error("Unhandled background submission error:", err);
       });
-      
+
     } catch (err) {
       console.error("Error in handleSubmit:", err);
       console.error("Error details:", err.response?.data);
@@ -533,15 +533,15 @@ useEffect(() => {
   };
 
   const handleClearAnswer = (questionId) => {
-  setAnswers((prev) => {
-    const updated = { ...prev };
-    delete updated[questionId];
-    // explicit new object already created by spread — good for re-render
-    // auto-save progress after clearing
-    saveProgressToBackend(updated, currentQuestionIndex);
-    return updated;
-  });
-};
+    setAnswers((prev) => {
+      const updated = { ...prev };
+      delete updated[questionId];
+      // explicit new object already created by spread — good for re-render
+      // auto-save progress after clearing
+      saveProgressToBackend(updated, currentQuestionIndex);
+      return updated;
+    });
+  };
   // 1️⃣ State for restore tracking
   const [progressRestored, setProgressRestored] = useState(false);
   const [savedProgress, setSavedProgress] = useState(null); // 👈 add this
@@ -709,9 +709,9 @@ useEffect(() => {
     // Set new current question
     setCurrentQuestionIndex(index);
   };
-    
 
-// console.log('submitting ',submitting)
+
+  // console.log('submitting ',submitting)
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
       <div className="max-w-6xl mx-auto">
@@ -746,9 +746,9 @@ useEffect(() => {
 
             {/* Timer */}
             <div
-              className={`flex items-center gap-3 px-6 py-3 rounded-xl border-2 transition-all duration-300 ${timeLeft <= 10 * 60
-                ? "border-red-300 bg-red-50 text-red-700"
-                : "border-blue-300 bg-blue-50 text-blue-700"
+              className={`flex items-center gap-3 px-6 py-3 rounded-xl border-2 transition-all duration-300 ${timeLeft <= (initialTime * 0.1)
+                  ? "border-red-300 bg-red-50 text-red-700"
+                  : "border-blue-300 bg-blue-50 text-blue-700"
                 }`}
             >
               <Clock className="w-5 h-5" />
@@ -887,7 +887,7 @@ useEffect(() => {
                   {/* Options */}
                   <div className="space-y-3">
                     <RadioGroup
-                        value={answers[questions[currentQuestionIndex]._id] ?? ""}
+                      value={answers[questions[currentQuestionIndex]._id] ?? ""}
                       onValueChange={(val) =>
                         handleChange(questions[currentQuestionIndex]._id, val)
                       }

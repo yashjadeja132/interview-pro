@@ -18,7 +18,7 @@ import {
   HelpCircle,
   Hash
 } from 'lucide-react';
-
+import { formatDateToIST } from "@/utils/dateHelper";
 const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onViewDetails }) => {
   console.log('CandidateResultCard received data:', { candidateData, testResults });
 
@@ -54,7 +54,8 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
           <Trophy className="w-10 h-10 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Interview Assessment Report</h1>
-        <p className="text-gray-600">Generated on {new Date().toLocaleDateString()}</p>
+        <p className="text-gray-600">Generated on {formatDateToIST(candidateData.createdAt)}
+                   {new Date().toLocaleDateString()}        </p>
       </div>
 
       {/* Candidate Information */}
@@ -96,8 +97,7 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
                 <div>
                   <p className="text-sm text-gray-600 dark:text-white">Test Date</p>
                   <p className="font-semibold text-gray-900 dark:text-white">
-                    {new Date(candidateData.createdAt).toLocaleDateString()}
-                  </p>
+{formatDateToIST(candidateData.createdAt)}                  </p>
                 </div>
               </div>
             </div>

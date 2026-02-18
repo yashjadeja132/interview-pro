@@ -4,6 +4,7 @@ import {
   Activity,
   Building2,
   Target,
+  AlertCircle,
 } from "lucide-react";
 import {
   Card,
@@ -15,22 +16,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Mail, Clock, ShieldCheck, AlertCircle } from "lucide-react";
 import axiosInstance from "@/Api/axiosInstance";
+import PositionDetailsDialog from "./components/PositionDetailsDialog";
+import CandidatesListDialog from "./components/CandidatesListDialog";
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
@@ -72,12 +60,6 @@ export default function AdminDashboard() {
           vacanciesDistribution: data.distributions.vacancies || {},
           appliedCandidates: data.distributions.appliedCandidates || {}
         });
-        // console.log('📊 Dashboard Stats from Backend:', {
-        //   totalCandidates: data.overview.totalCandidates,
-        //   totalPositions: data.overview.totalPositions,
-        //   positionDistribution: data.distributions.position,
-        //   vacancies: data.distributions.vacancies
-        // });
       } else {
         console.error('❌ API returned error:', response.data.message);
         setError(response.data.message);
@@ -115,6 +97,7 @@ export default function AdminDashboard() {
         const { data } = await axiosInstance.get("/hr", {
           params: { position: posId, limit: 100 } // Get a reasonable number of candidates
         });
+        console.log(data);
         setPositionCandidates(data.data || []);
       } else {
         setPositionCandidates([]);
@@ -127,6 +110,26 @@ export default function AdminDashboard() {
     }
   };
 
+  const [showPositionDialog, setShowPositionDialog] = useState(false);
+  const [selectedPositionDetails, setSelectedPositionDetails] = useState(null);
+
+  const handleVacancyClick = (positionName) => {
+    const position = positions.find(p => p.name === positionName);
+    if (position) {
+      setSelectedPositionDetails(position);
+      setShowPositionDialog(true);
+    }
+  };
+
+  const handlePositionUpdate = (updatedPosition) => {
+    // Update the positions list with the updated position
+    setPositions(prev =>
+      prev.map(p => p._id === updatedPosition._id ? updatedPosition : p)
+    );
+    setSelectedPositionDetails(updatedPosition);
+    // Refresh dashboard stats to reflect changes
+    getDashboardStats();
+  };
   // Call API on component mount
   useEffect(() => {
     getDashboardStats();
@@ -230,7 +233,11 @@ export default function AdminDashboard() {
                 <div className="space-y-3">
                   {Object.keys(dashboardData.vacanciesDistribution).length > 0 ? (
                     Object.entries(dashboardData.vacanciesDistribution).map(([position, count]) => (
-                      <div key={position} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                      <button
+                        key={position}
+                        onClick={() => handleVacancyClick(position)}
+                        className="w-full flex items-center justify-between p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors text-left"
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 rounded-full bg-orange-500"></div>
                           <span className="text-sm font-medium text-slate-700">{position}</span>
@@ -238,7 +245,7 @@ export default function AdminDashboard() {
                         <Badge variant="outline" className="bg-orange-100 text-orange-700">
                           {count} Vacancies
                         </Badge>
-                      </div>
+                      </button>
                     ))
                   ) : (
                     <div className="text-center py-8">
@@ -321,68 +328,22 @@ export default function AdminDashboard() {
 
       </div>
 
-      {/* Candidates Dialog */}
-      <Dialog open={showCandidatesDialog} onOpenChange={setShowCandidatesDialog}>
-        <DialogContent className="max-w-4xl dark:bg-slate-900 dark:border-slate-800">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold dark:text-white">
-              Candidates for {selectedPosition}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4">
-            {candidatesLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => (
-                  <Skeleton key={i} className="h-16 w-full dark:bg-slate-800" />
-                ))}
-              </div>
-            ) : positionCandidates.length === 0 ? (
-              <div className="text-center py-10 text-slate-500 dark:text-slate-400">
-                No candidates found for this position.
-              </div>
-            ) : (
-              <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-slate-50/50 dark:bg-slate-800/50">
-                      <TableHead className="font-bold">#</TableHead>
-                      <TableHead className="font-bold">Name</TableHead>
-                      <TableHead className="font-bold">Experience</TableHead>
-                      <TableHead className="font-bold">Test Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {positionCandidates.map((candidate, idx) => (
-                      <TableRow key={candidate._id} className="dark:border-slate-800">
-                        <TableCell className="dark:text-slate-400">{idx + 1}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium dark:text-white">{candidate.name}</span>
-                            <span className="text-xs text-slate-500 flex items-center gap-1">
-                              <Mail className="w-3 h-3" /> {candidate.email}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="dark:text-slate-300">
-                          {candidate.experience || 'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${candidate.isSubmitted === 1
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                              : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                            }`}>
-                            {candidate.isSubmitted === 1 ? 'Completed' : 'Pending'}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Position Details Dialog - Editable */}
+      <PositionDetailsDialog
+        open={showPositionDialog}
+        onOpenChange={setShowPositionDialog}
+        position={selectedPositionDetails}
+        onUpdate={handlePositionUpdate}
+      />
+
+      {/* Candidates List Dialog - Read-only */}
+      <CandidatesListDialog
+        open={showCandidatesDialog}
+        onOpenChange={setShowCandidatesDialog}
+        positionName={selectedPosition}
+        candidates={positionCandidates}
+        loading={candidatesLoading}
+      />
     </div>
   );
 }

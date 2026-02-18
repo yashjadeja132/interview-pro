@@ -1,7 +1,15 @@
-import React from 'react'
+import React,{useEffect} from 'react'
 import { Loader2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress' 
 export default function TimesUpPage() {
+   useEffect(() => {
+    const disableBack = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", disableBack);
+    return () => window.removeEventListener("popstate", disableBack);
+  }, []);
   return (
   <>
      <div className="fixed inset-0 z-[9999] bg-white/95 backdrop-blur-md flex flex-col items-center justify-center">
@@ -10,7 +18,7 @@ export default function TimesUpPage() {
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Time's Up!</h2>
           <p className="text-lg text-gray-600 max-w-md text-center">
-            We are wrapping up your test and saving your answers. This may take a few seconds...
+          Your Test is submitted successfully.
           </p>
           <div className="mt-8 w-64">
             <Progress value={100} className="h-2 animate-pulse" />

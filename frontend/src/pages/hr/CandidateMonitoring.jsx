@@ -37,8 +37,12 @@ const formatDate = (date) => {
 const formatDateForAPI = (date) => {
   if (!date) return '';
   const d = new Date(date);
-  return d.toISOString().split('T')[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
+
 
 export default function CandidateMonitoring() {
   const navigate = useNavigate();
@@ -463,7 +467,7 @@ export default function CandidateMonitoring() {
                             <TableCell>
                               <div className="flex items-center space-x-3 min-w-0">
                                 <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0 pm-candidate-icon">
-                                  <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                  <User className="w-4 h-4 text-blue-600 dark:text-white" />
                                 </div>
                                 <div className="min-w-0 flex-1 relative">
                                   <div className="flex items-center gap-2">

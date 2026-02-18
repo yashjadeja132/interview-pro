@@ -44,33 +44,28 @@ module.exports.registerCandidate = async (req, res) => {
 module.exports.loginCandidate = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const candidate = await Candidate.findOne({ email }).populate('position', '_id name');
+    // Find ALL candidates with this email
+    const candidates = await Candidate.find({ email }).populate('position', '_id name');
     console.log('loginCandidate api called');
 
-    // ✅ Check if candidate exists first
-    if (!candidate) {
+    // ✅ Check if ANY candidate exists
+    if (!candidates || candidates.length === 0) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // ✅ Safe to access candidate.position now
-    const positionId = candidate.position?._id || candidate.position;
+    let candidate = null;
+    let isMatch = false;
 
-    // Check if test already submitted
-    const submittedTest = await testResult.findOne({
-      candidateId: candidate._id,
-      positionId: positionId,
-      isSubmitted: 1,
-    });
-
-    if (submittedTest) {
-      console.log('test already submitted');
-      return res.status(403).json({
-        message: 'You have already submitted the test. You cannot login again.',
-      });
+    // Iterate through all candidates with this email to find matching password
+    for (const cand of candidates) {
+        const match = await bcrypt.compare(password, cand.password);
+        if (match) {
+            candidate = cand;
+            isMatch = true;
+            break; // Found the correct user
+        }
     }
 
-    // ✅ Await bcrypt comparison
-    const isMatch = await bcrypt.compare(password, candidate.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }

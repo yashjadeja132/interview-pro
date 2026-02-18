@@ -99,25 +99,11 @@ export default function SecuritySettings() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-
-      {/* Info Card */}
-      {/* <div className="bg-orange-50 p-4 rounded-lg flex items-start gap-3 border border-orange-100">
-        <ShieldCheck className="text-orange-600 mt-1" size={20} />
-        <div>
-          <h4 className="font-semibold text-orange-900">Security Recommendations</h4>
-          <p className="text-xs text-orange-700 mt-1">
-            Use a strong password with at least 8 characters, including numbers and symbols.
-          </p>
-        </div>
-      </div> */}
-
       <div className="space-y-4 max-w-md">
-
         <PasswordInput
           label="Current Password"
           name="currentPassword"
           value={passwords.currentPassword}
-          icon={<Lock size={14} />}
           showKey="current"
           show={show}
           setShow={setShow}
@@ -128,7 +114,6 @@ export default function SecuritySettings() {
           label="New Password"
           name="newPassword"
           value={passwords.newPassword}
-          icon={<Key size={14} />}
           showKey="new"
           show={show}
           setShow={setShow}
@@ -139,7 +124,6 @@ export default function SecuritySettings() {
           label="Confirm New Password"
           name="confirmPassword"
           value={passwords.confirmPassword}
-          icon={<Key size={14} />}
           showKey="confirm"
           show={show}
           setShow={setShow}

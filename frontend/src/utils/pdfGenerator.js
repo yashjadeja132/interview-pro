@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { formatDateToIST } from "@/utils/dateHelper";
 
 // Helper function to split text into multiple lines
 const splitTextIntoLines = (pdf, text, maxWidth, x, y, fontSize = 10) => {
@@ -33,7 +34,8 @@ export const generateCandidateResultPDF = async (candidateData, testResults) => 
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  
+  console.log(candidateData);
+  console.log(testResults);
   // Professional color scheme
   const primaryColor = [59, 130, 246]; // Blue
   const secondaryColor = [30, 64, 175]; // Dark Blue
@@ -74,11 +76,7 @@ export const generateCandidateResultPDF = async (candidateData, testResults) => 
 
   // Date in header
   pdf.setFontSize(10);
-  const reportDate = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
+  const reportDate =  formatDateToIST(candidateData.createdAt);
   pdf.text(reportDate, pageWidth - 20, 26, { align: 'right' });
 
   // Add a subtle line under header
@@ -125,7 +123,7 @@ export const generateCandidateResultPDF = async (candidateData, testResults) => 
   pdf.setFont('helvetica', 'bold');
   pdf.text('Position:', infoLeftX, infoY);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(candidateData.positionName || 'N/A', infoLeftX + 25, infoY);
+  pdf.text(candidateData.positionName || 'N/A', infoLeftX + 20, infoY);
   
   infoY += lineHeight + 2;
   pdf.setFont('helvetica', 'bold');
@@ -136,7 +134,7 @@ export const generateCandidateResultPDF = async (candidateData, testResults) => 
     month: 'long', 
     day: 'numeric' 
   });
-  pdf.text(testDate, infoLeftX + 28, infoY);
+  pdf.text(testDate, infoLeftX + 20, infoY);
 
   yPosition += 55;
 

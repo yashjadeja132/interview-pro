@@ -10,18 +10,26 @@ export default function ProfileSettings() {
         phone: '',
         image: '',
     });
+    const [initialData, setInitialData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        image: '',
+    });
     const [message, setMessage] = useState({ type: '', text: '' });
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
-            setFormData({
+            const data = {
                 name: user.name || '',
                 email: user.email || '',
                 phone: user.phone || '',
                 image: user.image || '',
-            });
+            };
+            setFormData(data);
+            setInitialData(data);
         }
     }, []);
 
@@ -46,6 +54,7 @@ export default function ProfileSettings() {
                     const updatedUser = { ...user, ...response.data.user };
                     localStorage.setItem('user', JSON.stringify(updatedUser));
                 }
+                setInitialData(formData);
                 setMessage({ type: 'success', text: 'Profile updated successfully!' });
             }
         } catch (error) {
@@ -111,11 +120,10 @@ export default function ProfileSettings() {
             {/* ================= MESSAGE ================= */}
             {message.text && (
                 <div
-                    className={`p-3 rounded-md text-sm ${
-                        message.type === 'success'
+                    className={`p-3 rounded-md text-sm ${message.type === 'success'
                             ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800'
                             : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800'
-                    }`}
+                        }`}
                 >
                     {message.text}
                 </div>
@@ -125,8 +133,8 @@ export default function ProfileSettings() {
             <div className="flex justify-end pt-4">
                 <button
                     type="submit"
-                    disabled={loading}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    disabled={loading || JSON.stringify(formData) === JSON.stringify(initialData)}
+                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Save size={18} />
                     {loading ? 'Saving...' : 'Save Changes'}
