@@ -331,12 +331,12 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                 />
                                             </TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 hidden sm:table-cell">#</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300">Candidate</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Contact</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Experience</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Job Post</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Status</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only">Test Duration</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center">Candidate</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center desktop-only">Contact</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center desktop-only">Experience</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center desktop-only">Job Post</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center desktop-only">Status</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center desktop-only">Test Duration</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-right pr-2 md:pr-6">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -366,11 +366,11 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                         />
                                                     </TableCell>
                                                     <TableCell className="hidden sm:table-cell">{(currentPage - 1) * rowsPerPage + idx + 1}</TableCell>
-                                                    <TableCell>
+                                                    <TableCell className="text-center">
                                                         <p className="font-medium text-slate-900 dark:text-white break-words line-clamp-2">{candidate.name || 'N/A'}</p>
                                                     </TableCell>
-                                                    <TableCell className="desktop-only">
-                                                        <div className="space-y-1">
+                                                    <TableCell className="desktop-only ">
+                                                        <div className="flex flex-col items-center justify-center space-y-1">
                                                             <div className="flex items-center gap-2">
                                                                 <Mail className="w-3 h-3 text-slate-400" />
                                                                 <span className="text-sm text-slate-600 dark:text-slate-300">{candidate.email || 'N/A'}</span>
@@ -381,22 +381,22 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                             </div>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="desktop-only">
+                                                    <TableCell className="desktop-only text-center">
                                                         <Badge variant={getExperienceBadgeVariant(candidate.experience)} className="dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
                                                             {getExperienceDisplayText(candidate.experience)}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="desktop-only">
+                                                    <TableCell className="desktop-only text-center">
                                                         <span className="text-sm text-slate-600 dark:text-slate-300">
                                                             {candidate.positionName || positions.find(p => p._id === candidate.position)?.name || 'N/A'}
                                                         </span>
                                                     </TableCell>
-                                                    <TableCell className="desktop-only">
+                                                    <TableCell className="desktop-only text-center">
                                                         <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getScheduleStatus(candidate.isSubmitted).bg} ${getScheduleStatus(candidate.isSubmitted).color}`}>
                                                             {getScheduleStatus(candidate.isSubmitted).status}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="desktop-only">
+                                                    <TableCell className="desktop-only text-center">
                                                         <div className="flex items-center gap-2">
                                                             <Clock className="w-3 h-3 text-slate-400" />
                                                             <span className="text-sm text-slate-600 dark:text-slate-300">
@@ -429,7 +429,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                 {expandedRows.has(candidate._id) && (
                                                     <TableRow className="md:hidden bg-slate-50/50 dark:bg-slate-800/20 border-none hover:bg-transparent">
                                                         <TableCell colSpan={2} className="border-none p-0 w-16"></TableCell> {/* Skip Chevron & Checkbox */}
-                                                        <TableCell className="border-none hidden sm:table-cell p-0"></TableCell> 
+                                                        <TableCell className="border-none hidden sm:table-cell p-0"></TableCell>
                                                         <TableCell className="p-2 pl-0 align-top border-none min-w-0">
                                                             <div className="space-y-4 text-sm min-w-0">
                                                                 <div className="min-w-0">

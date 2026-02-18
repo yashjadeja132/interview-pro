@@ -251,7 +251,7 @@ export default function CandidateMonitoring() {
       </div>
 
       {/* Main Content */}
-      <div className="p-2 sm:p-4 max-w-7xl mx-auto space-y-6">
+      <div className="pt-2 sm:pt-4 max-w-8xl mx-auto space-y-6">
         {/* Search and Filter Section */}
         <Card className="border-0 shadow-sm dark:bg-slate-900">
           <CardContent className="p-6">
@@ -432,7 +432,7 @@ export default function CandidateMonitoring() {
                         <TableHead className="w-10 px-0 text-center"></TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:table-cell w-12">#</TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 w-full">Candidate</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden md:table-cell">Position</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden md:table-cell">Position</TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden lg:table-cell">Questions Asked</TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden md:table-cell">Scheduled Time</TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:table-cell">Score</TableHead>
@@ -467,7 +467,7 @@ export default function CandidateMonitoring() {
                             <TableCell>
                               <div className="flex items-center space-x-3 min-w-0">
                                 <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0 pm-candidate-icon">
-                                  <User className="w-4 h-4 text-blue-600 dark:text-white" />
+                                  <User className="w-4 h-4 dark:text-white" />
                                 </div>
                                 <div className="min-w-0 flex-1 relative">
                                   <div className="flex items-center gap-2">
@@ -480,7 +480,7 @@ export default function CandidateMonitoring() {
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell className="text-center hidden md:table-cell">
                               {r.positionName}
                             </TableCell>
                             <TableCell className="text-center hidden lg:table-cell">

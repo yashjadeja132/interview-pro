@@ -14,7 +14,4 @@ router.get('/', settingsController.getSettings);
 // PUT update settings
 router.put('/', settingsController.updateSettings);
 
-// GET audit logs
-router.get('/audit-logs', settingsController.getAuditLogs);
-
 module.exports = router;

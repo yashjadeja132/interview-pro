@@ -74,7 +74,7 @@ export default function ThemeSettings({ settings, onUpdate, loading }) {
                     </div>
                 </div>
 
-                <div className="space-y-4">
+                {/* <div className="space-y-4">
                     <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
                         <Image size={16} /> Logo URL
                     </label>
@@ -86,7 +86,7 @@ export default function ThemeSettings({ settings, onUpdate, loading }) {
                         onChange={handleChange}
                         className="w-full p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     />
-                </div>
+                </div> */}
 
             </div>
 

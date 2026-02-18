@@ -348,7 +348,6 @@ exports.createCandidate=async(req,res)=>{
    try {
        const { email,name, phone, position, experienceYears, experienceMonths, timeDurationForTest,questionsAskedToCandidate,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue} = req.body;
        const {allowDuplicate} = req.body; 
-       console.log(allowDuplicate)   
        const timeforTest = parseInt(timeDurationForTest);
           // Check if position is provided
           if (!position) {
@@ -438,13 +437,17 @@ exports.createCandidate=async(req,res)=>{
                 const candidateIds = previousExist.map(c => c._id);
                  const existingResults = await TestResult.find({
                     candidateId: { $in: candidateIds },
-                 }).sort({ createdAt: -1 });
+                 }).populate("positionId", "name")
+                 .sort({ createdAt: -1 });
+                 console.log('existingResults',existingResults)
                    console.log('existingResults',existingResults.length)
                    const scoreHistory = existingResults.map(result => ({
+                     position: result.positionId?.name || "Unknown Position",
                       score: result.score,
                       date: result.createdAt,
                       marks:result.totalMarks
                     }));
+                    console.log('scoreHistory',scoreHistory)
               return res.status(409).json({
                 message: "Candidate already exists with this email and phone number",
                 candidate: {

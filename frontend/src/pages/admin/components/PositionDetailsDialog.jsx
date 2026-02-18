@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Building2, Clock, Save, X } from "lucide-react";
+import { Building2, Clock, Save, X, AlertCircle } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -33,6 +33,7 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
         jobType: "",
         shift: "",
     });
+    const [fieldErrors, setFieldErrors] = useState({});
 
     useEffect(() => {
         if (position) {
@@ -44,18 +45,82 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                 jobType: position.jobType || "Full-time",
                 shift: position.shift || "Day Shift",
             });
+            setFieldErrors({});
             setIsEditing(false);
         }
     }, [position]);
 
+    const validateField = (name, value) => {
+        let message = "";
+
+        if (name === "name" && !value.trim()) message = "Position name is required";
+        if (name === "salary") {
+            if (!value) message = "Salary is required";
+            else if (isNaN(value) || Number(value) <= 0) message = "Enter a valid positive number";
+        }
+        if (name === "experience" && !value.trim()) message = "Experience is required";
+        if (name === "vacancies") {
+            if (!value) message = "Vacancies are required";
+            else if (!Number.isInteger(Number(value)) || Number(value) <= 0)
+                message = "Must be a positive integer";
+        }
+        if (name === "jobType" && !value.trim()) message = "Job type is required";
+        if (name === "shift" && !value.trim()) message = "Shift is required";
+
+        setFieldErrors((prev) => ({ ...prev, [name]: message }));
+        return message;
+    };
+
     const handleInputChange = (field, value) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
+        let sanitizedValue = value;
+
+        // Restriction: Position Name - no numbers allowed
+        if (field === "name") {
+            sanitizedValue = value.replace(/[0-9]/g, "");
+        }
+
+        // Restriction: Salary and Vacancies - only numbers
+        if (["salary", "vacancies"].includes(field)) {
+            sanitizedValue = value.replace(/[^0-9]/g, "");
+        }
+
+        setFormData((prev) => ({ ...prev, [field]: sanitizedValue }));
+        validateField(field, sanitizedValue);
+    };
+
+    const hasChanges = () => {
+        if (!position) return false;
+        return (
+            formData.name !== (position.name || "") ||
+            formData.salary.toString() !== (position.salary || "").toString() ||
+            formData.experience.toString() !== (position.experience || "").toString() ||
+            formData.vacancies.toString() !== (position.vacancies || "").toString() ||
+            formData.jobType !== (position.jobType || "Full-time") ||
+            formData.shift !== (position.shift || "Day Shift")
+        );
     };
 
     const handleSave = async () => {
+        const fieldsToValidate = ["name", "salary", "jobType", "experience", "vacancies", "shift"];
+        const errors = {};
+
+        fieldsToValidate.forEach((field) => {
+            const msg = validateField(field, formData[field]);
+            if (msg) errors[field] = msg;
+        });
+
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            return;
+        }
+
         try {
             setLoading(true);
-            const response = await axiosInstance.put(`/position/${position._id}`, formData);
+            const response = await axiosInstance.put(`/position/${position._id}`, {
+                ...formData,
+                salary: Number(formData.salary),
+                vacancies: Number(formData.vacancies),
+            });
 
             if (response.data.success) {
                 toast.success("Position updated successfully");
@@ -83,6 +148,7 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                 shift: position.shift || "Day Shift",
             });
         }
+        setFieldErrors({});
         setIsEditing(false);
     };
 
@@ -90,7 +156,10 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md dark:bg-slate-900 dark:border-slate-800">
+            <DialogContent className="max-w-md dark:bg-slate-900 dark:border-slate-800"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
+            >
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold dark:text-white flex items-center gap-2">
                         <Building2 className="w-5 h-5 text-orange-600" />
@@ -108,8 +177,14 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                     id="position-name"
                                     value={formData.name}
                                     onChange={(e) => handleInputChange("name", e.target.value)}
-                                    className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.name ? "border-red-500" : ""}`}
                                 />
+                                {fieldErrors.name && (
+                                    <p className="text-xs text-red-600 flex items-center gap-1">
+                                        <AlertCircle className="w-3 h-3" />
+                                        {fieldErrors.name}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -120,19 +195,31 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                         type="number"
                                         value={formData.salary}
                                         onChange={(e) => handleInputChange("salary", e.target.value)}
-                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.salary ? "border-red-500" : ""}`}
                                     />
+                                    {fieldErrors.salary && (
+                                        <p className="text-xs text-red-600 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {fieldErrors.salary}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="experience" className="dark:text-slate-300">Experience (years)</Label>
                                     <Input
                                         id="experience"
-                                        type="number"
+                                        type="text"
                                         value={formData.experience}
                                         onChange={(e) => handleInputChange("experience", e.target.value)}
-                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.experience ? "border-red-500" : ""}`}
                                     />
+                                    {fieldErrors.experience && (
+                                        <p className="text-xs text-red-600 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {fieldErrors.experience}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -142,8 +229,14 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                         type="number"
                                         value={formData.vacancies}
                                         onChange={(e) => handleInputChange("vacancies", e.target.value)}
-                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.vacancies ? "border-red-500" : ""}`}
                                     />
+                                    {fieldErrors.vacancies && (
+                                        <p className="text-xs text-red-600 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {fieldErrors.vacancies}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -152,16 +245,23 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                         value={formData.jobType}
                                         onValueChange={(value) => handleInputChange("jobType", value)}
                                     >
-                                        <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                        <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.jobType ? "border-red-500" : ""}`}>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Full-time">Full-time</SelectItem>
                                             <SelectItem value="Part-time">Part-time</SelectItem>
+                                            <SelectItem value="Freelancer">Freelancer</SelectItem>
                                             <SelectItem value="Contract">Contract</SelectItem>
                                             <SelectItem value="Internship">Internship</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    {fieldErrors.jobType && (
+                                        <p className="text-xs text-red-600 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {fieldErrors.jobType}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2 col-span-2">
@@ -170,7 +270,7 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                         value={formData.shift}
                                         onValueChange={(value) => handleInputChange("shift", value)}
                                     >
-                                        <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                        <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.shift ? "border-red-500" : ""}`}>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -179,6 +279,12 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                             <SelectItem value="Flexible">Flexible</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    {fieldErrors.shift && (
+                                        <p className="text-xs text-red-600 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {fieldErrors.shift}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </>
@@ -242,7 +348,7 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                             <Button
                                 variant="outline"
                                 onClick={handleCancel}
-                                className="flex-1"
+                                className="flex-1 dark:text-white"
                                 disabled={loading}
                             >
                                 <X className="w-4 h-4 mr-2" />
@@ -251,7 +357,7 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                             <Button
                                 onClick={handleSave}
                                 className="flex-1 bg-orange-600 hover:bg-orange-700"
-                                disabled={loading}
+                                disabled={loading || !hasChanges()}
                             >
                                 <Save className="w-4 h-4 mr-2" />
                                 {loading ? "Saving..." : "Save Changes"}

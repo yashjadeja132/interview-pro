@@ -1,5 +1,4 @@
 const Settings = require('../../models/Settings');
-const AuditLog = require('../../models/AuditLog');
 
 // GET /api/settings/:section? (optional query param to get specific section)
 const getSettings = async (req, res) => {
@@ -63,35 +62,10 @@ const updateSettings = async (req, res) => {
         const updates = req.body; // expect partial updates
         const settings = await Settings.findOneAndUpdate({}, updates, { new: true, upsert: true });
 
-        // Audit log entry
-        await AuditLog.create({
-            adminId: req.user.id,
-            action: 'UPDATE_SETTINGS',
-            target: 'settings',
-            details: updates,
-            ipAddress: req.ip,
-            userAgent: req.get('User-Agent')
-        });
-
-        res.json({ message: 'Settings updated', settings });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
 };
 
-// GET /api/settings/audit-logs
-const getAuditLogs = async (req, res) => {
-    try {
-        const logs = await AuditLog.find()
-            .populate('adminId', 'name email')
-            .sort({ createdAt: -1 })
-            .limit(50); // Limit to last 50 logs for now
-        res.json({ logs });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
-    }
-};
-
-module.exports = { getSettings, updateSettings, getAuditLogs };
+module.exports = { getSettings, updateSettings };

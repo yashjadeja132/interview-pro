@@ -331,7 +331,7 @@ export default function QuestionModal({ isOpen, onClose, initialData, positions,
 
                         {/* Category Selection */}
                         <div className="space-y-2">
-                            <Label className="text-sm font-medium dark:text-gray-300">Category</Label>
+                            <Label className="text-sm font-medium dark:text-gray-300">Category (optional)</Label>
                             <Select
                                 value={form.category ? String(form.category) : ""}
                                 onValueChange={(value) => {

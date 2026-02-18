@@ -19,23 +19,23 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             if (initialData) {
                 // Handle position - extract _id if it's an object
                 const positionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
-              // Extract years and months from "experience" string if available
-let years = "";
-let months = "";
-if (initialData.experience) {
-  const matchYears = initialData.experience.match(/(\d+)\s*year/);
-  const matchMonths = initialData.experience.match(/(\d+)\s*month/);
-  years = matchYears ? matchYears[1] : "0";
-  months = matchMonths ? matchMonths[1] : "0";
-}
+                // Extract years and months from "experience" string if available
+                let years = "";
+                let months = "";
+                if (initialData.experience) {
+                    const matchYears = initialData.experience.match(/(\d+)\s*year/);
+                    const matchMonths = initialData.experience.match(/(\d+)\s*month/);
+                    years = matchYears ? matchYears[1] : "0";
+                    months = matchMonths ? matchMonths[1] : "0";
+                }
 
-const formData = {
-  ...initialData,
-  position: positionId,
-  timeDurationForTest: initialData.timeforTest || initialData.timeDurationForTest,
-  experienceYears: years,
-  experienceMonths: months
-};
+                const formData = {
+                    ...initialData,
+                    position: positionId,
+                    timeDurationForTest: initialData.timeforTest || initialData.timeDurationForTest,
+                    experienceYears: years,
+                    experienceMonths: months
+                };
 
                 setForm(formData);
                 // Handle position question count
@@ -219,7 +219,7 @@ const formData = {
         setGeneralError("");
         try {
             // Use the duplicate candidate's ID to update
-            await api.post("/hr", { ...form ,allowDuplicate: true });
+            await api.post("/hr", { ...form, allowDuplicate: true });
             onSuccess();
             onClose();
         } catch (err) {
@@ -238,6 +238,7 @@ const formData = {
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent
                 onOpenAutoFocus={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
                 className="max-w-2xl max-h-[90vh] overflow-y-auto dark:bg-slate-900 border-slate-200 dark:border-slate-800 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800"
             >
 
@@ -250,6 +251,120 @@ const formData = {
 
                 <div className="grid gap-6 py-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        {/* Position */}
+                        <div className="space-y-2">
+                            <Label className="dark:text-slate-300">Position *</Label>
+                            <Select
+                                value={form.position || ""}
+                                onValueChange={(val) => {
+                                    const pos = positions.find(p => p._id === val);
+                                    setSelectedPositionCounts(pos ? {
+                                        total: pos.questionCount || 0,
+                                        technical: pos.technicalQuestionCount || 0,
+                                        logical: pos.logicalQuestionCount || 0
+                                    } : null);
+                                    setForm(prev => ({ ...prev, position: val }));
+                                    validateField("position", val);
+                                }}
+                            >
+                                <SelectTrigger className={`w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.position ? "border-red-500" : ""}`}>
+                                    <SelectValue placeholder="Select position" />
+                                </SelectTrigger>
+                                <SelectContent className="dark:bg-slate-800 border-slate-700">
+                                    {positions.map(pos => (
+                                        <SelectItem key={pos._id} value={pos._id} className="dark:text-white">{pos.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                           {selectedPositionCounts && (
+                                <h2  className="text-[13px] text-gray-500 dark:text-slate-300">
+                                    Available: {selectedPositionCounts.total} (Technical: {selectedPositionCounts.technical}, Logical: {selectedPositionCounts.logical})
+                                </h2>
+                            )}
+                            {fieldErrors.position && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.position}</p>}
+                        </div>
+
+                        {/* Schedule */}
+                        <div className="space-y-2">
+                            <Label htmlFor="schedule" className="dark:text-slate-300">Interview Schedule *</Label>
+                            <Input
+                                id="schedule"
+                                name="schedule"
+                                type="datetime-local"
+                                min={new Date().toISOString().slice(0, 16)}
+                                value={form.schedule ? (() => {
+                                    const date = new Date(form.schedule);
+                                    const offset = date.getTimezoneOffset();
+                                    const localDate = new Date(date.getTime() - (offset * 60000));
+                                    return localDate.toISOString().slice(0, 16);
+                                })() : ""}
+                                onChange={handleChange}
+                                className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.schedule ? "border-red-500" : ""}`}
+                            />
+                            {fieldErrors.schedule && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.schedule}</p>}
+                        </div>
+
+                        {/* Questions count */}
+                        <div className="space-y-2">
+                            <Label htmlFor="questionsAskedToCandidate" className="dark:text-slate-300">Questions Asked *</Label>
+                            <Input
+                                id="questionsAskedToCandidate"
+                                name="questionsAskedToCandidate"
+                                type="number"
+                                value={form.questionsAskedToCandidate || ""}
+                                onChange={handleChange}
+                                className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.questionsAskedToCandidate ? "border-red-500" : ""}`}
+                            />
+                            {/* {selectedPositionCounts && (
+                                <h2  className="text-[13px] text-gray-500 dark:text-slate-300">
+                                    Available: {selectedPositionCounts.total} (Technical: {selectedPositionCounts.technical}, Logical: {selectedPositionCounts.logical})
+                                </h2>
+                            )} */}
+                            {fieldErrors.questionsAskedToCandidate && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.questionsAskedToCandidate}</p>}
+                        </div>
+
+                        {/* Test Duration */}
+                        <div className="space-y-2">
+                            <Label htmlFor="timeDurationForTest" className="dark:text-slate-300">Duration (min) *</Label>
+                            <Input
+                                id="timeDurationForTest"
+                                name="timeDurationForTest"
+                                type="number"
+                                value={form.timeDurationForTest || ""}
+                                onChange={handleChange}
+                                className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.timeDurationForTest ? "border-red-500" : ""}`}
+                            />
+                            {fieldErrors.timeDurationForTest && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.timeDurationForTest}</p>}
+                        </div>
+
+                        {/* Questions Breakdown */}
+                        {form.questionsAskedToCandidate > 0 && (
+                            <>
+                                <div className="space-y-2">
+                                    <Label className="dark:text-slate-300">Technical Questions</Label>
+                                    <Input
+                                        name="technicalQuestions"
+                                        type="number"
+                                        value={form.technicalQuestions ?? ""}
+                                        onChange={handleChange}
+                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="dark:text-slate-300">Logical Questions</Label>
+                                    <Input
+                                        name="logicalQuestions"
+                                        type="number"
+                                        value={form.logicalQuestions ?? ""}
+                                        onChange={handleChange}
+                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    />
+                                </div>
+                            </>
+                        )}
+
+
                         {/* Name */}
                         <div className="space-y-2">
                             <Label htmlFor="name" className="dark:text-slate-300">Full Name *</Label>
@@ -359,7 +474,7 @@ const formData = {
 
 
                         {/* Position */}
-                        <div className="space-y-2">
+                        {/* <div className="space-y-2">
                             <Label className="dark:text-slate-300">Position *</Label>
                             <Select
                                 value={form.position || ""}
@@ -384,10 +499,10 @@ const formData = {
                                 </SelectContent>
                             </Select>
                             {fieldErrors.position && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.position}</p>}
-                        </div>
+                        </div> */}
 
                         {/* Schedule */}
-                        <div className="space-y-2">
+                        {/* <div className="space-y-2">
                             <Label htmlFor="schedule" className="dark:text-slate-300">Interview Schedule *</Label>
                             <Input
                                 id="schedule"
@@ -404,10 +519,10 @@ const formData = {
                                 className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.schedule ? "border-red-500" : ""}`}
                             />
                             {fieldErrors.schedule && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.schedule}</p>}
-                        </div>
+                        </div> */}
 
                         {/* Questions count */}
-                        <div className="space-y-2">
+                        {/* <div className="space-y-2">
                             <Label htmlFor="questionsAskedToCandidate" className="dark:text-slate-300">Questions Asked *</Label>
                             <Input
                                 id="questionsAskedToCandidate"
@@ -423,10 +538,10 @@ const formData = {
                                 </h6>
                             )}
                             {fieldErrors.questionsAskedToCandidate && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.questionsAskedToCandidate}</p>}
-                        </div>
+                        </div> */}
 
                         {/* Test Duration */}
-                        <div className="space-y-2">
+                        {/* <div className="space-y-2">
                             <Label htmlFor="timeDurationForTest" className="dark:text-slate-300">Duration (min) *</Label>
                             <Input
                                 id="timeDurationForTest"
@@ -437,34 +552,9 @@ const formData = {
                                 className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.timeDurationForTest ? "border-red-500" : ""}`}
                             />
                             {fieldErrors.timeDurationForTest && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.timeDurationForTest}</p>}
-                        </div>
+                        </div> */}
                     </div>
 
-                    {/* Questions Breakdown */}
-                    {form.questionsAskedToCandidate > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
-                            <div className="space-y-2">
-                                <Label className="dark:text-slate-300">Technical Questions</Label>
-                                <Input
-                                    name="technicalQuestions"
-                                    type="number"
-                                    value={form.technicalQuestions ?? ""}
-                                    onChange={handleChange}
-                                    className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="dark:text-slate-300">Logical Questions</Label>
-                                <Input
-                                    name="logicalQuestions"
-                                    type="number"
-                                    value={form.logicalQuestions ?? ""}
-                                    onChange={handleChange}
-                                    className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                                />
-                            </div>
-                        </div>
-                    )}
                     {/* Negative Marking */}
                     <div className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4">
                         <Label className="dark:text-slate-300">Negative Marking</Label>
@@ -543,8 +633,8 @@ const formData = {
                                                     Attempt {index + 1}:{" "}
                                                     <span className="font-semibold">
                                                         {formatDateToIST(attempt.date)}
-                                                    </span><br/>
-                                                      Position: <span className="font-semibold">{duplicateData.position}</span> 
+                                                    </span><br />
+                                                    Position: <span className="font-semibold">{attempt.position}</span>
                                                     <br />
                                                     Score: <span className="font-semibold">{attempt.score.toFixed(2)} %</span> | Marks:{" "}
                                                     <span className="font-semibold">{attempt.marks}</span>

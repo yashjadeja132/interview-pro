@@ -64,7 +64,7 @@ export default function CandidateManagement() {
       </div>
 
       {/* Main Content */}
-      <div className="p-1 sm:p-2 max-w-7xl mx-auto">
+      <div className="pt-2 sm:pt-4 max-w-8xl mx-auto">
         <CandidateTable
           positions={positions}
           onEdit={handleOpenEditModal}

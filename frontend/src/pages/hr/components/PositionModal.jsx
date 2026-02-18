@@ -161,7 +161,10 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800 pm-modal-content">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800 pm-modal-content">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold dark:text-white flex items-center gap-2">
             {initialData ? (

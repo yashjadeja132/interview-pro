@@ -291,13 +291,13 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
                                     <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent pm-table-header-row">
                                         <TableHead className="w-10 md:hidden"></TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Position Name</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Salary</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Experience</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Vacancies</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Shift</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Job Type</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only">Created</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center">Position Name</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Salary</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Experience</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Vacancies</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Shift</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Job Type</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Created</TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right pr-6">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -321,19 +321,19 @@ export default function PositionTable({ onEdit, refreshTrigger }) {
                                                 </TableCell>
                                                 <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                                                 <TableCell className="min-w-0">
-                                                    <div className="flex items-center space-x-3 min-w-0">
+                                                    <div className="flex items-center justify-center space-x-3 min-w-0">
                                                         <div className="pm-job-icon w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                                                             <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                                         </div>
                                                         <span className="font-medium text-slate-800 dark:text-slate-200 break-words line-clamp-2">{pos.name}</span>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="desktop-only">{pos.salary || 0}</TableCell>
-                                                <TableCell className="desktop-only">{pos.experience || 'N/A'}</TableCell>
-                                                <TableCell className="desktop-only">{pos.vacancies || 0}</TableCell>
-                                                <TableCell className="desktop-only">{pos.shift}</TableCell>
-                                                <TableCell className="desktop-only">{pos.jobType}</TableCell>
-                                                <TableCell className="desktop-only">
+                                                <TableCell className="desktop-only text-center">{pos.salary || 0}</TableCell>
+                                                <TableCell className="desktop-only text-center">{pos.experience || 'N/A'}</TableCell>
+                                                <TableCell className="desktop-only text-center">{pos.vacancies || 0}</TableCell>
+                                                <TableCell className="desktop-only text-center">{pos.shift}</TableCell>
+                                                <TableCell className="desktop-only text-center">{pos.jobType}</TableCell>
+                                                <TableCell className="desktop-only text-center">
                                                     {pos.createdAt ? new Date(pos.createdAt).toLocaleDateString() : "N/A"}
                                                 </TableCell>
                                                 <TableCell className="text-right pr-6">

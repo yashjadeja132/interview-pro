@@ -52,7 +52,7 @@ export default function PositionManagement() {
       </div>
 
       {/* Main Content */}
-      <div className="p-2 max-w-7xl mx-auto">
+      <div className="pt-2 sm:pt-4 max-w-8xl mx-auto">
         <PositionTable onEdit={handleOpenEditModal} refreshTrigger={refreshTrigger} />
       </div>
 

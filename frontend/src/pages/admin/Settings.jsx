@@ -14,7 +14,7 @@ import SecuritySettings from '@/components/admin/settings/SecuritySettings';
 // import RoleSettings from '@/components/admin/settings/RoleSettings';
 import InterviewRules from '@/components/admin/settings/InterviewRules';
 import ThemeSettings from '@/components/admin/settings/ThemeSettings';
-import AuditLogs from '@/components/admin/settings/AuditLogs';
+// import AuditLogs from '@/components/admin/settings/AuditLogs';
 
 export default function Settings() {
     const { updateTheme } = useContext(ThemeContext);
@@ -107,7 +107,7 @@ export default function Settings() {
         // { id: 'roles', label: 'Roles', icon: Users, component: RoleSettings },
         { id: 'rules', label: 'Rules', icon: FileText, component: InterviewRules },
         { id: 'theme', label: 'Theme', icon: Palette, component: ThemeSettings },
-        { id: 'logs', label: 'Audit Logs', icon: Activity, component: AuditLogs }, // Logs fetch their own data
+        // { id: 'logs', label: 'Audit Logs', icon: Activity, component: AuditLogs }, // Logs fetch their own data
     ];
 
     return (
