@@ -76,13 +76,15 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
 
         // Restriction: Position Name - no numbers allowed
         if (field === "name") {
-            sanitizedValue = value.replace(/[0-9]/g, "");
+            sanitizedValue = value.replace(/[^a-zA-Z\s]/g, "");
         }
 
         // Restriction: Salary and Vacancies - only numbers
         if (["salary", "vacancies"].includes(field)) {
-            sanitizedValue = value.replace(/[^0-9]/g, "");
+            // Allow only digits
+            sanitizedValue = value.replace(/\D/g, "");
         }
+
 
         setFormData((prev) => ({ ...prev, [field]: sanitizedValue }));
         validateField(field, sanitizedValue);
@@ -195,6 +197,14 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                         type="number"
                                         value={formData.salary}
                                         onChange={(e) => handleInputChange("salary", e.target.value)}
+                                        onKeyDown={(e) => {
+    // Prevent typing non-numeric characters
+    if (
+      ["e", "E", "+", "-", ".", ",", "*", "/", "@", "#", "$", "%"].includes(e.key)
+    ) {
+      e.preventDefault();
+    }
+  }}
                                         className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.salary ? "border-red-500" : ""}`}
                                     />
                                     {fieldErrors.salary && (
@@ -226,11 +236,21 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                     <Label htmlFor="vacancies" className="dark:text-slate-300">Vacancies</Label>
                                     <Input
                                         id="vacancies"
-                                        type="number"
+                                        type="text"
                                         value={formData.vacancies}
                                         onChange={(e) => handleInputChange("vacancies", e.target.value)}
-                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.vacancies ? "border-red-500" : ""}`}
+                                        onKeyDown={(e) => {
+                                            // Prevent typing non-numeric characters
+                                            if (
+                                                ["e", "E", "+", "-", ".", ",", "*", "/", "@", "#", "$", "%"].includes(e.key)
+                                            ) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.vacancies ? "border-red-500" : ""
+                                            }`}
                                     />
+
                                     {fieldErrors.vacancies && (
                                         <p className="text-xs text-red-600 flex items-center gap-1">
                                             <AlertCircle className="w-3 h-3" />

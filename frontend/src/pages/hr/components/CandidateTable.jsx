@@ -397,7 +397,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="desktop-only text-center">
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center justify-center gap-2">
                                                             <Clock className="w-3 h-3 text-slate-400" />
                                                             <span className="text-sm text-slate-600 dark:text-slate-300">
                                                                 {candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time'}
