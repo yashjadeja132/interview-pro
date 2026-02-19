@@ -37,6 +37,13 @@ const navigationItems = [
     icon: Building2,
     description: "Job positions and roles",
   },
+
+  {
+    title: "Subject Management",
+    url: "/subjectManagement",
+    icon: Building2,
+    description: "Subjects For Positions",
+  },
   {
     title: "Candidate Management",
     url: "/candidateManagement",

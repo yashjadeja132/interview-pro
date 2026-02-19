@@ -16,34 +16,12 @@ const getSettings = async (req, res) => {
             }
             const data = {};
             switch (section) {
-                case 'system':
-                    data.interviewTime = settings.interviewTime;
-                    data.maxAttempts = settings.maxAttempts;
-                    data.cameraMonitoring = settings.cameraMonitoring;
-                    data.tabSwitchDetection = settings.tabSwitchDetection;
-                    data.autoPublishResult = settings.autoPublishResult;
-                    break;
-                case 'email':
-                    data.smtpHost = settings.smtpHost;
-                    data.smtpEmail = settings.smtpEmail;
-                    data.smtpPassword = settings.smtpPassword;
-                    data.sendInterviewLink = settings.sendInterviewLink;
-                    data.sendResultEmail = settings.sendResultEmail;
-                    break;
-                case 'interviewRules':
-                    data.allowResumeUpload = settings.allowResumeUpload;
-                    data.allowReattempt = settings.allowReattempt;
-                    data.autoSubmitOnTimeEnd = settings.autoSubmitOnTimeEnd;
-                    data.negativeMarking = settings.negativeMarking;
-                    break;
                 case 'theme':
                     data.darkMode = settings.darkMode;
                     data.primaryColor = settings.primaryColor;
                     data.logoUrl = settings.logoUrl;
                     break;
-                case 'roles':
-                    data.roles = settings.roles;
-                    break;
+                
                 default:
                     break;
             }

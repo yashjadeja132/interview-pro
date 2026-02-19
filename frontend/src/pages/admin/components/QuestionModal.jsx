@@ -10,16 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import api from "../../../Api/axiosInstance";
 
-const categories = [
-    { value: 1, label: "Quantitative & Aptitude" },
-    { value: 2, label: "Verbal & Language Skills" },
-    { value: 3, label: "Programming Logic" }
-];
 
-export default function QuestionModal({ isOpen, onClose, initialData, positions, onSuccess }) {
+export default function QuestionModal({ isOpen, onClose, initialData, subjects, onSuccess, defaultSubjectId }) {
     const [form, setForm] = useState({
-        positionId: "",
-        category: "",
+        subjectId: "",
         questionText: "",
         questionImage: null,
         options: [
@@ -43,10 +37,10 @@ export default function QuestionModal({ isOpen, onClose, initialData, positions,
         if (isOpen) {
             if (initialData) {
                 // Edit mode - populate form with existing data
-                const positionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
+                console.log("Initial Data:", initialData);
+                const subjectId = typeof initialData.subject === 'object' ? initialData.subject._id : (initialData.subjectId || initialData.subject);
                 setForm({
-                    positionId: positionId,
-                    category: initialData.category || "",
+                    subjectId: subjectId || "",
                     questionText: initialData.questionText || "",
                     questionImage: null,
                     options: initialData.options || [
@@ -67,10 +61,9 @@ export default function QuestionModal({ isOpen, onClose, initialData, positions,
                 });
                 setOptionImagePreviews(previews);
             } else {
-                // Add mode - reset form
+                // Add mode - reset form but keep defaultSubjectId if provided
                 setForm({
-                    positionId: "",
-                    category: "",
+                    subjectId: defaultSubjectId || "",
                     questionText: "",
                     questionImage: null,
                     options: [
@@ -85,11 +78,11 @@ export default function QuestionModal({ isOpen, onClose, initialData, positions,
             }
             setFieldErrors({});
         }
-    }, [isOpen, initialData]);
+    }, [isOpen, initialData, defaultSubjectId]);
 
     const validateForm = () => {
         let errors = {};
-        if (!form.positionId) errors.positionId = "Position is required";
+        if (!form.subjectId) errors.subjectId = "Subject is required";
         if (!form.questionText && !form.questionImage && !questionImagePreview) {
             errors.question = "Question text or image is required";
         }
@@ -208,9 +201,9 @@ export default function QuestionModal({ isOpen, onClose, initialData, positions,
     const hasChanges = () => {
         if (!initialData) return true; // Always allow adding new
 
-        const initialPositionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
+        const initialSubjectId = typeof initialData.subject === 'object' ? initialData.subject._id : initialData.subjectId;
 
-        if (form.positionId !== initialPositionId) return true;
+        if (form.subjectId !== initialSubjectId) return true;
         if (form.questionText !== (initialData.questionText || "")) return true;
         if (form.questionImage instanceof File) return true;
         if (initialData.questionImage && !questionImagePreview) return true;
@@ -237,13 +230,8 @@ export default function QuestionModal({ isOpen, onClose, initialData, positions,
 
         try {
             const formData = new FormData();
-            formData.append("positionId", form.positionId);
+            formData.append("subjectId", form.subjectId);
             formData.append("questionText", form.questionText);
-
-            // Category (optional) - send as number
-            if (form.category) {
-                formData.append("category", Number(form.category));
-            }
 
             // Question image
             if (form.questionImage) {
@@ -298,57 +286,34 @@ export default function QuestionModal({ isOpen, onClose, initialData, positions,
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
-                    {/* Position and Category Selection */}
+                    {/* Subject Selection */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Position Selection */}
                         <div className="space-y-2">
-                            <Label className="text-sm font-medium dark:text-gray-300">Position *</Label>
+                            <Label className="text-sm font-medium dark:text-gray-300">Subject *</Label>
                             <Select
-                                value={form.positionId || ""}
+                                value={form.subjectId || ""}
                                 onValueChange={(value) => {
-                                    setForm((prev) => ({ ...prev, positionId: value }));
-                                    validateField("positionId", value);
+                                    setForm((prev) => ({ ...prev, subjectId: value }));
+                                    validateField("subjectId", value);
                                 }}
                             >
-                                <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.positionId ? "border-red-500" : ""}`}>
-                                    <SelectValue placeholder="Select position" />
+                                <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.subjectId ? "border-red-500" : ""}`}>
+                                    <SelectValue placeholder="Select subject" />
                                 </SelectTrigger>
                                 <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                                    {positions.map((pos) => (
-                                        <SelectItem key={pos._id} value={pos._id} className="dark:text-white dark:focus:bg-slate-700">
-                                            {pos.name}
+                                    {subjects.map((sub) => (
+                                        <SelectItem key={sub._id} value={sub._id} className="dark:text-white dark:focus:bg-slate-700">
+                                            {sub.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {fieldErrors.positionId && (
+                            {fieldErrors.subjectId && (
                                 <p className="text-sm text-red-600 flex items-center gap-1">
                                     <AlertCircle className="w-4 h-4" />
-                                    {fieldErrors.positionId}
+                                    {fieldErrors.subjectId}
                                 </p>
                             )}
-                        </div>
-
-                        {/* Category Selection */}
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium dark:text-gray-300">Category (optional)</Label>
-                            <Select
-                                value={form.category ? String(form.category) : ""}
-                                onValueChange={(value) => {
-                                    setForm((prev) => ({ ...prev, category: value ? Number(value) : "" }));
-                                }}
-                            >
-                                <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                                    <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                                <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                                    {categories.map((cat) => (
-                                        <SelectItem key={cat.value} value={String(cat.value)} className="dark:text-white dark:focus:bg-slate-700">
-                                            {cat.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
                         </div>
                     </div>
 

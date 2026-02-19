@@ -27,8 +27,8 @@ import QuestionModal from "./components/QuestionModal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function QuestionManagement() {
-  const [positions, setPositions] = useState([]);
-  const [selectedPosition, setSelectedPosition] = useState("");
+  const [subjects, setSubjects] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [questions, setQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,27 +40,27 @@ export default function QuestionManagement() {
 
   // Fetch positions on component mount
   useEffect(() => {
-    const fetchPositions = async () => {
+    const fetchSubjects = async () => {
       try {
-        const res = await api.get("/position");
-        setPositions(res.data.data);
+        const res = await api.get("/subject");
+        setSubjects(res.data.data);
       } catch (err) {
         console.error("Failed to load positions", err);
         toast.error("Failed to load positions");
       }
     };
-    fetchPositions();
+    fetchSubjects();
   }, []);
 
   // Fetch questions when position changes
   useEffect(() => {
-    if (selectedPosition) {
-      fetchQuestionsByPosition(selectedPosition);
+    if (selectedSubject) {
+      fetchQuestionsBySubject(selectedSubject);
     } else {
       setQuestions([]);
       setFilteredQuestions([]);
     }
-  }, [selectedPosition]);
+  }, [selectedSubject]);
 
   // Filter questions based on search term
   useEffect(() => {
@@ -74,10 +74,10 @@ export default function QuestionManagement() {
     }
   }, [searchTerm, questions]);
 
-  const fetchQuestionsByPosition = async (positionId) => {
+  const fetchQuestionsBySubject = async (subjectId) => {
     setIsLoading(true);
     try {
-      const res = await api.get(`/question/position/${positionId}`);
+      const res = await api.get(`/question/subject/${subjectId}`);
       console.log(res.data);
       setQuestions(res.data);
       setFilteredQuestions(res.data);
@@ -99,8 +99,8 @@ export default function QuestionManagement() {
       await api.delete(`/question/${deleteId}`);
       toast.success("Question deleted successfully");
       setDeleteId(null);
-      if (selectedPosition) {
-        fetchQuestionsByPosition(selectedPosition);
+      if (selectedSubject) {
+        fetchQuestionsBySubject(selectedSubject);
       }
     } catch (err) {
       console.error("Failed to delete question", err);
@@ -121,129 +121,11 @@ export default function QuestionManagement() {
   const handleQuestionSuccess = () => {
     setShowQuestionModal(false);
     setSelectedQuestion(null);
-    if (selectedPosition) {
-      fetchQuestionsByPosition(selectedPosition);
+    if (selectedSubject) {
+      fetchQuestionsBySubject(selectedSubject);
     }
   };
 
-  const getCorrectOption = (options) => {
-    return options.find(opt => opt.isCorrect);
-  };
-
-  const renderQuestionCard = (question) => (
-    <Card key={question._id} className="group border border-gray-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all duration-200 bg-white dark:bg-slate-900">
-      <CardContent className="p-6">
-        {/* Header with badges and actions */}
-        {/* <div className="flex items-start justify-between mb-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-3">
-              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
-                {question.position?.name || "No Position"}
-              </Badge>
-              {question.questionImage && (
-                <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">
-                  <ImageIcon className="w-3 h-3 mr-1" />
-                  Has Image
-                </Badge>
-              )}
-              <Badge variant="outline" className="text-xs bg-gray-50 text-gray-600 dark:bg-slate-800 dark:text-gray-400 dark:border-slate-700">
-                {question.options?.length || 0} options
-              </Badge>
-            </div>
-          </div>
-          <div className="flex gap-1 ml-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleViewQuestion(question)}
-              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 dark:text-gray-300 dark:hover:bg-slate-800"
-              title="View Question"
-            >
-              <Eye className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEditQuestion(question)}
-              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 dark:text-gray-300 dark:hover:bg-slate-800"
-              title="Edit Question"
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDeleteQuestion(question._id)}
-              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              title="Delete Question"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-        </div> */}
-
-        {/* Question Content */}
-        <div className="mb-4">
-          {question.questionImage ? (
-            <div className="mb-3">
-              <img
-                src={question.questionImage}
-                alt="Question"
-                className="w-full h-40 object-contain rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'block';
-                }}
-              />
-              <div className="w-full h-40 bg-gray-100 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm" style={{ display: 'none' }}>
-                <div className="text-center">
-                  <ImageIcon className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
-                  <p>Image not available</p>
-                </div>
-              </div>
-            </div>
-          ) : null}
-
-          <h1 className="text-base font-semibold text-gray-900 dark:text-white mb-3 leading-relaxed border border-slate-300 dark:border-slate-700 rounded-lg p-3 bg-white dark:bg-gray-900 shadow-sm">
-            {question.questionText || "No question text provided"}
-          </h1>
-
-        </div>
-
-        {/* Options */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Answer Options:</h4>
-          <div className="space-y-2">
-            {question.options?.slice(0, 3).map((option, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-3 p-3 rounded-lg border text-sm ${option.isCorrect
-                  ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
-                  : 'bg-gray-50 border-gray-200 dark:bg-slate-800 dark:border-slate-700'
-                  }`}
-              >
-                <div className={`w-3 h-3 rounded-full flex-shrink-0 ${option.isCorrect ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-600'
-                  }`}></div>
-                <span className="flex-1 text-gray-800 dark:text-gray-200">
-                  {option.optionText || "No option text"}
-                </span>
-                {option.isCorrect && (
-                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 flex-shrink-0">
-                    Correct
-                  </Badge>
-                )}
-              </div>
-            ))}
-            {question.options?.length > 3 && (
-              <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-2 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700">
-                +{question.options.length - 3} more options
-              </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <>
@@ -252,7 +134,7 @@ export default function QuestionManagement() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">Question Management</h1>
           <div className="flex justify-between gap-5">
-            <p className="text-slate-600 dark:text-slate-400">Organize and manage questions by position for your interviews</p>
+            <p className="text-slate-600 dark:text-slate-400">Organize and manage questions by subject for your interviews</p>
             <Button
               onClick={() => {
                 setSelectedQuestion(null);
@@ -269,17 +151,17 @@ export default function QuestionManagement() {
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           <div>
             <Label className="block text-sm font-medium text-slate-700 mb-3">
-              Select Position
+              Select Subject
             </Label>
-            <Select value={selectedPosition} onValueChange={setSelectedPosition}>
+            <Select value={selectedSubject} onValueChange={setSelectedSubject}>
               <SelectTrigger className="h-11 border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-blue-500 focus:ring-blue-500">
-                <SelectValue placeholder="Choose a position to view questions" />
+                <SelectValue placeholder="Choose a subject to view questions" />
               </SelectTrigger>
               <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                {positions.map((pos) => (
-                  <SelectItem key={pos._id} value={pos._id} className="dark:text-gray-200 dark:focus:bg-slate-700">
+                {subjects.map((subject) => (
+                  <SelectItem key={subject._id} value={subject._id} className="dark:text-gray-200 dark:focus:bg-slate-700">
                     <div className="flex items-center gap-2">
-                      {pos.name}
+                      {subject.name}
                     </div>
                   </SelectItem>
                 ))}
@@ -323,7 +205,6 @@ export default function QuestionManagement() {
                   <TableRow>
                     <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
                     <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Question</TableHead>
-                    <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Position</TableHead>
                     <TableHead className="px-6 py-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -336,7 +217,6 @@ export default function QuestionManagement() {
                     >
                       <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{index + 1}</TableCell>
                       <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{question.questionText}</TableCell>
-                      <TableCell className="px-6 py-4 text-slate-600 dark:text-slate-400">{question.position?.name}</TableCell>
                       <TableCell className="px-6 py-4 flex justify-center gap-2">
                         <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => handleViewQuestion(question)}>
                           <Eye className="w-4 h-4" />
@@ -354,9 +234,9 @@ export default function QuestionManagement() {
               </Table>
             ) : (
               <div className="py-12 text-center text-slate-600 dark:text-slate-400">
-                {selectedPosition
-                  ? "No questions found for this position."
-                  : "Please select a position to view questions."}
+                {selectedSubject
+                  ? "No questions found for this subject."
+                  : "Please select a subject to view questions."}
               </div>
             )}
           </div>
@@ -372,7 +252,8 @@ export default function QuestionManagement() {
           setSelectedQuestion(null);
         }}
         initialData={selectedQuestion}
-        positions={positions}
+        defaultSubjectId={selectedSubject}
+        subjects={subjects}
         onSuccess={handleQuestionSuccess}
       />
 
@@ -384,9 +265,9 @@ export default function QuestionManagement() {
           </DialogHeader>
           {selectedQuestion && (
             <div className="space-y-6">
-              {/* Position Badge */}
+              {/* Subject Badge */}
               <div className="flex items-center gap-2">
-                <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Position:</Label>
+                <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Subject:</Label>
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
                   {selectedQuestion.position?.name}
                 </Badge>

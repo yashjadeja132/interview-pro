@@ -1,0 +1,108 @@
+/* Subject Management Styling and Responsiveness */
+
+/* Header Section */
+.sm-header-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+    .sm-header-container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.sm-header-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+@media (max-width: 480px) {
+    .pm-header-info h1 {
+        font-size: 1.5rem !important;
+    }
+    .pm-header-info p {
+        font-size: 0.875rem !important;
+    }
+}
+
+/* Modal Responsiveness */
+@media (max-width: 640px) {
+    [role="dialog"] {
+        width: 95% !important;
+        margin: 0 auto;
+    }
+}
+
+/* Radio Group styling */
+.dark [role="radiogroup"] button {
+    border-color: #475569;
+}
+
+.dark [role="radiogroup"] button[data-state="checked"] {
+    border-color: #3b82f6;
+    background-color: #3b82f6;
+}
+
+/* Tablet and Mobile Table adjustments */
+.sm-table-wrapper {
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .sm-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 640px) {
+    .sm-table-wrapper th {
+        white-space: nowrap !important;
+        word-break: normal !important;
+    }
+    .sm-table-wrapper td {
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+    .sm-table-wrapper table {
+        min-width: 0 !important;
+        width: 100% !important;
+        table-layout: fixed !important;
+    }
+
+    .sm-subject-icon {
+        display: none !important;
+    }
+
+    .subject-detail {
+        padding-left: 10px;
+    }
+}
+
+@media (max-width: 425px) {
+    .sm-table-wrapper {
+        overflow-x: hidden !important;
+        width: 100% !important;
+    }
+    .sm-table-wrapper th, 
+    .sm-table-wrapper td {
+        padding-left: 0.15rem !important;
+        padding-right: 0.15rem !important;
+    }
+}
+
+@media (max-width: 320px) {
+    .sm-table-wrapper td, 
+    .sm-table-wrapper th {
+        font-size: 0.65rem !important;
+        padding-left: 0.05rem !important;
+        padding-right: 0.05rem !important;
+    }
+}

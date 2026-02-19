@@ -77,14 +77,6 @@ export default function Settings() {
         try {
             setLoading(true);
             setGlobalMessage(null);
-
-            const payload = {};
-            // Merge current settings with updates
-            // This is a bit simplified, ideally we patch only what's needed
-            // But our API expects a flat body for all settings, or we can send everything merged
-
-            // Actually my backend controller does: Settings.findOneAndUpdate({}, updates)
-            // So I can just send the partial object!
             const response = await axiosInstance.put('/settings', data);
             if (response.data && response.data.settings) {
                 setSettings(response.data.settings);

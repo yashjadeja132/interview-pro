@@ -24,6 +24,7 @@ const passwordRoutes = require('./routes/admin/PasswordRoutes')
 const profileRoutes = require('./routes/admin/ProfileRoutes')
 const settingsRoutes = require('./routes/admin/SettingsRoutes');
 const loginTimeRoutes = require('./routes/admin/logintimeroutes');
+const subjectRoutes = require('./routes/admin/subjectRoutes');
 const { swaggerDocs } = require('./docs/swagger');
 const path = require("path");
 // Connect Database
@@ -59,6 +60,7 @@ app.use('/api/hr', hrRoutes)
 app.use('/api/question', questionRoutes)
 app.use('/api/candidates', CandidateRoutes)
 app.use('/api/position', positionRoutes)
+app.use('/api/subject', subjectRoutes)
 app.use('/api/test', testRoutes)
 app.use('/api/test-attempt', testAttemptRoutes)
 app.use('/api/recording', recordingRoutes)
