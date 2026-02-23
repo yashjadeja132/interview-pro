@@ -125,7 +125,7 @@ export default function QuestionManagement() {
       fetchQuestionsBySubject(selectedSubject);
     }
   };
-
+   console.log(selectedSubject);
 
   return (
     <>
@@ -269,7 +269,7 @@ export default function QuestionManagement() {
               <div className="flex items-center gap-2">
                 <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Subject:</Label>
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
-                  {selectedQuestion.position?.name}
+                  {selectedQuestion.subject?.name}
                 </Badge>
               </div>
 

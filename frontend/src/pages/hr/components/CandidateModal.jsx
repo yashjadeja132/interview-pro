@@ -1,5 +1,24 @@
-import { useState, useEffect } from "react";
-import { Plus, Edit2, AlertCircle } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+    Plus,
+    Edit2,
+    AlertCircle,
+    Calendar,
+    ChevronLeft,
+    ChevronRight,
+    Loader2,
+    Info,
+    CheckCircle2,
+    AlertTriangle
+} from "lucide-react";
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +33,104 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
     const [duplicateData, setDuplicateData] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedPositionCounts, setSelectedPositionCounts] = useState(null);
+    const [availableCounts, setAvailableCounts] = useState({ tech: null, nonTech: null, total: null });
+    const [loadingCounts, setLoadingCounts] = useState(false);
+    const [subjectsList, setSubjectsList] = useState([]);
+    const [loadingSubjects, setLoadingSubjects] = useState(false);
+    const countsAbortRef = useRef(null);
+
+    const fetchSubjects = async () => {
+        try {
+            setLoadingSubjects(true);
+            const response = await api.get("/subject?limit=100");
+            if (response.data.success) {
+                setSubjectsList(response.data.data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch subjects:", err);
+        } finally {
+            setLoadingSubjects(false);
+        }
+    };
+
+    const fetchQuestionCounts = useCallback(async (subjectIds) => {
+        if (!subjectIds || subjectIds.length === 0) {
+            setAvailableCounts({ tech: null, nonTech: null, total: null });
+            return;
+        }
+        if (countsAbortRef.current) countsAbortRef.current.abort();
+        const controller = new AbortController();
+        countsAbortRef.current = controller;
+
+        try {
+            setLoadingCounts(true);
+            const res = await api.post("/position/question-counts", { subjects: subjectIds }, { signal: controller.signal });
+            if (res.data.success) {
+                setAvailableCounts({
+                    tech: res.data.data.technicalQuestionCount,
+                    nonTech: res.data.data.nonTechnicalQuestionCount,
+                    total: res.data.data.totalAvailable,
+                });
+            }
+        } catch (err) {
+            if (err.name !== 'CanceledError' && err.code !== 'ERR_CANCELED') {
+                console.error("Failed to fetch question counts:", err);
+            }
+        } finally {
+            setLoadingCounts(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchSubjects();
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen && form.position) {
+            const pos = positions.find(p => p._id === form.position);
+            if (pos && pos.subjects) {
+                const subjectIds = pos.subjects.map(s => s._id || s);
+                fetchQuestionCounts(subjectIds);
+            }
+        } else {
+            setAvailableCounts({ tech: null, nonTech: null, total: null });
+        }
+    }, [isOpen, form.position, positions, fetchQuestionCounts]);
+
+    const getCountStatus = (field) => {
+        const entered = Number(form[field === 'technicalQuestions' ? 'technicalQuestions' : 'logicalQuestions']) || 0;
+        const available = field === 'technicalQuestions' ? availableCounts.tech : availableCounts.nonTech;
+        const label = field === 'technicalQuestions' ? 'technical' : 'non-technical';
+
+        if (!form.position) return null;
+        if (loadingCounts) return { type: 'loading', message: 'Checking...' };
+        if (available === null) return null;
+
+        if (available === 0) {
+            return { type: 'error', message: `No ${label} questions available for this position` };
+        }
+        if (!form[field === 'technicalQuestions' ? 'technicalQuestions' : 'logicalQuestions'] || entered === 0) {
+            return { type: 'info', message: `${available} ${label} questions available` };
+        }
+        if (entered > available) {
+            return { type: 'error', message: `Only ${available} ${label} questions available (you entered ${entered})` };
+        }
+        return { type: 'success', message: `${available} available` };
+    };
+
+    const getTotalCountStatus = () => {
+        if (!form.position || loadingCounts || availableCounts.total === null) return null;
+        const techEntered = Number(form.technicalQuestions) || 0;
+        const nonTechEntered = Number(form.logicalQuestions) || 0;
+        const totalEntered = techEntered + nonTechEntered;
+        if (totalEntered === 0) return null;
+        if (totalEntered > availableCounts.total) {
+            return { type: 'error', message: `Total questions (${totalEntered}) exceed available (${availableCounts.total})` };
+        }
+        return { type: 'success', message: `Total: ${totalEntered} of ${availableCounts.total} available` };
+    };
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
@@ -41,9 +158,9 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                 // Handle position question count
                 const pos = positions.find(p => p._id === positionId);
                 setSelectedPositionCounts(pos ? {
-                    total: pos.questionCount || 0,
+                    total: pos.TotalQuestionsCount || 0,
                     technical: pos.technicalQuestionCount || 0,
-                    logical: pos.logicalQuestionCount || 0
+                    logical: pos.nonTechnicalQuestionCount || 0
                 } : null);
             } else {
                 setForm({});
@@ -89,18 +206,22 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             if (!value) message = "Schedule is required";
             else if (new Date(value) < new Date()) message = "Interview schedule cannot be in the past";
         }
-        if (name === "questionsAskedToCandidate") {
-            if (!value || value === "") message = "Questions asked is required";
+        if (name === "technicalQuestions") {
+            if (!value && value !== 0) message = "Technical questions is required";
             else {
                 const count = parseInt(value);
                 if (isNaN(count) || count < 0) message = "Must be a positive number";
-                else if (selectedPositionCounts && count > selectedPositionCounts.total) {
-                    message = `Only ${selectedPositionCounts.total} questions available for this position.`;
-                }
+            }
+        }
+        if (name === "logicalQuestions") {
+            if (!value && value !== 0) message = "Non-Technical questions is required";
+            else {
+                const count = parseInt(value);
+                if (isNaN(count) || count < 0) message = "Must be a positive number";
             }
         }
         if (name === "timeDurationForTest") {
-            if (!value) message = "Time duration is required";
+            if (!value) message = "Test duration is required";
             else {
                 const num = parseFloat(value);
                 if (isNaN(num) || num <= 0) message = "Must be a positive number";
@@ -131,7 +252,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
 
         // Restriction: Question counts and Duration - only numbers
         if (["questionsAskedToCandidate", "technicalQuestions", "logicalQuestions", "timeDurationForTest"].includes(name)) {
-            value = value.replace(/[^0-9]/g, "");
+            value = value.replace(/\D/g, "");
         }
 
         setForm(prev => ({ ...prev, [name]: value }));
@@ -142,13 +263,27 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
         const errors = {};
         const fieldsToValidate = [
             "name", "email", "phone", "experience", "position",
-            "schedule", "questionsAskedToCandidate", "timeDurationForTest"
+            "schedule", "technicalQuestions", "logicalQuestions", "timeDurationForTest"
         ];
 
         fieldsToValidate.forEach(field => {
             const msg = validateField(field, form[field]);
             if (msg) errors[field] = msg;
         });
+
+        // Validate against available counts
+        const tech = Number(form.technicalQuestions) || 0;
+        const nonTech = Number(form.logicalQuestions) || 0;
+
+        if (availableCounts.tech !== null && tech > availableCounts.tech) {
+            errors.technicalQuestions = `Only ${availableCounts.tech} technical questions available`;
+        }
+        if (availableCounts.nonTech !== null && nonTech > availableCounts.nonTech) {
+            errors.logicalQuestions = `Only ${availableCounts.nonTech} non-technical questions available`;
+        }
+        if (availableCounts.total !== null && (tech + nonTech) > availableCounts.total) {
+            errors.technicalQuestions = errors.technicalQuestions || `Total (${tech + nonTech}) exceeds available (${availableCounts.total})`;
+        }
 
         if (form.isNagativeMarking && !form.negativeMarkingValue) {
             errors.negativeMarkingValue = "Negative marking value is required";
@@ -194,7 +329,6 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
 
         const initialPositionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
         const initialTimeDuration = initialData.timeforTest || initialData.timeDurationForTest;
-        console.log('initialData', initialData)
         return (
             form.name !== initialData.name ||
             form.email !== initialData.email ||
@@ -202,10 +336,9 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             form.experience !== initialData.experience ||
             form.position !== initialPositionId ||
             !areDatesEqual(form.schedule, initialData.schedule) ||
-            parseInt(form.questionsAskedToCandidate) !== parseInt(initialData.questionsAskedToCandidate) ||
-            parseInt(form.timeDurationForTest) !== parseInt(initialTimeDuration) ||
             parseInt(form.technicalQuestions || 0) !== parseInt(initialData.technicalQuestions || 0) ||
             parseInt(form.logicalQuestions || 0) !== parseInt(initialData.logicalQuestions || 0) ||
+            parseInt(form.timeDurationForTest || 0) !== parseInt(initialTimeDuration || 0) ||
             !!form.isNagativeMarking !== !!initialData.isNagativeMarking ||
             String(form.negativeMarkingValue || "") !== String(initialData.negativeMarkingValue || "")
         );
@@ -213,7 +346,6 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
 
     // Function to handle "Yes" click - proceed with updating existing candidate
     const handleDuplicateProceed = async () => {
-        console.log('duplicateData')
         if (!duplicateData) return;
         setIsSubmitting(true);
         setGeneralError("");
@@ -260,12 +392,21 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                 onValueChange={(val) => {
                                     const pos = positions.find(p => p._id === val);
                                     setSelectedPositionCounts(pos ? {
-                                        total: pos.questionCount || 0,
+                                        total: pos.TotalQuestionsCount || 0,
                                         technical: pos.technicalQuestionCount || 0,
-                                        logical: pos.logicalQuestionCount || 0
+                                        logical: pos.nonTechnicalQuestionCount || 0
                                     } : null);
-                                    setForm(prev => ({ ...prev, position: val }));
+                                    setForm(prev => ({
+                                        ...prev,
+                                        position: val,
+                                        technicalQuestions: pos ? pos.techQuestionCount : 0,
+                                        logicalQuestions: pos ? pos.nonTechQuestionCount : 0,
+                                        timeDurationForTest: pos ? pos.testDuration : 0
+                                    }));
                                     validateField("position", val);
+                                    if (pos && pos.subjects) {
+                                        fetchQuestionCounts(pos.subjects.map(s => s._id || s));
+                                    }
                                 }}
                             >
                                 <SelectTrigger className={`w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.position ? "border-red-500" : ""}`}>
@@ -277,11 +418,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                     ))}
                                 </SelectContent>
                             </Select>
-                           {selectedPositionCounts && (
-                                <h2  className="text-[13px] text-gray-500 dark:text-slate-300">
-                                    Available: {selectedPositionCounts.total} (Technical: {selectedPositionCounts.technical}, Logical: {selectedPositionCounts.logical})
-                                </h2>
-                            )}
+
                             {fieldErrors.position && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.position}</p>}
                         </div>
 
@@ -305,64 +442,167 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                             {fieldErrors.schedule && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.schedule}</p>}
                         </div>
 
-                        {/* Questions count */}
-                        <div className="space-y-2">
-                            <Label htmlFor="questionsAskedToCandidate" className="dark:text-slate-300">Questions Asked *</Label>
-                            <Input
-                                id="questionsAskedToCandidate"
-                                name="questionsAskedToCandidate"
-                                type="number"
-                                value={form.questionsAskedToCandidate || ""}
-                                onChange={handleChange}
-                                className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.questionsAskedToCandidate ? "border-red-500" : ""}`}
-                            />
-                            {/* {selectedPositionCounts && (
-                                <h2  className="text-[13px] text-gray-500 dark:text-slate-300">
-                                    Available: {selectedPositionCounts.total} (Technical: {selectedPositionCounts.technical}, Logical: {selectedPositionCounts.logical})
-                                </h2>
-                            )} */}
-                            {fieldErrors.questionsAskedToCandidate && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.questionsAskedToCandidate}</p>}
-                        </div>
-
-                        {/* Test Duration */}
-                        <div className="space-y-2">
-                            <Label htmlFor="timeDurationForTest" className="dark:text-slate-300">Duration (min) *</Label>
-                            <Input
-                                id="timeDurationForTest"
-                                name="timeDurationForTest"
-                                type="number"
-                                value={form.timeDurationForTest || ""}
-                                onChange={handleChange}
-                                className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.timeDurationForTest ? "border-red-500" : ""}`}
-                            />
-                            {fieldErrors.timeDurationForTest && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.timeDurationForTest}</p>}
-                        </div>
-
-                        {/* Questions Breakdown */}
-                        {form.questionsAskedToCandidate > 0 && (
+                        {/* Position Fields */}
+                        {/* {form.position && (
                             <>
                                 <div className="space-y-2">
-                                    <Label className="dark:text-slate-300">Technical Questions</Label>
+                                    <Label className="dark:text-slate-300">Technical Questions *</Label>
                                     <Input
                                         name="technicalQuestions"
                                         type="number"
                                         value={form.technicalQuestions ?? ""}
                                         onChange={handleChange}
-                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        onKeyDown={(e) => {
+                                            if (["e", "E", "+", "-", ".", "*", "/"].includes(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.technicalQuestions ? "border-red-500" : getCountStatus('technicalQuestions')?.type === 'error' ? "border-amber-500" : getCountStatus('technicalQuestions')?.type === 'success' ? "border-green-500" : ""}`}
                                     />
+                                    {fieldErrors.technicalQuestions && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.technicalQuestions}</p>}
+                                    {!fieldErrors.technicalQuestions && (() => {
+                                        const status = getCountStatus('technicalQuestions');
+                                        if (!status) return null;
+                                        if (status.type === 'loading') return (
+                                            <p className="text-[10px] text-slate-500 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin shrink-0" />{status.message}</p>
+                                        );
+                                        if (status.type === 'error') return (
+                                            <p className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1"><AlertTriangle className="w-3 h-3 shrink-0" />{status.message}</p>
+                                        );
+                                        if (status.type === 'success') return (
+                                            <p className="text-[10px] text-green-600 dark:text-green-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3 shrink-0" />{status.message}</p>
+                                        );
+                                        if (status.type === 'info') return (
+                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1"><Info className="w-3 h-3 shrink-0" />{status.message}</p>
+                                        );
+                                        return null;
+                                    })()}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="dark:text-slate-300">Logical Questions</Label>
+                                    <Label className="dark:text-slate-300">Non-Technical *</Label>
                                     <Input
                                         name="logicalQuestions"
                                         type="number"
                                         value={form.logicalQuestions ?? ""}
                                         onChange={handleChange}
-                                        className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        onKeyDown={(e) => {
+                                            if (["e", "E", "+", "-", ".", "*", "/"].includes(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.logicalQuestions ? "border-red-500" : getCountStatus('logicalQuestions')?.type === 'error' ? "border-amber-500" : getCountStatus('logicalQuestions')?.type === 'success' ? "border-green-500" : ""}`}
                                     />
+                                    {fieldErrors.logicalQuestions && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.logicalQuestions}</p>}
+                                    {!fieldErrors.logicalQuestions && (() => {
+                                        const status = getCountStatus('logicalQuestions');
+                                        if (!status) return null;
+                                        if (status.type === 'loading') return (
+                                            <p className="text-[10px] text-slate-500 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin shrink-0" />{status.message}</p>
+                                        );
+                                        if (status.type === 'error') return (
+                                            <p className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1"><AlertTriangle className="w-3 h-3 shrink-0" />{status.message}</p>
+                                        );
+                                        if (status.type === 'success') return (
+                                            <p className="text-[10px] text-green-600 dark:text-green-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3 shrink-0" />{status.message}</p>
+                                        );
+                                        if (status.type === 'info') return (
+                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1"><Info className="w-3 h-3 shrink-0" />{status.message}</p>
+                                        );
+                                        return null;
+                                    })()}
+                                </div>
+                                <div className="col-span-2">
+                                    {(() => {
+                                        const totalStatus = getTotalCountStatus();
+                                        if (!totalStatus) return null;
+                                        return (
+                                            <p className={`text-[11px] flex items-center gap-1 ${totalStatus.type === 'error' ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
+                                                {totalStatus.type === 'error' ? <AlertTriangle className="w-3 h-3 shrink-0" /> : <CheckCircle2 className="w-3 h-3 shrink-0" />}
+                                                {totalStatus.message}
+                                            </p>
+                                        );
+                                    })()}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="dark:text-slate-300">Test Duration (min) *</Label>
+                                    <Input
+                                        name="timeDurationForTest"
+                                        type="number"
+                                        value={form.timeDurationForTest ?? ""}
+                                        onChange={handleChange}
+                                        onKeyDown={(e) => {
+                                            if (["e", "E", "+", "-", ".", "*", "/"].includes(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.timeDurationForTest ? "border-red-500" : ""}`}
+                                    />
+                                    {fieldErrors.timeDurationForTest && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.timeDurationForTest}</p>}
+                                </div>
+
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                        Position Subjects
+                                    </label>
+                                    <div className="border rounded-lg p-4 dark:border-slate-700">
+                                        <Tabs defaultValue="technical" className="w-full">
+                                            <TabsList className="grid w-full grid-cols-2 mb-4 bg-slate-100 dark:bg-slate-800">
+                                                <TabsTrigger value="technical">Technical</TabsTrigger>
+                                                <TabsTrigger value="non-technical">Non Technical</TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="technical" className="mt-0">
+                                                <div className="grid grid-cols-2 gap-y-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                                    {(() => {
+                                                        const pos = positions.find(p => p._id === form.position);
+                                                        const posSubjects = pos?.subjects?.map(s => s._id || s) || [];
+                                                        const techSubjects = subjectsList.filter(s => s.type === 1 && posSubjects.includes(s._id));
+                                                        return techSubjects.length > 0 ? techSubjects.map((subject) => (
+                                                            <div key={subject._id} className="flex items-center space-x-2 opacity-80">
+                                                                <Checkbox
+                                                                    id={subject._id}
+                                                                    checked={true}
+                                                                    disabled={true}
+                                                                />
+                                                                <label
+                                                                    htmlFor={subject._id}
+                                                                    className="text-sm cursor-default dark:text-slate-300"
+                                                                >
+                                                                    {subject.name}
+                                                                </label>
+                                                            </div>
+                                                        )) : <p className="text-xs text-slate-500 col-span-2 italic">No technical subjects for this position.</p>;
+                                                    })()}
+                                                </div>
+                                            </TabsContent>
+                                            <TabsContent value="non-technical" className="mt-0">
+                                                <div className="grid grid-cols-2 gap-y-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                                    {(() => {
+                                                        const pos = positions.find(p => p._id === form.position);
+                                                        const posSubjects = pos?.subjects?.map(s => s._id || s) || [];
+                                                        const nonTechSubjects = subjectsList.filter(s => s.type === 2 && posSubjects.includes(s._id));
+                                                        return nonTechSubjects.length > 0 ? nonTechSubjects.map((subject) => (
+                                                            <div key={subject._id} className="flex items-center space-x-2 opacity-80">
+                                                                <Checkbox
+                                                                    id={subject._id}
+                                                                    checked={true}
+                                                                    disabled={true}
+                                                                />
+                                                                <label
+                                                                    htmlFor={subject._id}
+                                                                    className="text-sm cursor-default dark:text-slate-300"
+                                                                >
+                                                                    {subject.name}
+                                                                </label>
+                                                            </div>
+                                                        )) : <p className="text-xs text-slate-500 col-span-2 italic">No non-technical subjects for this position.</p>;
+                                                    })()}
+                                                </div>
+                                            </TabsContent>
+                                        </Tabs>
+                                    </div>
                                 </div>
                             </>
-                        )}
+                        )} */}
 
 
                         {/* Name */}

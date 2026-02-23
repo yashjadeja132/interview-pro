@@ -5,7 +5,7 @@ const CandidateSchema = new mongoose.Schema({
   email: { type: String, required: true },
   password :{type:String},
   phone: { type: String},
-  experience: { type: String, required: true },
+  experience: { type:String},
   isNagativeMarking: { type: Boolean, default: false },
   negativeMarkingValue: { type: Number },
    schedule: { type: Date },

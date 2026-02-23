@@ -198,13 +198,10 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                         value={formData.salary}
                                         onChange={(e) => handleInputChange("salary", e.target.value)}
                                         onKeyDown={(e) => {
-    // Prevent typing non-numeric characters
-    if (
-      ["e", "E", "+", "-", ".", ",", "*", "/", "@", "#", "$", "%"].includes(e.key)
-    ) {
-      e.preventDefault();
-    }
-  }}
+                                            if (["e", "E", "+", "-", ".", "*", "/"].includes(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }}
                                         className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.salary ? "border-red-500" : ""}`}
                                     />
                                     {fieldErrors.salary && (
@@ -240,10 +237,7 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                         value={formData.vacancies}
                                         onChange={(e) => handleInputChange("vacancies", e.target.value)}
                                         onKeyDown={(e) => {
-                                            // Prevent typing non-numeric characters
-                                            if (
-                                                ["e", "E", "+", "-", ".", ",", "*", "/", "@", "#", "$", "%"].includes(e.key)
-                                            ) {
+                                            if (["e", "E", "+", "-", ".", "*", "/"].includes(e.key)) {
                                                 e.preventDefault();
                                             }
                                         }}

@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import PositionTable from "./components/PositionTable";
 import PositionModal from "./components/PositionModal";
+import PositionViewModal from "./components/PositionViewModal";
 import "@/assets/css/PositionManagement.css";
 
 export default function PositionManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingPosition, setEditingPosition] = useState(null);
+  const [viewingPosition, setViewingPosition] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleOpenAddModal = () => {
@@ -19,6 +22,11 @@ export default function PositionManagement() {
   const handleOpenEditModal = (position) => {
     setEditingPosition(position);
     setIsModalOpen(true);
+  };
+
+  const handleOpenViewModal = (position) => {
+    setViewingPosition(position);
+    setIsViewModalOpen(true);
   };
 
   const handleSuccess = () => {
@@ -53,7 +61,11 @@ export default function PositionManagement() {
 
       {/* Main Content */}
       <div className="pt-2 sm:pt-4 max-w-8xl mx-auto">
-        <PositionTable onEdit={handleOpenEditModal} refreshTrigger={refreshTrigger} />
+        <PositionTable
+          onEdit={handleOpenEditModal}
+          onView={handleOpenViewModal}
+          refreshTrigger={refreshTrigger}
+        />
       </div>
 
       {/* Add/Edit Modal */}
@@ -62,6 +74,13 @@ export default function PositionManagement() {
         onClose={() => setIsModalOpen(false)}
         initialData={editingPosition}
         onSuccess={handleSuccess}
+      />
+
+      {/* View Modal */}
+      <PositionViewModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        data={viewingPosition}
       />
     </div>
   );

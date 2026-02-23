@@ -132,10 +132,11 @@ exports.updateCandidate = async (req, res) => {
     }
 
     const updateData = { 
-      name, email, phone, position,timefortest, questionsAskedToCandidate, 
+      name, email, phone, position,timefortest, 
       technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue,
       experienceYears: parseInt(experienceYears || 0),
-      experienceMonths: parseInt(experienceMonths || 0)
+      experienceMonths: parseInt(experienceMonths || 0),
+      questionsAskedToCandidate: (parseInt(technicalQuestions) || 0) + (parseInt(logicalQuestions) || 0)
     };
     if (finalExperience !== undefined) {
       updateData.experience = finalExperience;
@@ -229,48 +230,8 @@ exports.updateCandidate = async (req, res) => {
       updateData.technicalQuestions = technicalCount;
     }
 
-    // Validate questionsAskedToCandidate if provided
-    if (questionsAskedToCandidate !== undefined && questionsAskedToCandidate !== null) {
-      const questionCount = parseInt(questionsAskedToCandidate);
-      if (isNaN(questionCount) || questionCount < 0) {
-        return res.status(400).json({ message: "Questions asked to candidate must be a positive number" });
-      }
-      
-      // Get available questions count for the position
-      const availableQuestions = await Question.countDocuments({ position: positionId });
-      
-      if (questionCount > availableQuestions) {
-        if (availableQuestions === 0) {
-          return res.status(400).json({ 
-            message: "No questions available for this position yet. Please add questions first." 
-          });
-        }
-        return res.status(400).json({ 
-          message: `Only ${availableQuestions} question${availableQuestions !== 1 ? 's' : ''} available for this position. Not enough questions.` 
-        });
-      }
-      
-      updateData.questionsAskedToCandidate = questionCount;
-    }
-
-    // Validate that Technical Questions + Logical Questions = Questions Asked To Candidate
-    // Use updated values if provided, otherwise use existing candidate values
-    const finalTechnicalCount = updateData.technicalQuestions !== undefined ? updateData.technicalQuestions : 
-                               (existingCandidate.technicalQuestions !== undefined ? existingCandidate.technicalQuestions : null);
-    const finalLogicalCount = updateData.logicalQuestions !== undefined ? updateData.logicalQuestions : 
-                             (existingCandidate.logicalQuestions !== undefined ? existingCandidate.logicalQuestions : null);
-    const finalQuestionCount = updateData.questionsAskedToCandidate !== undefined ? updateData.questionsAskedToCandidate : 
-                              (existingCandidate.questionsAskedToCandidate !== undefined ? existingCandidate.questionsAskedToCandidate : null);
-
-    // Only validate sum if all three values are provided (either updated or existing)
-    if (finalTechnicalCount !== null && finalLogicalCount !== null && finalQuestionCount !== null) {
-      const sum = finalTechnicalCount + finalLogicalCount;
-      if (sum !== finalQuestionCount) {
-        return res.status(400).json({ 
-          message: `The sum of Technical Questions (${finalTechnicalCount}) and Logical Questions (${finalLogicalCount}) must equal Questions Asked To Candidate (${finalQuestionCount}). Current sum: ${sum}` 
-        });
-      }
-    }
+    // Validation for technical and logical questions sum is now handled by automatic calculation
+    // Derived questionsAskedToCandidate value is already in updateData
 
     if (req.file) {
       updateData.resume = req.file.filename; // update resume if uploaded
@@ -346,88 +307,19 @@ exports.bulkDeleteCandidates = async (req, res) => {
 
 exports.createCandidate=async(req,res)=>{
    try {
-       const { email,name, phone, position, experienceYears, experienceMonths, timeDurationForTest,questionsAskedToCandidate,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue} = req.body;
+       const { email,name, phone, position, experienceYears, experienceMonths, timeDurationForTest,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue} = req.body;
        const {allowDuplicate} = req.body; 
-       const timeforTest = parseInt(timeDurationForTest);
+       const experience = experienceYears + " year " + experienceMonths + " month";
+       console.log('experience',experience)
+       const timeforTest = parseInt(timeDurationForTest); 
           // Check if position is provided
           if (!position) {
             return res.status(400).json({ message: "Position is required" });
           }
 
-          // Format experience
-          let experience;
-          if (experienceYears !== undefined || experienceMonths !== undefined) {
-            const years = parseInt(experienceYears || 0);
-            const months = parseInt(experienceMonths || 0);
-            experience = `${years} year ${months} month`;
-          } else {
-            experience = "0 year 0 month"; // Default if neither is provided
-          }
-          // Count questions for the specific position
-          const numberOfNonTechnicalQuestions = await Question.countDocuments({
-            position: position,
-            category: {$exists: true}
-          });
-          const technicalQuestionsCount = await Question.countDocuments({
-            position: position,
-            category: {$exists: false}
-          });
-          
-          // Validate logicalQuestions against position-specific non-technical questions
-          if (logicalQuestions !== undefined && logicalQuestions !== null) {
-            const logicalCount = parseInt(logicalQuestions);
-            if (isNaN(logicalCount) || logicalCount < 0) {
-              return res.status(400).json({ message: "Logical questions must be a positive number" });
-            }
-            if (logicalCount > numberOfNonTechnicalQuestions) {
-              if (numberOfNonTechnicalQuestions === 0) {
-                return res.status(400).json({ 
-                  message: "No logical questions available for this position yet. Please add questions first." 
-                });
-              }
-              return res.status(400).json({ 
-                message: `O ${numberOfNonTechnicalQuestions} logical question${numberOfNonTechnicalQuestions !== 1 ? 's' : ''} available for this position. Not enough questions.` 
-              });
-            }
-          }
-          
-          // Validate technicalQuestions against position-specific technical questions
-          if (technicalQuestions !== undefined && technicalQuestions !== null) {
-            const technicalCount = parseInt(technicalQuestions);
-            if (isNaN(technicalCount) || technicalCount < 0) {
-              return res.status(400).json({ message: "Technical questions must be a positive number" });
-            }
-            if (technicalCount > technicalQuestionsCount) {
-              if (technicalQuestionsCount === 0) {
-                return res.status(400).json({ 
-                  message: "No technical questions available for this position yet. Please add questions first." 
-                });
-              }
-              console.log('technicalQuestionsCount',technicalQuestionsCount)
-              console.log('technicalCount',technicalCount)
-
-              return res.status(400).json({ 
-                message: `Only ${technicalQuestionsCount} technical question${technicalQuestionsCount !== 1 ? 's' : ''} available for this position.` 
-              });
-            }
-          }
-          
-          // Validate that Technical Questions + Logical Questions = Questions Asked To Candidate
-          // Only validate if all three values are provided
-          if (questionsAskedToCandidate !== undefined && questionsAskedToCandidate !== null &&
-              technicalQuestions !== undefined && technicalQuestions !== null &&
-              logicalQuestions !== undefined && logicalQuestions !== null) {
-            const questionCount = parseInt(questionsAskedToCandidate);
-            const technicalCount = parseInt(technicalQuestions);
-            const logicalCount = parseInt(logicalQuestions);
-            const sum = technicalCount + logicalCount;
-            
-            if (sum !== questionCount) {
-              return res.status(400).json({ 
-                message: `The sum of Technical Questions (${technicalCount}) and Logical Questions (${logicalCount}) must equal Questions Asked To Candidate (${questionCount}). Current sum: ${sum}` 
-              });
-            }
-          }
+        
+          // questionsAskedToCandidate is now derived from technical and logical questions
+          const derivedQuestionsAsked = (parseInt(technicalQuestions) || 0) + (parseInt(logicalQuestions) || 0);
           
           const schedule = req.body.schedule ? new Date(req.body.schedule) : null;  
             // Check for duplicate with Email AND Phone
@@ -440,7 +332,7 @@ exports.createCandidate=async(req,res)=>{
                  }).populate("positionId", "name")
                  .sort({ createdAt: -1 });
                  console.log('existingResults',existingResults)
-                   console.log('existingResults',existingResults.length)
+                   console.log('existingResults length',existingResults.length)
                    const scoreHistory = existingResults.map(result => ({
                      position: result.positionId?.name || "Unknown Position",
                       score: result.score,
@@ -461,44 +353,14 @@ exports.createCandidate=async(req,res)=>{
               }); 
             }
              
-          // Validate questionsAskedToCandidate if provided
-          if (questionsAskedToCandidate !== undefined && questionsAskedToCandidate !== null) {
-            const questionCount = parseInt(questionsAskedToCandidate);
-            if (isNaN(questionCount) || questionCount < 0) {
-              return res.status(400).json({ message: "Questions asked to candidate must be a positive number" });
-            }
-            
-            // Check if position is provided
-            if (!position) {
-              return res.status(400).json({ message: "Position is required to validate questions" });
-            }
-            
-            // Get available questions count for the position
-            const availableQuestions = await Question.countDocuments({ position: position });
-            
-            if (questionCount > availableQuestions) {
-             
-              if (availableQuestions === 0) {
-                // console.log('availableQuestions is ',availableQuestions)
-                // console.log('questionCount is ',questionCount)
-                return res.status(400).json({ 
-                  message: "No questions available for this position yet. Please add questions first." 
-                });
-              }
-              return res.status(400).json({ 
-                message: `Only ${availableQuestions} question${availableQuestions !== 1 ? 's' : ''} available for this position. Not enough questions.` 
-              });
-            }
-          }
+          // derivedQuestionsAsked will be used in candidate creation
 
            const plainPassword = Math.random().toString(36).slice(-8); // 8-char password
           const hashedPassword = await bcrypt.hash(plainPassword, 10);
          
           const candidate = new Candidate({
-              name, email, password: hashedPassword,phone ,position, experience, 
-              experienceYears: parseInt(experienceYears || 0),
-              experienceMonths: parseInt(experienceMonths || 0),
-              schedule, questionsAskedToCandidate,
+              name, email, password: hashedPassword,phone ,position, experience,  
+              schedule, questionsAskedToCandidate: derivedQuestionsAsked,
               technicalQuestions, logicalQuestions ,timeforTest, isNagativeMarking, negativeMarkingValue
           })
       const token = jwt.sign(
@@ -519,7 +381,7 @@ exports.createCandidate=async(req,res)=>{
         },
         token })
       } catch (error) {
-          console.log(error.message)
+          console.log(error)
           return res.status(500).json({ message: "Internal Server Error" })
       }
 }

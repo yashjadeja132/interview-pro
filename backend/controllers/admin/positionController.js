@@ -4,23 +4,32 @@ const Question = require('../../models/Question')
 // Add a new position
 exports.addPosition = async (req, res) => {
   try {
-    const { name, salary, experience, vacancies, shift, jobType } = req.body;
+    const { name, salary, experienceYears, experienceMonths, vacancies, shift, jobType, testDuration, subjects, techQuestionCount, nonTechQuestionCount } = req.body;
     const existing = await Position.findOne({ name });
     if (existing) {
       return res.status(400).json({ success: false, message: "Position already exists" });
     }
 
+    let finalExperience = "";
+    if (experienceYears !== undefined || experienceMonths !== undefined) {
+      const years = parseInt(experienceYears || 0);
+      const months = parseInt(experienceMonths || 0);
+      finalExperience = `${years} year ${months} month`;
+    }
+
       const position = new Position({
       name,
       salary,
-      experience,
+      experience: finalExperience,
       vacancies,
       shift,
       jobType,
+      testDuration,
+      subjects,
+      techQuestionCount,
+      nonTechQuestionCount,
     });
-    console.log(position);
     await position.save();
-
     res.status(201).json({ success: true, data: position });
   } catch (err) {
     console.log(err);
@@ -31,7 +40,7 @@ exports.addPosition = async (req, res) => {
 exports.getPositions = async (req, res) => {
   try {
     // Extract query parameters for filtering and pagination
-    const { vacancy, jobType, salary, shift, search, experience } = req.query;
+    const { vacancy, jobType, salary, shift, search, experience, startDate, endDate } = req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -62,6 +71,20 @@ exports.getPositions = async (req, res) => {
     // Filter by search term (position name)
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
+    }
+
+    // Filter by date range
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        // Set end date to end of the day to capture all records for that day
+        const end = new Date(endDate);
+        end.setUTCHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
     }
     
    // Filter by experience
@@ -106,20 +129,34 @@ if (experience && experience !== 'all') {
       .sort({ createdAt: -1 })
       .select('-updatedAt -__v')
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate('subjects', 'name type');
 
     // Get question counts for each position
     const positionsWithCounts = await Promise.all(
       positions.map(async (position) => {
-        const questionCount = await Question.countDocuments({ position: position._id });
-        const technicalQuestionCount = await Question.countDocuments({ position: position._id, category: { $exists: false } });
-        const logicalQuestionCount = await Question.countDocuments({ position: position._id, category: { $exists: true } });
+        // Separate technical and non-technical subject IDs
+        const techSubjectIds = position.subjects
+          .filter(s => s.type === 1)
+          .map(s => s._id);
+        
+        const nonTechSubjectIds = position.subjects
+          .filter(s => s.type === 2)
+          .map(s => s._id);
+
+        // Count questions for tech and non-tech subjects
+        const [technicalQuestionCount, nonTechnicalQuestionCount] = await Promise.all([
+          Question.countDocuments({ subject: { $in: techSubjectIds } }),
+          Question.countDocuments({ subject: { $in: nonTechSubjectIds } })
+        ]);
+
+        const TotalQuestionsCount = technicalQuestionCount + nonTechnicalQuestionCount;
         
         return {
           ...position.toObject(),
-          questionCount,
+          TotalQuestionsCount,
           technicalQuestionCount,
-          logicalQuestionCount
+          nonTechnicalQuestionCount,
         };
       })
     );
@@ -146,11 +183,34 @@ if (experience && experience !== 'all') {
 // Get position by ID
 exports.getPositionById = async (req, res) => {
   try {
-    const position = await Position.findById(req.params.id);
+    const position = await Position.findById(req.params.id).populate('subjects', 'name type');
     if (!position) {
       return res.status(404).json({ success: false, message: "Position not found" });
     }
-    res.json({ success: true, data: position });
+
+    // Separate technical and non-technical subject IDs
+    const techSubjectIds = position.subjects
+      .filter(s => s.type === 1)
+      .map(s => s._id);
+    
+    const nonTechSubjectIds = position.subjects
+      .filter(s => s.type === 2)
+      .map(s => s._id);
+
+    // Count questions for tech and non-tech subjects
+    const [technicalQuestionCount, nonTechnicalQuestionCount] = await Promise.all([
+      Question.countDocuments({ subject: { $in: techSubjectIds } }),
+      Question.countDocuments({ subject: { $in: nonTechSubjectIds } })
+    ]);
+
+    const data = {
+      ...position.toObject(),
+      technicalQuestionCount,
+      nonTechnicalQuestionCount,
+      TotalQuestionsCount: technicalQuestionCount + nonTechnicalQuestionCount
+    };
+
+    res.json({ success: true, data });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -159,16 +219,73 @@ exports.getPositionById = async (req, res) => {
 // Update position
 exports.updatePosition = async (req, res) => {
   try {
-    const { name, salary,experience,vacancies,shift,jobType } = req.body;
+    const { name, salary, experienceYears, experienceMonths, vacancies, shift, jobType, testDuration, subjects, techQuestionCount, nonTechQuestionCount } = req.body;
+    
+    let finalExperience;
+    if (experienceYears !== undefined || experienceMonths !== undefined) {
+      const years = parseInt(experienceYears || 0);
+      const months = parseInt(experienceMonths || 0);
+      finalExperience = `${years} year ${months} month`;
+    }
+
+    const updateData = {
+      name, 
+      salary,
+      vacancies,
+      shift,
+      jobType, 
+      testDuration, 
+      subjects, 
+      techQuestionCount, 
+      nonTechQuestionCount
+    };
+
+    if (finalExperience !== undefined) {
+      updateData.experience = finalExperience;
+    }
+
     const updated = await Position.findByIdAndUpdate(
       req.params.id,
-      { name, salary,experience,vacancies,shift,jobType },
+      updateData,
       { new: true, runValidators: true }
     );
     if (!updated) {
       return res.status(404).json({ success: false, message: "Position not found" });
     }
     res.json({ success: true, data: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// Get question counts by subject IDs
+exports.getQuestionCounts = async (req, res) => {
+  try {
+    const { subjects } = req.body;
+    if (!subjects || !Array.isArray(subjects) || subjects.length === 0) {
+      return res.json({ success: true, data: { technicalQuestionCount: 0, nonTechnicalQuestionCount: 0 } });
+    }
+
+    // Populate subject details to separate by type
+    const Subject = require('../../models/Subject');
+    const subjectDocs = await Subject.find({ _id: { $in: subjects } });
+
+    const techSubjectIds = subjectDocs.filter(s => s.type === 1).map(s => s._id);
+    const nonTechSubjectIds = subjectDocs.filter(s => s.type === 2).map(s => s._id);
+
+    const [technicalQuestionCount, nonTechnicalQuestionCount] = await Promise.all([
+      techSubjectIds.length > 0 ? Question.countDocuments({ subject: { $in: techSubjectIds } }) : 0,
+      nonTechSubjectIds.length > 0 ? Question.countDocuments({ subject: { $in: nonTechSubjectIds } }) : 0,
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        technicalQuestionCount,
+        nonTechnicalQuestionCount,
+        totalAvailable: technicalQuestionCount + nonTechnicalQuestionCount,
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
