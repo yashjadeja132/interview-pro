@@ -96,6 +96,10 @@ module.exports.loginCandidate = async (req, res) => {
       }
 
       if (now > expirationTime) {
+        // Mark as expired
+        candidates[0].isSubmitted = 2;
+        await candidates[0].save();
+        
         return res.status(403).json({
           message: `Your login window has expired. You could only login within ${allowedMinutes} minutes of your scheduled time.`,
         });

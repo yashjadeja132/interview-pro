@@ -452,7 +452,7 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Experience *
               </label>
-              <div className="flex gap-3">
+              <div className="flex gap-1">
                 <Select
                   value={form.experienceYears}
                   onValueChange={(v) => handleSelectChange("experienceYears", v)}

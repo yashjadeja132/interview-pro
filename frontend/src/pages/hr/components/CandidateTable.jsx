@@ -107,6 +107,8 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
     const getScheduleStatus = (isSubmitted) => {
         if (isSubmitted === 1) {
             return { status: 'completed', color: 'text-green-600', bg: 'bg-green-100' };
+        } else if (isSubmitted === 2) {
+            return { status: 'expired', color: 'text-red-600', bg: 'bg-red-100' };
         } else {
             return { status: 'pending', color: 'text-yellow-600', bg: 'bg-yellow-100' };
         }
@@ -410,7 +412,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                                 variant="outline"
                                                                 size="sm"
                                                                 className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
-                                                                disabled={candidate.isSubmitted === 1}
+                                                                disabled={candidate.isSubmitted === 1 || candidate.isSubmitted === 2}
                                                                 onClick={() => onEdit(candidate)}
                                                             >
                                                                 <Edit2 className="w-3 h-3" />
