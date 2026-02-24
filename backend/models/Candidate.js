@@ -15,6 +15,7 @@ const CandidateSchema = new mongoose.Schema({
   position: { type: mongoose.Schema.Types.ObjectId, ref:'Position' ,required: true }, // job role applied for
   questionsAskedToCandidate: { type: Number }, // Number of questions to ask the candidate
   isSubmitted: { type: Number, default: 0 }, // 0 = not submitted, 1 = submitted
+  description: { type: String },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Candidate", CandidateSchema);

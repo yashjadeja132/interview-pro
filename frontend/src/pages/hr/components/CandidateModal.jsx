@@ -102,34 +102,45 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
     const getCountStatus = (field) => {
         const entered = Number(form[field === 'technicalQuestions' ? 'technicalQuestions' : 'logicalQuestions']) || 0;
         const available = field === 'technicalQuestions' ? availableCounts.tech : availableCounts.nonTech;
+        const preset = field === 'technicalQuestions' ? selectedPositionCounts?.technical : selectedPositionCounts?.logical;
         const label = field === 'technicalQuestions' ? 'technical' : 'non-technical';
 
         if (!form.position) return null;
         if (loadingCounts) return { type: 'loading', message: 'Checking...' };
-        if (available === null) return null;
 
+        // Validation against preset (The "New Flow")
+        if (preset !== undefined && entered > preset) {
+            return { type: 'error', message: `Exceeds position preset of ${preset} questions` };
+        }
+
+        // Informational message about database availability
         if (available === 0) {
-            return { type: 'error', message: `No ${label} questions available for this position` };
+            return { type: 'error', message: `No ${label} questions available in database` };
         }
-        if (!form[field === 'technicalQuestions' ? 'technicalQuestions' : 'logicalQuestions'] || entered === 0) {
-            return { type: 'info', message: `${available} ${label} questions available` };
+        if (available !== null && entered > available) {
+            return { type: 'error', message: `Only ${available} questions available in database (you entered ${entered})` };
         }
-        if (entered > available) {
-            return { type: 'error', message: `Only ${available} ${label} questions available (you entered ${entered})` };
+
+        if (preset !== undefined) {
+            return { type: 'info', message: `${preset} questions required by position (${available || 0} available in DB)` };
         }
-        return { type: 'success', message: `${available} available` };
+
+        return null;
     };
 
     const getTotalCountStatus = () => {
-        if (!form.position || loadingCounts || availableCounts.total === null) return null;
+        if (!form.position || loadingCounts) return null;
         const techEntered = Number(form.technicalQuestions) || 0;
         const nonTechEntered = Number(form.logicalQuestions) || 0;
         const totalEntered = techEntered + nonTechEntered;
-        if (totalEntered === 0) return null;
-        if (totalEntered > availableCounts.total) {
-            return { type: 'error', message: `Total questions (${totalEntered}) exceed available (${availableCounts.total})` };
+        const totalPreset = selectedPositionCounts?.total;
+
+        if (totalPreset !== undefined && totalEntered > totalPreset) {
+            return { type: 'error', message: `Total questions (${totalEntered}) exceeds position limit (${totalPreset})` };
         }
-        return { type: 'success', message: `Total: ${totalEntered} of ${availableCounts.total} available` };
+
+        if (totalEntered === 0) return null;
+        return { type: 'success', message: `Total: ${totalEntered} questions configured` };
     };
     useEffect(() => {
         if (isOpen) {
@@ -158,9 +169,9 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                 // Handle position question count
                 const pos = positions.find(p => p._id === positionId);
                 setSelectedPositionCounts(pos ? {
-                    total: pos.TotalQuestionsCount || 0,
-                    technical: pos.technicalQuestionCount || 0,
-                    logical: pos.nonTechnicalQuestionCount || 0
+                    total: (pos.techQuestionCount || 0) + (pos.nonTechQuestionCount || 0),
+                    technical: pos.techQuestionCount || 0,
+                    logical: pos.nonTechQuestionCount || 0
                 } : null);
             } else {
                 setForm({});
@@ -232,6 +243,9 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             if (!value) message = "Value is required";
             else if (isNaN(value)) message = "Must be a number";
         }
+        if (name === "description" && !value) {
+            message = "Description is required";
+        }
 
         setFieldErrors(prev => ({ ...prev, [name]: message }));
         return message;
@@ -263,7 +277,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
         const errors = {};
         const fieldsToValidate = [
             "name", "email", "phone", "experience", "position",
-            "schedule", "technicalQuestions", "logicalQuestions", "timeDurationForTest"
+            "schedule", "technicalQuestions", "logicalQuestions", "timeDurationForTest", "description"
         ];
 
         fieldsToValidate.forEach(field => {
@@ -271,18 +285,25 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             if (msg) errors[field] = msg;
         });
 
-        // Validate against available counts
+        // Validate against position presets
         const tech = Number(form.technicalQuestions) || 0;
         const nonTech = Number(form.logicalQuestions) || 0;
+        const techPreset = selectedPositionCounts?.technical || 0;
+        const nonTechPreset = selectedPositionCounts?.logical || 0;
 
+        if (tech > techPreset) {
+            errors.technicalQuestions = `Cannot exceed position preset of ${techPreset} questions`;
+        }
+        if (nonTech > nonTechPreset) {
+            errors.logicalQuestions = `Cannot exceed position preset of ${nonTechPreset} questions`;
+        }
+
+        // Also cross-check with available (optional but good for UX)
         if (availableCounts.tech !== null && tech > availableCounts.tech) {
-            errors.technicalQuestions = `Only ${availableCounts.tech} technical questions available`;
+            errors.technicalQuestions = errors.technicalQuestions || `Only ${availableCounts.tech} questions available in database`;
         }
         if (availableCounts.nonTech !== null && nonTech > availableCounts.nonTech) {
-            errors.logicalQuestions = `Only ${availableCounts.nonTech} non-technical questions available`;
-        }
-        if (availableCounts.total !== null && (tech + nonTech) > availableCounts.total) {
-            errors.technicalQuestions = errors.technicalQuestions || `Total (${tech + nonTech}) exceeds available (${availableCounts.total})`;
+            errors.logicalQuestions = errors.logicalQuestions || `Only ${availableCounts.nonTech} questions available in database`;
         }
 
         if (form.isNagativeMarking && !form.negativeMarkingValue) {
@@ -340,7 +361,8 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             parseInt(form.logicalQuestions || 0) !== parseInt(initialData.logicalQuestions || 0) ||
             parseInt(form.timeDurationForTest || 0) !== parseInt(initialTimeDuration || 0) ||
             !!form.isNagativeMarking !== !!initialData.isNagativeMarking ||
-            String(form.negativeMarkingValue || "") !== String(initialData.negativeMarkingValue || "")
+            String(form.negativeMarkingValue || "") !== String(initialData.negativeMarkingValue || "") ||
+            String(form.description || "") !== String(initialData.description || "")
         );
     };
 
@@ -392,9 +414,9 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                 onValueChange={(val) => {
                                     const pos = positions.find(p => p._id === val);
                                     setSelectedPositionCounts(pos ? {
-                                        total: pos.TotalQuestionsCount || 0,
-                                        technical: pos.technicalQuestionCount || 0,
-                                        logical: pos.nonTechnicalQuestionCount || 0
+                                        total: (pos.techQuestionCount || 0) + (pos.nonTechQuestionCount || 0),
+                                        technical: pos.techQuestionCount || 0,
+                                        logical: pos.nonTechQuestionCount || 0
                                     } : null);
                                     setForm(prev => ({
                                         ...prev,
@@ -850,6 +872,21 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                 {fieldErrors.negativeMarkingValue && <p className="text-xs text-red-600 font-medium">{fieldErrors.negativeMarkingValue}</p>}
                             </div>
                         )}
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                        <Label htmlFor="description" className="dark:text-slate-300">Description *</Label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            rows={3}
+                            placeholder="Enter candidate description..."
+                            value={form.description || ""}
+                            onChange={handleChange}
+                            className={`w-full px-3 py-2 text-sm rounded-md border dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.description ? "border-red-500" : "border-slate-200"}`}
+                        />
+                        {fieldErrors.description && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.description}</p>}
                     </div>
                     {duplicateData && (
                         <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 rounded-lg space-y-2">

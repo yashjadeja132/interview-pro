@@ -81,8 +81,13 @@ module.exports.loginCandidate = async (req, res) => {
       const scheduleTime = new Date(candidates[0].schedule);
 
       const loginTimeSettings = await LoginTime.findOne();
-      const allowedMinutes = loginTimeSettings?.timeDurationForTest || 30;
-      const expirationTime = new Date(scheduleTime.getTime() + allowedMinutes * 60 * 1000);
+      const allowedMinutes = loginTimeSettings?.timeDurationForTest || 30; // "Login Time for Student" in minutes
+      const expirationTime = new Date(scheduleTime.getTime() + (allowedMinutes * 60 * 1000));
+
+      console.log(`Current Time: ${now.toISOString()}`);
+      console.log(`Schedule Time: ${scheduleTime.toISOString()}`);
+      console.log(`Allowed Buffer: ${allowedMinutes} mins`);
+      console.log(`Expiration Time: ${expirationTime.toISOString()}`);
 
       if (now < scheduleTime) {
         return res.status(403).json({
@@ -92,7 +97,7 @@ module.exports.loginCandidate = async (req, res) => {
 
       if (now > expirationTime) {
         return res.status(403).json({
-          message: `⏰ Your login window has expired. You could only login within ${allowedMinutes} minutes of your scheduled time.`,
+          message: `Your login window has expired. You could only login within ${allowedMinutes} minutes of your scheduled time.`,
         });
       }
     }

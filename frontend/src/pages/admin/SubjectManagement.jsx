@@ -28,7 +28,7 @@ function SubjectManagement() {
         <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
             {/* Header Section */}
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-6 transition-colors duration-200">
-                <div className="max-w-7xl mx-auto sm-header-container flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="max-w-10xl mx-auto sm-header-container flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="sm-header-info flex items-center gap-4">
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
                             <BookOpen className="w-6 h-6 text-white" />

@@ -1,5 +1,6 @@
  const Candidate = require("../../models/Candidate");
 const Question = require("../../models/Question");
+const Position = require("../../models/Position");
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const {sendCandidateMail} = require('../../services/hrEmailServices')
@@ -82,6 +83,7 @@ exports.getCandidates = async (req, res) => {
       questionsAskedToCandidate: c.questionsAskedToCandidate, // Include questionsAskedToCandidate
       technicalQuestions: c.technicalQuestions,
       logicalQuestions: c.logicalQuestions,
+      description: c.description, // Include description
       isSubmitted: c.isSubmitted || 0 // Include isSubmitted field
     }));
 
@@ -121,7 +123,7 @@ exports.getCandidateById = async (req, res) => {
 // Update candidate
 exports.updateCandidate = async (req, res) => {
   try {
-    const { name, email, phone, experienceYears, experienceMonths, position,timeDurationForTest, questionsAskedToCandidate, technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue } = req.body;
+    const { name, email, phone, experienceYears, experienceMonths, position,timeDurationForTest, questionsAskedToCandidate, technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue, description } = req.body;
     const timefortest = parseInt(timeDurationForTest);
     
     let finalExperience;
@@ -133,7 +135,7 @@ exports.updateCandidate = async (req, res) => {
 
     const updateData = { 
       name, email, phone, position,timefortest, 
-      technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue,
+      technicalQuestions, logicalQuestions, isNagativeMarking, negativeMarkingValue, description,
       experienceYears: parseInt(experienceYears || 0),
       experienceMonths: parseInt(experienceMonths || 0),
       questionsAskedToCandidate: (parseInt(technicalQuestions) || 0) + (parseInt(logicalQuestions) || 0)
@@ -182,15 +184,14 @@ exports.updateCandidate = async (req, res) => {
       return res.status(400).json({ message: "Position is required to validate questions" });
     }
 
-    // Count questions for the specific position
-    const numberOfNonTechnicalQuestions = await Question.countDocuments({
-      position: positionId,
-      category: {$exists: true}
-    });
-    const technicalQuestionsCount = await Question.countDocuments({
-      position: positionId,
-      category: {$exists: false}
-    });
+    // Fetch position details for validation
+    const positionDoc = await Position.findById(positionId);
+    if (!positionDoc) {
+      return res.status(404).json({ message: "Position not found" });
+    }
+
+    const numberOfNonTechnicalQuestions = positionDoc.nonTechQuestionCount || 0;
+    const technicalQuestionsCount = positionDoc.techQuestionCount || 0;
 
     // Validate logicalQuestions against position-specific non-technical questions
     if (logicalQuestions !== undefined && logicalQuestions !== null) {
@@ -199,13 +200,8 @@ exports.updateCandidate = async (req, res) => {
         return res.status(400).json({ message: "Logical questions must be a positive number" });
       }
       if (logicalCount > numberOfNonTechnicalQuestions) {
-        if (numberOfNonTechnicalQuestions === 0) {
-          return res.status(400).json({ 
-            message: "No logical questions available for this position yet. Please add questions first." 
-          });
-        }
         return res.status(400).json({ 
-          message: `Only ${numberOfNonTechnicalQuestions} logical question${numberOfNonTechnicalQuestions !== 1 ? 's' : ''} available for this position. Not enough questions.` 
+          message: `Only ${numberOfNonTechnicalQuestions} non-technical questions are allowed for this position according to its configuration.` 
         });
       }
       updateData.logicalQuestions = logicalCount;
@@ -218,13 +214,8 @@ exports.updateCandidate = async (req, res) => {
         return res.status(400).json({ message: "Technical questions must be a positive number" });
       }
       if (technicalCount > technicalQuestionsCount) {
-        if (technicalQuestionsCount === 0) {
-          return res.status(400).json({ 
-            message: "No technical questions available for this position yet. Please add questions first." 
-          });
-        }
         return res.status(400).json({ 
-          message: `Only ${technicalQuestionsCount} technical question${technicalQuestionsCount !== 1 ? 's' : ''} available for this position. Not enough questions.` 
+          message: `Only ${technicalQuestionsCount} technical questions are allowed for this position according to its configuration.` 
         });
       }
       updateData.technicalQuestions = technicalCount;
@@ -307,7 +298,7 @@ exports.bulkDeleteCandidates = async (req, res) => {
 
 exports.createCandidate=async(req,res)=>{
    try {
-       const { email,name, phone, position, experienceYears, experienceMonths, timeDurationForTest,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue} = req.body;
+       const { email,name, phone, position, experienceYears, experienceMonths, timeDurationForTest,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue, description} = req.body;
        const {allowDuplicate} = req.body; 
        const experience = experienceYears + " year " + experienceMonths + " month";
        console.log('experience',experience)
@@ -320,6 +311,19 @@ exports.createCandidate=async(req,res)=>{
         
           // questionsAskedToCandidate is now derived from technical and logical questions
           const derivedQuestionsAsked = (parseInt(technicalQuestions) || 0) + (parseInt(logicalQuestions) || 0);
+
+          // Validate against position presets
+          const positionDoc = await Position.findById(position);
+          if (!positionDoc) {
+            return res.status(404).json({ message: "Position not found" });
+          }
+
+          if (technicalQuestions > positionDoc.techQuestionCount) {
+            return res.status(400).json({ message: `Technical questions cannot exceed position limit of ${positionDoc.techQuestionCount}` });
+          }
+          if (logicalQuestions > positionDoc.nonTechQuestionCount) {
+            return res.status(400).json({ message: `Non-technical questions cannot exceed position limit of ${positionDoc.nonTechQuestionCount}` });
+          }
           
           const schedule = req.body.schedule ? new Date(req.body.schedule) : null;  
             // Check for duplicate with Email AND Phone
@@ -361,7 +365,7 @@ exports.createCandidate=async(req,res)=>{
           const candidate = new Candidate({
               name, email, password: hashedPassword,phone ,position, experience,  
               schedule, questionsAskedToCandidate: derivedQuestionsAsked,
-              technicalQuestions, logicalQuestions ,timeforTest, isNagativeMarking, negativeMarkingValue
+              technicalQuestions, logicalQuestions ,timeforTest, isNagativeMarking, negativeMarkingValue, description
           })
       const token = jwt.sign(
         { id: candidate._id, role: "Candidate" ,schedule:candidate.schedule},

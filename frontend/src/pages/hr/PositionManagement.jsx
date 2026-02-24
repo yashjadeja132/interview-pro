@@ -39,7 +39,7 @@ export default function PositionManagement() {
 
       {/* Header Section */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-6 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto pm-header-container">
+        <div className="max-w-10xl mx-auto pm-header-container">
           <div className="pm-header-info">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shrink-0">
               <Building2 className="w-6 h-6 text-white" />

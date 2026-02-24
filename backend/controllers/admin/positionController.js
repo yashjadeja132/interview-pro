@@ -1,5 +1,6 @@
 const Position = require('../../models/Position')
 const Question = require('../../models/Question')
+const Candidate = require('../../models/Candidate')
 
 // Add a new position
 exports.addPosition = async (req, res) => {
@@ -145,9 +146,10 @@ if (experience && experience !== 'all') {
           .map(s => s._id);
 
         // Count questions for tech and non-tech subjects
-        const [technicalQuestionCount, nonTechnicalQuestionCount] = await Promise.all([
+        const [technicalQuestionCount, nonTechnicalQuestionCount, candidateCount] = await Promise.all([
           Question.countDocuments({ subject: { $in: techSubjectIds } }),
-          Question.countDocuments({ subject: { $in: nonTechSubjectIds } })
+          Question.countDocuments({ subject: { $in: nonTechSubjectIds } }),
+          Candidate.countDocuments({ position: position._id })
         ]);
 
         const TotalQuestionsCount = technicalQuestionCount + nonTechnicalQuestionCount;
@@ -157,6 +159,7 @@ if (experience && experience !== 'all') {
           TotalQuestionsCount,
           technicalQuestionCount,
           nonTechnicalQuestionCount,
+          hasCandidates: candidateCount > 0,
         };
       })
     );
@@ -197,17 +200,19 @@ exports.getPositionById = async (req, res) => {
       .filter(s => s.type === 2)
       .map(s => s._id);
 
-    // Count questions for tech and non-tech subjects
-    const [technicalQuestionCount, nonTechnicalQuestionCount] = await Promise.all([
+    // Count questions for tech and non-tech subjects, and check for candidates
+    const [technicalQuestionCount, nonTechnicalQuestionCount, candidateCount] = await Promise.all([
       Question.countDocuments({ subject: { $in: techSubjectIds } }),
-      Question.countDocuments({ subject: { $in: nonTechSubjectIds } })
+      Question.countDocuments({ subject: { $in: nonTechSubjectIds } }),
+      Candidate.countDocuments({ position: position._id })
     ]);
 
     const data = {
       ...position.toObject(),
       technicalQuestionCount,
       nonTechnicalQuestionCount,
-      TotalQuestionsCount: technicalQuestionCount + nonTechnicalQuestionCount
+      TotalQuestionsCount: technicalQuestionCount + nonTechnicalQuestionCount,
+      hasCandidates: candidateCount > 0
     };
 
     res.json({ success: true, data });
@@ -221,6 +226,19 @@ exports.updatePosition = async (req, res) => {
   try {
     const { name, salary, experienceYears, experienceMonths, vacancies, shift, jobType, testDuration, subjects, techQuestionCount, nonTechQuestionCount } = req.body;
     
+    // Check if position exists and has candidates
+    const position = await Position.findById(req.params.id);
+    if (!position) {
+      return res.status(404).json({ success: false, message: "Position not found" });
+    }
+
+    if (name && name !== position.name) {
+      const candidateCount = await Candidate.countDocuments({ position: req.params.id });
+      if (candidateCount > 0) {
+        return res.status(400).json({ success: false, message: "Cannot change position name because candidates have already applied" });
+      }
+    }
+
     let finalExperience;
     if (experienceYears !== undefined || experienceMonths !== undefined) {
       const years = parseInt(experienceYears || 0);

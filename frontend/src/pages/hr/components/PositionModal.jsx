@@ -325,6 +325,10 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
   const hasChanges = () => {
     if (!initialData) return true; // Always allow adding new
 
+    // Normalize subjects for comparison (array of IDs, sorted)
+    const initialSubjectIds = (initialData.subjects || []).map(s => s._id || s).sort();
+    const currentSubjectIds = [...form.subjects].sort();
+
     return (
       form.name !== (initialData.name || "") ||
       String(form.salary) !== String(initialData.salary || "") ||
@@ -334,10 +338,9 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
       String(form.vacancies) !== String(initialData.vacancies || "") ||
       form.shift !== (initialData.shift || "Day Shift") ||
       String(form.testDuration) !== String(initialData.testDuration || "") ||
-      String(form.questionCount) !== String(initialData.questionCount || "") ||
-      String(form.techQuestionCount) !== String(initialData.techQuestionCount || "") ||
-      String(form.nonTechQuestionCount) !== String(initialData.nonTechQuestionCount || "") ||
-      JSON.stringify(form.subjects) !== JSON.stringify(initialData.subjects || [])
+      String(form.techQuestionCount) !== String(initialData.techQuestionCount || "0") ||
+      String(form.nonTechQuestionCount) !== String(initialData.nonTechQuestionCount || "0") ||
+      JSON.stringify(currentSubjectIds) !== JSON.stringify(initialSubjectIds)
     );
   };
 
@@ -374,9 +377,16 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
                 placeholder="e.g., Software Engineer"
                 value={form.name}
                 onChange={handleChange}
+                disabled={initialData?.hasCandidates}
                 className={`h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.name ? "border-red-500" : ""
-                  }`}
+                  } ${initialData?.hasCandidates ? "opacity-70 cursor-not-allowed bg-slate-50 dark:bg-slate-800/50" : ""}`}
               />
+              {initialData?.hasCandidates && (
+                <p className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-1">
+                  <Info className="w-3 h-3" />
+                  Editing name is disabled because candidates have applied
+                </p>
+              )}
               {fieldErrors.name && (
                 <p className="text-xs text-red-600 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
@@ -541,7 +551,7 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
             </div>
           </div>
 
-               {/* Subjects Selection */}
+          {/* Subjects Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Subjects *
