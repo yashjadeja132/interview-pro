@@ -366,7 +366,7 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                     <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent pm-table-header-row">
                                         <TableHead className="w-10 md:hidden"></TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center">Position Name</TableHead>
+                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 ">Position Name</TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Salary</TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Experience</TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Vacancies</TableHead>
@@ -396,7 +396,7 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                                 </TableCell>
                                                 <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                                                 <TableCell className="min-w-0">
-                                                    <div className="flex items-center justify-center space-x-3 min-w-0">
+                                                    <div className="flex items-center  space-x-3 min-w-0">
                                                         <div className="pm-job-icon w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                                                             <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                                         </div>

@@ -58,11 +58,10 @@ export default function Settings() {
                 const fetchedSettings = response.data.settings;
                 setSettings(fetchedSettings);
 
-                // Sync theme and primaryColor from backend settings to ThemeContext
+                // Sync theme from backend settings to ThemeContext
                 if (updateTheme) {
                     updateTheme({
                         darkMode: fetchedSettings.darkMode,
-                        primaryColor: fetchedSettings.primaryColor
                     });
                 }
             }

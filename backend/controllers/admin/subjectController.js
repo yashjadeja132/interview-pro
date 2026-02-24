@@ -1,4 +1,5 @@
 const Subject = require('../../models/Subject');
+const Question = require('../../models/Question');
 
 // Add a new subject
 exports.addSubject = async (req, res) => {
@@ -37,11 +38,26 @@ exports.getSubjects = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+    // Get question counts per subject
+    const subjectIds = subjects.map(s => s._id);
+    const questionCounts = await Question.aggregate([
+      { $match: { subject: { $in: subjectIds } } },
+      { $group: { _id: "$subject", count: { $sum: 1 } } }
+    ]);
+    const countMap = {};
+    questionCounts.forEach(q => { countMap[q._id.toString()] = q.count; });
+
+    // Enrich subjects with question counts
+    const enrichedSubjects = subjects.map(s => ({
+      ...s.toObject(),
+      questionCount: countMap[s._id.toString()] || 0
+    }));
+
     const totalPages = Math.ceil(total / limit);
 
     res.status(200).json({
       success: true,
-      data: subjects,
+      data: enrichedSubjects,
       pagination: {
         currentPage: page,
         totalPages,

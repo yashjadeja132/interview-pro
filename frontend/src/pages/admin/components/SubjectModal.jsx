@@ -46,7 +46,12 @@ export default function SubjectModal({ isOpen, onClose, initialData, onSuccess }
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm(prev => ({ ...prev, [name]: value }));
-        validateField(name, value);
+        if (name === "name") {
+            let sanitizedValue = value;
+            sanitizedValue = sanitizedValue.replace(/[^a-zA-Z\s]/g, "");
+            setForm(prev => ({ ...prev, name: sanitizedValue }));
+        }
+    validateField(name, sanitizedValue);
     };
 
     const handleTypeChange = (value) => {

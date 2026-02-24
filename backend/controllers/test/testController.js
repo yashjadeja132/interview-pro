@@ -18,7 +18,7 @@ exports.submitTest = async (req, res) => {
     const questionIds = answers.map(a => a.questionId);
     const candidate = await Candidate.findById(candidateId).populate('position');
     if (!candidate) return res.status(404).json({ message: "Candidate not found" });
-    const questions = await Question.find({ position: positionId, _id: { $in: questionIds } });
+    const questions = await Question.find({ _id: { $in: questionIds } });
     if (questions.length === 0)
       return res.status(400).json({ message: "No questions found for this position" });
     let correctCount = 0;
@@ -290,82 +290,77 @@ exports.getResultByCandidate = async (req, res) => {
   }
 };
 
-// Fetch random questions for candidate (with shuffled options)
+// Fetch random questions for candidate based on Position configuration
 exports.getRandomQuestionsByPosition = async (req, res) => {
   try {
-    const { positionId, count } = req.query;
-    const candidateId = req.query.candidateId || (req.user && req.user.id) || null;
-    
-    let technicalQuestionsCount = null;
-    let logicalQuestionsCount = null;
-    
-    // If candidateId is provided, fetch candidate's question preferences
-    if (candidateId) {
-      const candidate = await Candidate.findById(candidateId);
-      if (candidate) {
-        technicalQuestionsCount = candidate.technicalQuestions;
-        logicalQuestionsCount = candidate.logicalQuestions;
-      }
+    const { positionId } = req.query;
+
+    if (!positionId) {
+      return res.status(400).json({ message: "Position ID is required" });
     }
-    
+
+    const Position = require("../../models/Position");
+    const Subject = require("../../models/Subject");
+
+    // Fetch position details
+    const position = await Position.findById(positionId);
+    if (!position) {
+      return res.status(404).json({ message: "Position not found" });
+    }
+
+    const { subjects, techQuestionCount, nonTechQuestionCount, testDuration } = position;
+
+    // Fetch subjects to categorize them
+    const positionSubjects = await Subject.find({ _id: { $in: subjects } });
+    const techSubjectIds = positionSubjects
+      .filter(s => s.type === 1)
+      .map(s => s._id);
+    const nonTechSubjectIds = positionSubjects
+      .filter(s => s.type === 2)
+      .map(s => s._id);
+
     let technicalQuestions = [];
-    let logicalQuestions = [];
-    
-    // Fetch technical questions first (category doesn't exist)
-    if (technicalQuestionsCount !== null && technicalQuestionsCount > 0) {
-      const technicalQuestionsList = await Question.aggregate([
+    let nonTechnicalQuestions = [];
+
+    // Fetch random technical questions
+    if (techQuestionCount > 0 && techSubjectIds.length > 0) {
+      technicalQuestions = await Question.aggregate([
         { 
           $match: { 
-            position: mongoose.Types.ObjectId(positionId),
-            category: { $exists: false } // Technical questions don't have category
+            subject: { $in: techSubjectIds }
           } 
         },
-        { $sample: { size: technicalQuestionsCount } }
+        { $sample: { size: techQuestionCount } }
       ]);
-      technicalQuestions = technicalQuestionsList;
     }
-    
-    // Fetch logical/non-technical questions (category exists)
-    if (logicalQuestionsCount !== null && logicalQuestionsCount > 0) {
-      const logicalQuestionsList = await Question.aggregate([
+
+    // Fetch random non-technical questions
+    if (nonTechQuestionCount > 0 && nonTechSubjectIds.length > 0) {
+      nonTechnicalQuestions = await Question.aggregate([
         { 
           $match: { 
-            position: mongoose.Types.ObjectId(positionId),
-            category: { $exists: true } // Logical questions have category
+            subject: { $in: nonTechSubjectIds }
           } 
         },
-        { $sample: { size: logicalQuestionsCount } }
+        { $sample: { size: nonTechQuestionCount } }
       ]);
-      logicalQuestions = logicalQuestionsList;
     }
-    
-    // If no candidate preferences, use default random sampling
-    if (technicalQuestionsCount === null && logicalQuestionsCount === null) {
-      const questions = await Question.aggregate([
-        { $match: { position: mongoose.Types.ObjectId(positionId) } },
-        { $sample: { size: parseInt(count) || 10 } }
-      ]);
 
-      // Shuffle options for each question
-      const shuffledQuestions = questions.map(q => ({
-        ...q,
-        options: q.options.sort(() => Math.random() - 0.5)
-      }));
+    // Combine questions and shuffle the set
+    const allQuestions = [...technicalQuestions, ...nonTechnicalQuestions].sort(() => Math.random() - 0.5);
 
-      return res.status(200).json(shuffledQuestions);
-    }
-    
-    // Combine questions: technical first, then logical
-    const allQuestions = [...technicalQuestions, ...logicalQuestions];
-    
     // Shuffle options for each question
     const shuffledQuestions = allQuestions.map(q => ({
       ...q,
       options: q.options.sort(() => Math.random() - 0.5)
     }));
 
-    res.status(200).json(shuffledQuestions);
+    res.status(200).json({
+      questions: shuffledQuestions,
+      testDuration: testDuration || 60 // Default to 60 if not set
+    });
   } catch (err) {
+    console.error("Error in getRandomQuestionsByPosition:", err);
     res.status(500).json({ message: err.message });
   }
 };

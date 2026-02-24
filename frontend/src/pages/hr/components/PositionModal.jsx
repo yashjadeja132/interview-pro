@@ -234,7 +234,7 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
 
     // Restriction: Position Name - no numbers allowed
     if (name === "name") {
-      value = value.replace(/[^a-zA-Z\s]/g, "");
+      value = value.replace(/[^a-zA-Z0-9\-]/g, "");
     }
 
     // Restriction: Salary and Vacancies - only numbers
@@ -540,6 +540,99 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
               )}
             </div>
           </div>
+
+               {/* Subjects Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Subjects *
+            </label>
+            <div className="border rounded-lg p-4 dark:border-slate-700">
+              <Tabs defaultValue="technical" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4 bg-slate-100 dark:bg-slate-800">
+                  <TabsTrigger value="technical">Technical</TabsTrigger>
+                  <TabsTrigger value="non-technical">Non Technical</TabsTrigger>
+                </TabsList>
+                <TabsContent value="technical" className="mt-0">
+                  <div className="grid grid-cols-2 gap-y-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                    {techSubjects.map((subject) => {
+                      const hasQuestions = subject.questionCount > 0;
+                      return (
+                        <div key={subject._id} className={`flex items-center space-x-2 ${!hasQuestions ? 'opacity-50' : ''}`}>
+                          <Checkbox
+                            id={subject._id}
+                            checked={form.subjects.includes(subject._id)}
+                            onCheckedChange={() => handleSubjectToggle(subject._id)}
+                            disabled={!hasQuestions}
+                          />
+                          <label
+                            htmlFor={subject._id}
+                            className={`text-sm dark:text-slate-300 ${hasQuestions ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                          >
+                            {subject.name}
+                            {!hasQuestions && <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-1">(No questions)</span>}
+                          </label>
+                        </div>
+                      );
+                    })}
+                    {techSubjects.length === 0 && !loadingSubjects && (
+                      <p className="text-xs text-slate-500 col-span-2 italic">No technical subjects found.</p>
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="non-technical" className="mt-0">
+                  <div className="grid grid-cols-2 gap-y-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                    {nonTechSubjects.map((subject) => {
+                      const hasQuestions = subject.questionCount > 0;
+                      return (
+                        <div key={subject._id} className={`flex items-center space-x-2 ${!hasQuestions ? 'opacity-50' : ''}`}>
+                          <Checkbox
+                            id={subject._id}
+                            checked={form.subjects.includes(subject._id)}
+                            onCheckedChange={() => handleSubjectToggle(subject._id)}
+                            disabled={!hasQuestions}
+                          />
+                          <label
+                            htmlFor={subject._id}
+                            className={`text-sm dark:text-slate-300 ${hasQuestions ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                          >
+                            {subject.name}
+                            {!hasQuestions && <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-1">(No questions)</span>}
+                          </label>
+                        </div>
+                      );
+                    })}
+                    {nonTechSubjects.length === 0 && !loadingSubjects && (
+                      <p className="text-xs text-slate-500 col-span-2 italic">No non-technical subjects found.</p>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+            {fieldErrors.subjects && (
+              <p className="text-xs text-red-600 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                {fieldErrors.subjects}
+              </p>
+            )}
+            {/* Selected Subjects Display */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {form.subjects.map((subId) => {
+                const sub = subjectsList.find((s) => s._id === subId);
+                return sub ? (
+                  <Badge key={subId} variant="secondary" className="flex items-center gap-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-none">
+                    {sub.name}
+                  </Badge>
+                ) : null;
+              })}
+            </div>
+          </div>
+          {/* General Error */}
+          {generalError && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400">{generalError}</p>
+            </div>
+          )}
+
           {/* Question Counts with Live Validation */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
@@ -684,7 +777,7 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
 
 
           {/* Subjects Selection */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Subjects *
             </label>
@@ -696,21 +789,26 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
                 </TabsList>
                 <TabsContent value="technical" className="mt-0">
                   <div className="grid grid-cols-2 gap-y-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                    {techSubjects.map((subject) => (
-                      <div key={subject._id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={subject._id}
-                          checked={form.subjects.includes(subject._id)}
-                          onCheckedChange={() => handleSubjectToggle(subject._id)}
-                        />
-                        <label
-                          htmlFor={subject._id}
-                          className="text-sm cursor-pointer dark:text-slate-300"
-                        >
-                          {subject.name}
-                        </label>
-                      </div>
-                    ))}
+                    {techSubjects.map((subject) => {
+                      const hasQuestions = subject.questionCount > 0;
+                      return (
+                        <div key={subject._id} className={`flex items-center space-x-2 ${!hasQuestions ? 'opacity-50' : ''}`}>
+                          <Checkbox
+                            id={subject._id}
+                            checked={form.subjects.includes(subject._id)}
+                            onCheckedChange={() => handleSubjectToggle(subject._id)}
+                            disabled={!hasQuestions}
+                          />
+                          <label
+                            htmlFor={subject._id}
+                            className={`text-sm dark:text-slate-300 ${hasQuestions ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                          >
+                            {subject.name}
+                            {!hasQuestions && <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-1">(No questions)</span>}
+                          </label>
+                        </div>
+                      );
+                    })}
                     {techSubjects.length === 0 && !loadingSubjects && (
                       <p className="text-xs text-slate-500 col-span-2 italic">No technical subjects found.</p>
                     )}
@@ -718,21 +816,26 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
                 </TabsContent>
                 <TabsContent value="non-technical" className="mt-0">
                   <div className="grid grid-cols-2 gap-y-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                    {nonTechSubjects.map((subject) => (
-                      <div key={subject._id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={subject._id}
-                          checked={form.subjects.includes(subject._id)}
-                          onCheckedChange={() => handleSubjectToggle(subject._id)}
-                        />
-                        <label
-                          htmlFor={subject._id}
-                          className="text-sm cursor-pointer dark:text-slate-300"
-                        >
-                          {subject.name}
-                        </label>
-                      </div>
-                    ))}
+                    {nonTechSubjects.map((subject) => {
+                      const hasQuestions = subject.questionCount > 0;
+                      return (
+                        <div key={subject._id} className={`flex items-center space-x-2 ${!hasQuestions ? 'opacity-50' : ''}`}>
+                          <Checkbox
+                            id={subject._id}
+                            checked={form.subjects.includes(subject._id)}
+                            onCheckedChange={() => handleSubjectToggle(subject._id)}
+                            disabled={!hasQuestions}
+                          />
+                          <label
+                            htmlFor={subject._id}
+                            className={`text-sm dark:text-slate-300 ${hasQuestions ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                          >
+                            {subject.name}
+                            {!hasQuestions && <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-1">(No questions)</span>}
+                          </label>
+                        </div>
+                      );
+                    })}
                     {nonTechSubjects.length === 0 && !loadingSubjects && (
                       <p className="text-xs text-slate-500 col-span-2 italic">No non-technical subjects found.</p>
                     )}
@@ -746,7 +849,6 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
                 {fieldErrors.subjects}
               </p>
             )}
-            {/* Selected Subjects Display */}
             <div className="flex flex-wrap gap-2 mt-2">
               {form.subjects.map((subId) => {
                 const sub = subjectsList.find((s) => s._id === subId);
@@ -757,14 +859,13 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
                 ) : null;
               })}
             </div>
-          </div>
-
+          </div> */}
           {/* General Error */}
-          {generalError && (
+          {/* {generalError && (
             <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg">
               <p className="text-sm text-red-600 dark:text-red-400">{generalError}</p>
             </div>
-          )}
+          )} */}
         </div>
 
         <DialogFooter className="gap-2">

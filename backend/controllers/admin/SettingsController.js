@@ -18,7 +18,6 @@ const getSettings = async (req, res) => {
             switch (section) {
                 case 'theme':
                     data.darkMode = settings.darkMode;
-                    data.primaryColor = settings.primaryColor;
                     data.logoUrl = settings.logoUrl;
                     break;
                 
@@ -39,6 +38,7 @@ const updateSettings = async (req, res) => {
     try {
         const updates = req.body; // expect partial updates
         const settings = await Settings.findOneAndUpdate({}, updates, { new: true, upsert: true });
+        res.json({ settings });
 
     } catch (error) {
         console.error(error);

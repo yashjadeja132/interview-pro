@@ -15,10 +15,22 @@ import {
   Sparkles
 } from "lucide-react";
 import sparrowLogo from "../../assets/sparrowlogo.svg";
+import axiosInstance from '@/Api/axiosInstance';
 export default function StartButton({ setStreams }) {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [testDuration, setTestDuration] = useState(null);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("candidateData");
+    if (stored) {
+      const data = JSON.parse(stored);
+      if (data.timeforTest) {
+        setTestDuration(data.timeforTest);
+      }
+    }
+  }, []);
 
   const handleStartTest = async () => {
     setErrorMessage("");
@@ -72,6 +84,11 @@ export default function StartButton({ setStreams }) {
       setIsLoading(false);
     }
   };
+
+  function fetchCandidateDetails() {
+
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header with Logo */}
@@ -117,7 +134,9 @@ export default function StartButton({ setStreams }) {
                     <Clock className="w-5 h-5 text-blue-600" />
                     <div>
                       <p className="font-medium text-slate-900">Duration</p>
-                      <p className="text-sm text-slate-600">Approximately 30-45 minutes</p>
+                      <p className="text-sm text-slate-600">
+                        {testDuration ? `${testDuration} minutes` : 'Loading...'}
+                      </p>
                     </div>
                   </div>
 
@@ -151,7 +170,7 @@ export default function StartButton({ setStreams }) {
                     </div>
                     <div className="flex items-center gap-2">
                       <Monitor className="w-4 h-4 text-slate-600" />
-                      <span className="text-sm text-slate-600">Screen sharing for security</span>
+                      <span className="text-sm text-slate-600">entire screen for recording</span>
                     </div>
                   </div>
                 </div>
@@ -207,7 +226,7 @@ export default function StartButton({ setStreams }) {
                 <div className="pt-4 border-t border-blue-500/30">
                   <div className="flex items-center justify-center gap-2 text-blue-200">
                     <CheckCircle className="w-4 h-4" />
-                    <span className="text-sm">Your progress is automatically saved</span>
+                    <span className="text-sm">Your progress will be  automatically saved</span>
                   </div>
                 </div>
               </CardContent>

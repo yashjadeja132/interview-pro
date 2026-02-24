@@ -16,7 +16,8 @@ export default function QuizTestWithAttempts({ streams }) {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [candidateData, setCandidateData] = useState(null);
-    const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes timer
+    const [timeLeft, setTimeLeft] = useState(null);
+    const [totalDuration, setTotalDuration] = useState(0);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [visitedQuestions, setVisitedQuestions] = useState([]);
     const [error, setError] = useState(null);
@@ -75,6 +76,7 @@ export default function QuizTestWithAttempts({ streams }) {
     }, [streams]);
 
     useEffect(() => {
+        if (timeLeft === null) return;
         if (timeLeft <= 0) {
             console.log("Time completed - auto submitting");
             handleSubmit(true);
@@ -92,20 +94,25 @@ export default function QuizTestWithAttempts({ streams }) {
         }, 1000);
 
         return () => clearInterval(timerId);
-    }, []);
+    }, [timeLeft]);
 
     const loadQuestions = async () => {
         try {
             setLoading(true);
-            // Use questionsAskedToCandidate from storedData if available, otherwise default to 10
-            const questionCount = storedData?.questionsAskedToCandidate || 10;
             const candidateId = candidateData?.id || storedData?.id || null;
-            const url = candidateId
-                ? `http://localhost:5000/api/test/questions/random?positionId=${candidateData?.positionId}&count=${questionCount}&candidateId=${candidateId}`
-                : `http://localhost:5000/api/test/questions/random?positionId=${candidateData?.positionId}&count=${questionCount}`;
+            const positionId = candidateData?.positionId || storedData?.positionId;
+            const url = `http://localhost:5000/api/test/questions/random?positionId=${positionId}${candidateId ? `&candidateId=${candidateId}` : ''}`;
             const response = await fetch(url);
             const data = await response.json();
-            setQuestions(data);
+
+            if (data.questions) {
+                setQuestions(data.questions);
+                const durationInSeconds = (data.testDuration || 60) * 60;
+                setTotalDuration(durationInSeconds);
+
+                // Only set timeLeft if not already set by restored progress
+                setTimeLeft(prev => prev === null ? durationInSeconds : prev);
+            }
         } catch (error) {
             console.error('Error loading questions:', error);
             setError('Failed to load questions');
@@ -122,7 +129,7 @@ export default function QuizTestWithAttempts({ streams }) {
             if (response.data) {
                 const progress = response.data;
                 setCurrentQuestionIndex(progress.currentQuestionIndex || 0);
-                setTimeLeft(progress.timeLeft || 60 * 60);
+                setTimeLeft(progress.timeLeft);
 
                 // Restore answers
                 const restoredAnswers = {};
@@ -284,8 +291,8 @@ export default function QuizTestWithAttempts({ streams }) {
 
             const testData = {
                 answers: detailedAnswers,
-                timeTakenInSeconds: 60 * 60 - timeLeft,
-                timeTakenFormatted: formatTime(60 * 60 - timeLeft),
+                timeTakenInSeconds: totalDuration - timeLeft,
+                timeTakenFormatted: formatTime(totalDuration - timeLeft),
                 recording: videoBlob
             };
 
@@ -544,12 +551,12 @@ export default function QuizTestWithAttempts({ streams }) {
                                                 key={index}
                                                 onClick={() => handleQuestionClick(index)}
                                                 className={`w-8 h-8 rounded-full text-xs font-medium transition-colors ${isCurrent
-                                                        ? 'bg-blue-600 text-white'
-                                                        : isAnswered
-                                                            ? 'bg-green-100 text-green-800 border-2 border-green-300'
-                                                            : isVisited
-                                                                ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300'
-                                                                : 'bg-gray-100 text-gray-600 border-2 border-gray-300'
+                                                    ? 'bg-blue-600 text-white'
+                                                    : isAnswered
+                                                        ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                                                        : isVisited
+                                                            ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300'
+                                                            : 'bg-gray-100 text-gray-600 border-2 border-gray-300'
                                                     }`}
                                             >
                                                 {index + 1}

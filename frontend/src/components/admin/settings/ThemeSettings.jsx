@@ -6,12 +6,10 @@ export default function ThemeSettings({ settings, onUpdate, loading }) {
     const { updateTheme } = useContext(ThemeContext);
     const [formData, setFormData] = useState({
         darkMode: settings.darkMode || false,
-        primaryColor: settings.primaryColor || '#1976d2',
         logoUrl: settings.logoUrl || '',
     });
     const [initialData, setInitialData] = useState({
         darkMode: settings.darkMode || false,
-        primaryColor: settings.primaryColor || '#1976d2',
         logoUrl: settings.logoUrl || '',
     });
 
@@ -19,7 +17,6 @@ export default function ThemeSettings({ settings, onUpdate, loading }) {
     useEffect(() => {
         const newData = {
             darkMode: settings.darkMode || false,
-            primaryColor: settings.primaryColor || '#1976d2',
             logoUrl: settings.logoUrl || '',
         };
         setFormData(newData);
@@ -58,21 +55,6 @@ export default function ThemeSettings({ settings, onUpdate, loading }) {
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <div className="space-y-4">
-                    <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
-                        <Palette size={16} /> Primary Color
-                    </label>
-                    <div className="flex items-center gap-4">
-                        <input
-                            type="color"
-                            name="primaryColor"
-                            value={formData.primaryColor}
-                            onChange={handleChange}
-                            className="h-10 w-20 cursor-pointer rounded border dark:border-gray-700 p-1"
-                        />
-                        <span className="text-sm text-gray-600 dark:text-white font-mono">{formData.primaryColor}</span>
-                    </div>
-                </div>
 
                 {/* <div className="space-y-4">
                     <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">

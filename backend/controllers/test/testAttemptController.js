@@ -147,7 +147,8 @@ exports.submitTestWithAttempt = async (req, res) => {
       return res.status(404).json({ message: "Candidate not found" });
     }
 
-    const questions = await Question.find({ position: positionId });
+    const questionIds = answers.map(a => a.questionId);
+    const questions = await Question.find({ _id: { $in: questionIds } });
     if (questions.length === 0) {
       return res.status(400).json({ message: "No questions found for this position" });
     }

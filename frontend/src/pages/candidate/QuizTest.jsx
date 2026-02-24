@@ -19,6 +19,7 @@ export default function QuizTest({ streams }) {
   const storedData = JSON.parse(sessionStorage.getItem("candidateData"));
   const initialTime = storedData?.timeforTest ? storedData.timeforTest * 60 : 60 * 60;
   const [timeLeft, setTimeLeft] = useState(initialTime);
+  const [totalDuration, setTotalDuration] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [visitedQuestions, setVisitedQuestions] = useState([]);
   const navigate = useNavigate();
@@ -228,15 +229,23 @@ export default function QuizTest({ streams }) {
   const fetchQuestions = async () => {
     try {
       setLoading(true);
-      // Use questionsAskedToCandidate if available, otherwise default to 20
-      const questionCount = candidateData?.questionsAskedToCandidate || 20;
       const candidateId = candidateData?.id || null;
-      const url = candidateId
-        ? `http://localhost:5000/api/question/random/${candidateData.positionId}?count=${questionCount}&candidateId=${candidateId}`
-        : `http://localhost:5000/api/question/random/${candidateData.positionId}?count=${questionCount}`;
+      const url = `http://localhost:5000/api/test/questions/random?positionId=${candidateData.positionId}${candidateId ? `&candidateId=${candidateId}` : ''}`;
       const res = await axios.get(url);
-      setQuestions(res.data);
-      console.log(res.data);
+
+      if (res.data.questions) {
+        setQuestions(res.data.questions);
+        const durationInMinutes = res.data.testDuration || 60;
+        const durationInSeconds = durationInMinutes * 60;
+        setTotalDuration(durationInSeconds);
+
+        // Only override initialTime if we haven't already restored progress
+        if (!progressRestored) {
+          setTimeLeft(durationInSeconds);
+          timeLeftRef.current = durationInSeconds;
+        }
+        console.log("Questions loaded with duration:", durationInMinutes, "mins");
+      }
     } catch (err) {
       console.error("Error fetching questions:", err);
     } finally {
@@ -347,7 +356,7 @@ export default function QuizTest({ streams }) {
       const finalAnswers = answersRef.current; // Use Ref for latest answers
       const finalQuestions = questionsRef.current; // Use Ref for latest questions
       const finalTimeLeft = timeLeftRef.current;
-      const totalTimeInSeconds = dataToUse.timeforTest * 60;
+      const totalTimeInSeconds = totalDuration;
       const secondsTaken = totalTimeInSeconds - finalTimeLeft;
       const minutes = Math.floor(secondsTaken / 60);
       const seconds = secondsTaken % 60;
@@ -747,8 +756,8 @@ export default function QuizTest({ streams }) {
             {/* Timer */}
             <div
               className={`flex items-center gap-3 px-6 py-3 rounded-xl border-2 transition-all duration-300 ${timeLeft <= (initialTime * 0.1)
-                  ? "border-red-300 bg-red-50 text-red-700"
-                  : "border-blue-300 bg-blue-50 text-blue-700"
+                ? "border-red-300 bg-red-50 text-red-700"
+                : "border-blue-300 bg-blue-50 text-blue-700"
                 }`}
             >
               <Clock className="w-5 h-5" />

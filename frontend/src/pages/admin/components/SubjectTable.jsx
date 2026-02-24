@@ -219,7 +219,7 @@ export default function SubjectTable({ onEdit, refreshTrigger }) {
                                                     <TableCell>
                                                         <div className="flex items-center space-x-3 min-w-0">
                                                             <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0 sm-subject-icon">
-                                                                <BookOpen className="w-4 h-4 dark:text-white" />
+                                                                <BookOpen className="w-4 h-4 dark:text-blue-600" />
                                                             </div>
                                                             <div className="min-w-0 flex-1 relative">
                                                                 <div className="font-medium text-slate-900 dark:text-white break-words">{subject.name || 'N/A'}</div>

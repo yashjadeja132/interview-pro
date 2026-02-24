@@ -53,27 +53,32 @@ module.exports.loginCandidate = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    let candidate = null;
-    let isMatch = false;
-
+    const positionId = candidates[0].position?._id || candidates[0].position;
+    // return;
     // Iterate through all candidates with this email to find matching password
-    for (const cand of candidates) {
-        const match = await bcrypt.compare(password, cand.password);
-        if (match) {
-            candidate = cand;
-            isMatch = true;
-            break; // Found the correct user
-        }
+   const submittedTest = await testResult.findOne({
+      candidateId: candidates[0]._id,
+      positionId: positionId,
+      isSubmitted: 1,
+    });
+
+    if (submittedTest) {
+      console.log('test already submitted');
+      return res.status(403).json({
+        message: 'You have already submitted the test. You cannot login again.',
+      });
     }
 
+    // ✅ Await bcrypt comparison
+    const isMatch = await bcrypt.compare(password, candidates[0].password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Schedule-based login restrictions
     const now = new Date();
-    if (candidate.schedule) {
-      const scheduleTime = new Date(candidate.schedule);
+    if (candidates[0].schedule) {
+      const scheduleTime = new Date(candidates[0].schedule);
 
       const loginTimeSettings = await LoginTime.findOne();
       const allowedMinutes = loginTimeSettings?.timeDurationForTest || 30;
@@ -94,7 +99,7 @@ module.exports.loginCandidate = async (req, res) => {
 
     // JWT
     const token = jwt.sign(
-      { id: candidate._id, email: candidate.email },
+      { id: candidates[0]._id, email: candidates[0].email },
       process.env.JWT_SECRET,
       { expiresIn: '2m' }
     );
@@ -103,12 +108,12 @@ module.exports.loginCandidate = async (req, res) => {
       message: 'Logged in successfully',
       token,
       candidate: {
-        id: candidate._id,
-        name: candidate.name,
-        email: candidate.email,
-        position: candidate.position,
-        questionsAskedToCandidate: candidate.questionsAskedToCandidate,
-        timeforTest: candidate.timeforTest,
+        id: candidates[0]._id,
+        name: candidates[0].name,
+        email: candidates[0].email,
+        position: candidates[0].position,
+        questionsAskedToCandidate: candidates[0].questionsAskedToCandidate,
+        timeforTest: candidates[0].timeforTest,
       },
     });
   } catch (error) {

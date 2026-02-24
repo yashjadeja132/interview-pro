@@ -120,6 +120,7 @@ export function StudentLogin() {
                     id="email"
                     type="email"
                     placeholder="Enter your email"
+                    autoComplete="off"
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
@@ -154,6 +155,8 @@ export function StudentLogin() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
+                    autoComplete="new-password"
+
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
