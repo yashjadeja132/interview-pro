@@ -418,7 +418,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                                 <Edit2 className="w-3 h-3" />
                                                             </Button>
                                                             <Button
-                                                                variant="destructive"
+                                                                variant="outline"
                                                                 size="sm"
                                                                 className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:bg-slate-800 dark:border-red-900/50"
                                                                 onClick={() => setDeleteId(candidate._id)}
