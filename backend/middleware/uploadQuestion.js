@@ -1,39 +1,20 @@
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const cloudinary = require("../config/config");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const multer = require("multer");
 
-// Ensure uploads/questions directory exists (inside backend folder)
-const uploadDir = path.join(__dirname, '../uploads/questions');
-if (!fs.existsSync(uploadDir)) {
-  console.log('uploads/questions directory does not exist, creating it');
-  fs.mkdirSync(uploadDir, { recursive: true });
-} else {
-  console.log('uploads/questions directory already exists');
-}
-
-// Storage config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir); // Folder for images
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "questions",
+    allowed_formats: ["jpg", "jpeg", "png"],
+    public_id: (req, file) => {
+      const timestamp = Date.now();
+      const name = file.originalname.split('.')[0];
+      return `${file.fieldname}-${timestamp}-${name}`;
+    },
   },
-  filename: (req, file, cb) => {
-   const timestamp = Date.now();
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${file.fieldname}-${timestamp}${ext}`);
-  }
 });
 
-// File filter (accept only images)
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png/;
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (allowedTypes.test(ext)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only .jpeg, .jpg, .png files are allowed'), false);
-  }
-};
-
-const upload = multer({ storage, fileFilter });
+const upload = multer({ storage });
 
 module.exports = upload;

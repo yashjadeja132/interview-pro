@@ -250,7 +250,7 @@ export default function SubjectTable({ onEdit, refreshTrigger }) {
                                                             <Button
                                                                 variant="destructive"
                                                                 size="sm"
-                                                                className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-red-900/50"
+                                                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:bg-slate-800 dark:border-red-900/50"
                                                                 onClick={() => setDeleteId(subject._id)}
                                                             >
                                                                 <Trash2 className="w-3 h-3" />

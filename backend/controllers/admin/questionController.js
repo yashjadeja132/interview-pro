@@ -3,6 +3,22 @@ const Position = require("../../models/Position");
 const Candidate = require("../../models/Candidate");
 const Subject = require("../../models/Subject");
 const { default: mongoose } = require("mongoose");
+const cloudinary = require("../../config/config");
+
+// Helper function to extract public_id from Cloudinary URL
+const getPublicId = (url) => {
+  if (!url) return null;
+  // Cloudinary URL format: .../upload/v{version}/{public_id}.{ext}
+  const parts = url.split("/");
+  const uploadIndex = parts.indexOf("upload");
+  if (uploadIndex === -1) return null;
+  
+  // The public_id starts after the version (v{digits})
+  // Usually parts[uploadIndex + 2] if version is present
+  const publicIdWithExt = parts.slice(uploadIndex + 2).join("/");
+  const publicId = publicIdWithExt.split(".")[0];
+  return publicId;
+};
 
 // Create a new question
 exports.createQuestion = async (req, res) => {
@@ -12,8 +28,7 @@ exports.createQuestion = async (req, res) => {
     
     let questionImageUrl = null;
     if (req.files && req.files['questionImage']) {
-      const fileName  = req.files['questionImage'][0].filename;
-      questionImageUrl=`${process.env.UploadLink}/questions/${fileName}`;
+      questionImageUrl = req.files['questionImage'][0].path;
     }
     console.log('questionImageUrl is ',questionImageUrl)
 
@@ -21,8 +36,7 @@ exports.createQuestion = async (req, res) => {
     if (req.files && req.files['optionImages']) {
       req.files['optionImages'].forEach((file, index) => {
         if (parsedOptions[index]) {
-          const fileName = file.filename
-          parsedOptions[index].optionImage = `${process.env.UploadLink}/questions/${fileName}`;
+          parsedOptions[index].optionImage = file.path;
         }
       });
     }
@@ -36,7 +50,7 @@ exports.createQuestion = async (req, res) => {
     if (normalizedText) {
       const existingQuestion = await Question.findOne({ subject: subjectId, normalizedQuestionText: normalizedText });
       if (existingQuestion) {
-        return res.status(400).json({ message: "Question with same subject and text already exists" });
+        return res.status(400).json({ message: "This question already exists for this subject." });
       }
     }
 
@@ -52,9 +66,9 @@ exports.createQuestion = async (req, res) => {
     res.status(201).json({ message: "Question created successfully", question });
   } catch (err) {
     console.log(err.message)
-     if (err.code === 11000 && err.keyPattern && (err.keyPattern.normalizedQuestionText || err.keyPattern.questionText)) {
-    return res.status(400).json({ message: "Duplicate question text. Please use a different question." });
-  }
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "This question already exists for this subject." });
+    }
     res.status(500).json({ message: err.message });
   }
 };
@@ -68,32 +82,57 @@ exports.updateQuestion = async (req, res) => {
     const question = await Question.findById(req.params.id);
     if (!question) return res.status(404).json({ message: "Question not found" });
 
-    if (subjectId) {
-      const subject = await Subject.findById(subjectId);
-      if (!subject) return res.status(404).json({ message: "Subject not found" });
-      question.subject = subjectId;
-    }
+    if (subjectId || questionText) {
+      const targetSubject = subjectId || question.subject;
+      const targetText = questionText || question.questionText;
+      
+      if (targetText) {
+        const normalizedText = targetText.trim().toLowerCase();
+        // Check for duplicate within same subject excluding current question
+        const duplicate = await Question.findOne({ 
+          subject: targetSubject, 
+          normalizedQuestionText: normalizedText, 
+          _id: { $ne: question._id } 
+        });
+        
+        if (duplicate) {
+          return res.status(400).json({ message: "This question already exists for this subject." });
+        }
+      }
 
-    if (questionText) {
-      const normalizedText = questionText.trim().toLowerCase();
-      // Check for duplicate within same subject excluding current question
-      const duplicate = await Question.findOne({ subject: question.subject, normalizedQuestionText: normalizedText, _id: { $ne: question._id } });
-      if (duplicate) return res.status(400).json({ message: "Another question with same subject and text already exists" });
-      question.questionText = questionText;
+      if (subjectId) {
+        const subject = await Subject.findById(subjectId);
+        if (!subject) return res.status(404).json({ message: "Subject not found" });
+        question.subject = subjectId;
+      }
+      if (questionText) {
+        question.questionText = questionText;
+      }
     }
 
     // Handle question image update
     if (req.files && req.files['questionImage']) {
-      const fileName = req.files['questionImage'][0].filename;
-      question.questionImage = `${process.env.UploadLink}/questions/${fileName}`;
+      // Delete old image from Cloudinary
+      if (question.questionImage) {
+        const publicId = getPublicId(question.questionImage);
+        if (publicId) await cloudinary.uploader.destroy(publicId);
+      }
+      question.questionImage = req.files['questionImage'][0].path;
     }
 
     // Handle option images update
     if (req.files && req.files['optionImages']) {
+      // Create a map of index to file
+      // Multer.fields preserves order but lets be safe with index if provided in some way
+      // Actually here we just match by index of the uploaded files to the parsedOptions
       req.files['optionImages'].forEach((file, index) => {
         if (parsedOptions[index]) {
-          const fileName = file.filename;
-          parsedOptions[index].optionImage = `${process.env.UploadLink}/questions/${fileName}`;
+          // Delete old option image if exists
+          if (parsedOptions[index].optionImage) {
+             const publicId = getPublicId(parsedOptions[index].optionImage);
+             if (publicId) cloudinary.uploader.destroy(publicId); // Async but don't strictly need to await all
+          }
+          parsedOptions[index].optionImage = file.path;
         }
       });
     }
@@ -103,6 +142,9 @@ exports.updateQuestion = async (req, res) => {
     await question.save();
     res.status(200).json({ message: "Question updated successfully", question });
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "This question already exists for this subject." });
+    }
     res.status(500).json({ message: err.message });
   }
 };
@@ -138,8 +180,23 @@ exports.getQuestionById = async (req, res) => {
 // Delete question
 exports.deleteQuestion = async (req, res) => {
   try {
-    const question = await Question.findByIdAndDelete(req.params.id);
+    const question = await Question.findById(req.params.id);
     if (!question) return res.status(404).json({ message: "Question not found" });
+
+    // Delete images from Cloudinary
+    if (question.questionImage) {
+      const publicId = getPublicId(question.questionImage);
+      if (publicId) await cloudinary.uploader.destroy(publicId);
+    }
+
+    for (const opt of question.options) {
+      if (opt.optionImage) {
+        const publicId = getPublicId(opt.optionImage);
+        if (publicId) await cloudinary.uploader.destroy(publicId);
+      }
+    }
+
+    await Question.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Question deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });

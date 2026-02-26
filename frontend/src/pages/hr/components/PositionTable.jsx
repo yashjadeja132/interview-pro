@@ -201,16 +201,6 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
 
                     {showFilters && (
                         <div className="pm-filter-grid">
-                            {/* <div>
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Vacancies</label>
-                                <Input
-                                    type="number"
-                                    placeholder="Min vacancies"
-                                    value={filters.vacancy}
-                                    onChange={(e) => setFilters({ ...filters, vacancy: e.target.value })}
-                                    className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                                />
-                            </div> */}
                             <div>
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Job Type</label>
                                 <Select value={filters.jobType} onValueChange={(v) => setFilters({ ...filters, jobType: v })}>
@@ -241,16 +231,6 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            {/* <div>
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Min Salary</label>
-                                <Input
-                                    type="number"
-                                    placeholder="e.g., 50000"
-                                    value={filters.salary}
-                                    onChange={(e) => setFilters({ ...filters, salary: e.target.value })}
-                                    className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                                />
-                            </div> */}
                             <div>
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Shift</label>
                                 <Select value={filters.shift} onValueChange={(v) => setFilters({ ...filters, shift: v })}>
@@ -364,8 +344,8 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                             <Table>
                                 <TableHeader>
                                     <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent pm-table-header-row">
-                                        <TableHead className="w-10 md:hidden"></TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
+                                        <TableHead className="w-8 md:hidden px-2"></TableHead>
+                                        <TableHead className="w-8 font-semibold text-slate-700 dark:text-slate-300 px-2 text-center">#</TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 ">Position Name</TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Salary</TableHead>
                                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Experience</TableHead>
@@ -380,7 +360,7 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                     {positions.map((pos, index) => (
                                         <>
                                             <TableRow key={pos._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800">
-                                                <TableCell className="md:hidden">
+                                                <TableCell className="md:hidden w-8 px-2">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -394,7 +374,7 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                                         )}
                                                     </Button>
                                                 </TableCell>
-                                                <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
+                                                <TableCell className="w-8 px-2 text-center text-slate-600 dark:text-slate-400">{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                                                 <TableCell className="min-w-0">
                                                     <div className="flex items-center  space-x-3 min-w-0">
                                                         <div className="pm-job-icon w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
@@ -444,39 +424,40 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                                 </TableCell>
                                             </TableRow>
                                             {expandedRows.has(pos._id) && (
-                                                <TableRow className="md:hidden bg-slate-50/50 dark:bg-slate-800/20 border-none">
-                                                    <TableCell colSpan={2} className="border-none"></TableCell>
-                                                    <TableCell className="p-4 align-top border-none">
-                                                        <div className="space-y-4 text-sm">
-                                                            <div>
-                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Salary</p>
-                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.salary || 0}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Vacancies</p>
-                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.vacancies || 0}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Job Type</p>
-                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.jobType}</p>
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="p-4 align-top text-right border-none pr-6 ">
-                                                        <div className="space-y-4 text-sm">
-                                                            <div>
-                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Experience</p>
-                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.experience || 'N/A'}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Shift</p>
-                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">{pos.shift}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-slate-500 dark:text-slate-400 font-medium text-[11px] uppercase tracking-wider">Created</p>
-                                                                <p className="text-slate-800 dark:text-slate-200 mt-0.5">
-                                                                    {pos.createdAt ? new Date(pos.createdAt).toLocaleDateString() : "N/A"}
-                                                                </p>
+                                                <TableRow className="md:hidden border-none overflow-hidden hover:bg-transparent">
+                                                    <TableCell colSpan={4} className="p-2 border-none pt-0">
+                                                        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] border border-slate-100 dark:border-slate-700/50 p-5 mx-2 backdrop-blur-sm mt-1 mb-4">
+                                                            <div className="grid grid-cols-2 gap-2 text-sm">
+                                                                <div className="space-y-4">
+                                                                    <div>
+                                                                        <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Salary</p>
+                                                                        <p className="text-slate-800 dark:text-slate-200 font-medium">{pos.salary || 0}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Vacancies</p>
+                                                                        <p className="text-slate-800 dark:text-slate-200 font-medium">{pos.vacancies || 0}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Job Type</p>
+                                                                        <p className="text-slate-800 dark:text-slate-200 font-medium capitalize">{pos.jobType}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="space-y-4">
+                                                                    <div>
+                                                                        <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Experience</p>
+                                                                        <p className="text-slate-800 dark:text-slate-200 font-medium">{pos.experience || 'N/A'}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Shift</p>
+                                                                        <p className="text-slate-800 dark:text-slate-200 font-medium capitalize">{pos.shift}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Created</p>
+                                                                        <p className="text-slate-800 dark:text-slate-200 font-medium">
+                                                                            {pos.createdAt ? new Date(pos.createdAt).toLocaleDateString() : "N/A"}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </TableCell>

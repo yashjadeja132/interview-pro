@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarIcon, Download, Eye, Filter, Search, Video, User, Clock, Trophy, FileText, ChevronLeft, ChevronRight, MoreHorizontal, FileDown, X, ChevronUp, ChevronDown, CheckCircle2 } from "lucide-react";
+import { CalendarIcon, Download, Eye, Filter, Search, Video, User, Clock, Trophy, FileText, ChevronLeft, ChevronRight, MoreHorizontal, FileDown, X, ChevronUp, ChevronDown, CheckCircle2, UserCheck } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import { generateCandidateResultPDF, generatePDFFromHTML } from "../../utils/pdfGenerator";
@@ -58,6 +58,7 @@ export default function CandidateMonitoring() {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [showCheckBox, setShowCheckBox] = useState(false);
   const [filters, setFilters] = useState({
     position: "",
     startDate: null,
@@ -227,7 +228,7 @@ export default function CandidateMonitoring() {
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
       {/* Header Section */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-6 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto pm-header-container">
+        <div className="max-w-10xl mx-auto pm-header-container">
           <div className="pm-header-info">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shrink-0">
               <Video className="w-6 h-6 text-white" />
@@ -285,8 +286,19 @@ export default function CandidateMonitoring() {
                   </Button>
                 )}
               </div>
-              <div className="text-sm text-slate-500 dark:text-slate-400 mt-2 md:mt-0">
-                Showing {results.length} of {totalResults} candidates
+              <div className="pm-results-count-container">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCheckBox(!showCheckBox)}
+                  className="bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/50 flex items-center gap-2 mb-2"
+                >
+                  <UserCheck className="w-4 h-4" />
+                  {showCheckBox ? "Hide Selection" : "Shortlist Candidates"}
+                </Button>
+                <div className="text-sm text-slate-500 dark:text-slate-400 pm-results-count">
+                  Showing {results.length} of {totalResults} candidates
+                </div>
               </div>
             </div>
           </CardContent>
@@ -428,16 +440,16 @@ export default function CandidateMonitoring() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                        <TableHead className="w-10 md:hidden"></TableHead>
-                        <TableHead className="w-10 px-0 text-center"></TableHead>
+                        <TableHead className="w-8 md:hidden"></TableHead>
+                        <TableHead className="w-8 px-0 text-center"></TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:table-cell w-12">#</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 w-full">Candidate</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 pm-candidate-column">Candidate</TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden md:table-cell">Position</TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden lg:table-cell">Questions Asked</TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden md:table-cell">Scheduled Time</TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:table-cell">Score</TableHead>
                         <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden lg:table-cell">Time Taken</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right pr-2 md:pr-6 w-[110px] sm:w-auto">Actions</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right pr-2 md:pr-6 w-[110px] sm:w-auto pm-actions-column">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -455,23 +467,25 @@ export default function CandidateMonitoring() {
                               </Button>
                             </TableCell>
                             <TableCell className="w-10 px-0 text-center">
-                              <Checkbox
-                                checked={r.isSelectedForInterview}
-                                onCheckedChange={() => toggleSelection(r._id, r.isSelectedForInterview)}
-                                className="dark:border-slate-500 mx-auto"
-                              />
+                              {showCheckBox && (
+                                <Checkbox
+                                  checked={r.isSelectedForInterview}
+                                  onCheckedChange={() => toggleSelection(r._id, r.isSelectedForInterview)}
+                                  className="dark:border-slate-500 mx-auto"
+                                />
+                              )}
                             </TableCell>
                             <TableCell className="font-medium text-slate-600 dark:text-slate-300 hidden sm:table-cell">
                               {(page - 1) * limit + idx + 1}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="pm-candidate-column">
                               <div className="flex items-center space-x-3 min-w-0">
                                 <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0 pm-candidate-icon">
                                   <User className="w-4 h-4 dark:text-white" />
                                 </div>
                                 <div className="min-w-0 flex-1 relative">
                                   <div className="flex items-center gap-2">
-                                    <div className="font-medium text-slate-800 dark:text-white break-words">{r.candidateName}</div>
+                                    <div className="font-medium text-slate-800 dark:text-white whitespace-nowrap">{r.candidateName}</div>
                                     {r.isSelectedForInterview && (
                                       <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" title="Selected for Interview" />
                                     )}
@@ -511,7 +525,7 @@ export default function CandidateMonitoring() {
                                 <span>{r.timeTakenFormatted || 'N/A'}</span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-right pr-2 md:pr-6 whitespace-nowrap">
+                            <TableCell className="text-right pr-2 md:pr-6 whitespace-nowrap pm-actions-column">
                               <div className="flex items-center justify-end space-x-2">
                                 {r.video && r.video !== 'no video' && (
                                   <Button
@@ -549,35 +563,35 @@ export default function CandidateMonitoring() {
                           </TableRow>
                           {expandedRows.has(idx) && (
                             <TableRow className="md:hidden bg-slate-50/50 dark:bg-slate-800/20 border-none hover:bg-transparent">
-                              <TableCell colSpan={9} className="p-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+                              <TableCell colSpan={10} className="p-4">
+                                <div className="grid grid-cols-1 gap-4 text-sm max-w-full">
                                   <div className="md:hidden">
-                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Candidate Email</p>
-                                    <p className="text-slate-800 dark:text-white mt-1 font-medium break-all candidate">{r.candidateEmail}</p>
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Candidate Email</p>
+                                    <p className="text-slate-800 dark:text-white mt-1 font-medium break-all">{r.candidateEmail}</p>
                                   </div>
                                   <div className="md:hidden">
-                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Position</p>
-                                    <p className="text-slate-800 dark:text-white mt-1 font-medium candidate">{r.positionName}</p>
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Position</p>
+                                    <p className="text-slate-800 dark:text-white mt-1 font-medium">{r.positionName}</p>
                                   </div>
                                   <div className="lg:hidden">
-                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Questions Asked</p>
-                                    <p className="text-slate-800 dark:text-white mt-1 font-medium candidate ">{r.questionsAskedToCandidate || 'N/A'}</p>
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Questions Asked</p>
+                                    <p className="text-slate-800 dark:text-white mt-1 font-medium">{r.questionsAskedToCandidate || 'N/A'}</p>
                                   </div>
                                   <div className="md:hidden">
-                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Scheduled Time</p>
-                                    <p className="text-slate-800 dark:text-white mt-1 font-medium candidate">{formatDate(r.createdAt)}</p>
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Scheduled Time</p>
+                                    <p className="text-slate-800 dark:text-white mt-1 font-medium">{formatDate(r.createdAt)}</p>
                                   </div>
                                   <div className="sm:hidden">
-                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Score</p>
-                                    <div className="mt-1 flex items-center gap-2 candidate">
-                                      <Badge variant={getScoreBadgeVariant(r.score)} className="font-semibold candidate">
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Score</p>
+                                    <div className="mt-1 flex items-center gap-2">
+                                      <Badge variant={getScoreBadgeVariant(r.score)} className="font-semibold">
                                         {Math.round(r.score)}%
                                       </Badge>
                                     </div>
                                   </div>
                                   <div className="lg:hidden">
-                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider candidate">Time Taken</p>
-                                    <div className="mt-1 flex items-center gap-1.5 text-slate-800 dark:text-white font-medium candidate">
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Time Taken</p>
+                                    <div className="mt-1 flex items-center gap-1.5 text-slate-800 dark:text-white font-medium">
                                       <Clock className="h-3.5 w-3.5 text-slate-400" />
                                       <span>{r.timeTakenFormatted || 'N/A'}</span>
                                     </div>

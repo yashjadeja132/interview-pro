@@ -99,7 +99,6 @@ const ForgotPassword = () => {
                                         className={`pl-10 h-12 bg-white/50 border-2 transition-all duration-200 ${error ? "border-red-300 focus:border-red-500" : "border-slate-200 focus:border-blue-500"
                                             } rounded-xl`}
                                         placeholder='admin@company.com'
-                                        required
                                     />
                                 </div>
                             </div>

@@ -3,7 +3,6 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -12,8 +11,9 @@ export default defineConfig({
     },
   },
   server: {
-    strictPort: false, // automatically pick 5174, 5175, etc.
+    strictPort: false,
+    allowedHosts: ["barry-housewives-devices-voted.trycloudflare.com"], // ✅ allow ANY hostname (permanent fix)
+    host: "0.0.0.0",       // ✅ listen on all network interfaces
+    cors: true,            // ✅ ensure cross-origin requests work
   },
 });
-
-

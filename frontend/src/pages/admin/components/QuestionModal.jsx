@@ -26,6 +26,7 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
 
     const [fieldErrors, setFieldErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [submitError, setSubmitError] = useState(null);
     const [questionImagePreview, setQuestionImagePreview] = useState(null);
     const [optionImagePreviews, setOptionImagePreviews] = useState({});
 
@@ -77,6 +78,7 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
                 setOptionImagePreviews({});
             }
             setFieldErrors({});
+            setSubmitError(null);
         }
     }, [isOpen, initialData, defaultSubjectId]);
 
@@ -227,6 +229,7 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
         if (!validateForm()) return;
 
         setIsLoading(true);
+        setSubmitError(null); // Clear submit error when submission starts
 
         try {
             const formData = new FormData();
@@ -269,7 +272,13 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
             }
         } catch (err) {
             console.error("Failed to save question:", err);
-            toast.error(initialData ? "Failed to update question" : "Failed to create question");
+            const errorMessage = err.response?.data?.message;
+
+            if (errorMessage === "This question already exists for this subject.") {
+                setSubmitError(errorMessage); // Set submit error for duplicate question
+            } else {
+                toast.error(errorMessage || (initialData ? "Failed to update question" : "Failed to create question"));
+            }
         } finally {
             setIsLoading(false);
         }
@@ -487,6 +496,15 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
                         )}
                     </div>
                 </div>
+
+                {submitError && (
+                    <div className="px-6 pb-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-200 dark:border-red-800">
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            {submitError}
+                        </div>
+                    </div>
+                )}
 
                 <DialogFooter className="gap-2">
                     <Button

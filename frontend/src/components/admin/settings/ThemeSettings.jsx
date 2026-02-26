@@ -54,22 +54,6 @@ export default function ThemeSettings({ settings, onUpdate, loading }) {
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-
-                {/* <div className="space-y-4">
-                    <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
-                        <Image size={16} /> Logo URL
-                    </label>
-                    <input
-                        type="text"
-                        name="logoUrl"
-                        placeholder="https://example.com/logo.png"
-                        value={formData.logoUrl}
-                        onChange={handleChange}
-                        className="w-full p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                    />
-                </div> */}
-
             </div>
 
             <div className="space-y-4 pt-4 border-t dark:border-gray-700">
@@ -79,8 +63,8 @@ export default function ThemeSettings({ settings, onUpdate, loading }) {
                     <div className="flex items-center gap-3">
                         {formData.darkMode ? <Moon size={20} className="text-indigo-500 dark:text-indigo-400" /> : <Sun size={20} className="text-orange-500 dark:text-orange-400" />}
                         <div>
-                            <p className="font-medium text-gray-900 dark:text-white">Dark Mode</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-300">Enable dark theme for admin portal</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{formData.darkMode ? 'Dark Mode' : 'Light Mode'}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-300">{formData.darkMode ? 'Disable dark theme for admin portal' : 'Enable dark theme for admin portal'}</p>
                         </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">

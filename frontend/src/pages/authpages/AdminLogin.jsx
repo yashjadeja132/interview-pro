@@ -120,7 +120,7 @@ export function AdminLogin() {
 
       <div className="relative w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
         {/* Right Side - Login Form */}
-        <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-100 to-blue-100 lg:col-span-2">
+        <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br  lg:col-span-2">
           <div className="w-full max-w-md">
 
             <Card className="bg-white/80 backdrop-blur-xl border-0 shadow-2xl shadow-blue-500/10">

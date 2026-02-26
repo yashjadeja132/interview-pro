@@ -25,7 +25,7 @@ export default function CandidatesListDialog({
 }) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl dark:bg-slate-900 dark:border-slate-800">
+            <DialogContent className="sm:max-w-6xl dark:bg-slate-900 dark:border-slate-800">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold dark:text-white">
                         Candidates for {positionName}
@@ -43,7 +43,7 @@ export default function CandidatesListDialog({
                             No candidates found for this position.
                         </div>
                     ) : (
-                        <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="max-h-[60vh] overflow-y-auto overflow-x-auto pr-2 custom-scrollbar">
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-slate-50/50 dark:bg-slate-800/50">
@@ -72,14 +72,14 @@ export default function CandidatesListDialog({
                                             <TableCell>
                                                 <div
                                                     className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${candidate.isSubmitted === 1
-                                                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                                            : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                                                         }`}
                                                 >
                                                     {candidate.isSubmitted === 1 ? "Completed" : "Pending"}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="dark:text-slate-300">
+                                            <TableCell className="dark:text-slate-300 whitespace-nowrap">
                                                 {formatDateToIST(candidate.schedule)}
                                             </TableCell>
                                         </TableRow>

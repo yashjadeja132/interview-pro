@@ -28,7 +28,8 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
     const [formData, setFormData] = useState({
         name: "",
         salary: "",
-        experience: "",
+        experienceYears: "0",
+        experienceMonths: "0",
         vacancies: "",
         jobType: "",
         shift: "",
@@ -40,7 +41,8 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
             setFormData({
                 name: position.name || "",
                 salary: position.salary || "",
-                experience: position.experience || "",
+                experienceYears: position.experience?.match(/(\d+)\s*year/)?.[1] || "0",
+                experienceMonths: position.experience?.match(/(\d+)\s*month/)?.[1] || "0",
                 vacancies: position.vacancies || "",
                 jobType: position.jobType || "Full-time",
                 shift: position.shift || "Day Shift",
@@ -58,7 +60,14 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
             if (!value) message = "Salary is required";
             else if (isNaN(value) || Number(value) <= 0) message = "Enter a valid positive number";
         }
-        if (name === "experience" && !value.trim()) message = "Experience is required";
+        if ((name === "experienceYears" || name === "experienceMonths")) {
+            const years = parseInt(formData.experienceYears || (name === "experienceYears" ? value : 0));
+            const months = parseInt(formData.experienceMonths || (name === "experienceMonths" ? value : 0));
+            if (years === 0 && months === 0) message = "Experience cannot be 0";
+
+            setFieldErrors((prev) => ({ ...prev, experience: message }));
+            return message;
+        }
         if (name === "vacancies") {
             if (!value) message = "Vacancies are required";
             else if (!Number.isInteger(Number(value)) || Number(value) <= 0)
@@ -95,7 +104,8 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
         return (
             formData.name !== (position.name || "") ||
             formData.salary.toString() !== (position.salary || "").toString() ||
-            formData.experience.toString() !== (position.experience || "").toString() ||
+            formData.experienceYears !== (position.experience?.match(/(\d+)\s*year/)?.[1] || "0") ||
+            formData.experienceMonths !== (position.experience?.match(/(\d+)\s*month/)?.[1] || "0") ||
             formData.vacancies.toString() !== (position.vacancies || "").toString() ||
             formData.jobType !== (position.jobType || "Full-time") ||
             formData.shift !== (position.shift || "Day Shift")
@@ -103,7 +113,7 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
     };
 
     const handleSave = async () => {
-        const fieldsToValidate = ["name", "salary", "jobType", "experience", "vacancies", "shift"];
+        const fieldsToValidate = ["name", "salary", "jobType", "experienceYears", "experienceMonths", "vacancies", "shift"];
         const errors = {};
 
         fieldsToValidate.forEach((field) => {
@@ -144,7 +154,8 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
             setFormData({
                 name: position.name || "",
                 salary: position.salary || "",
-                experience: position.experience || "",
+                experienceYears: position.experience?.match(/(\d+)\s*year/)?.[1] || "0",
+                experienceMonths: position.experience?.match(/(\d+)\s*month/)?.[1] || "0",
                 vacancies: position.vacancies || "",
                 jobType: position.jobType || "Full-time",
                 shift: position.shift || "Day Shift",
@@ -213,14 +224,40 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="experience" className="dark:text-slate-300">Experience (years)</Label>
-                                    <Input
-                                        id="experience"
-                                        type="text"
-                                        value={formData.experience}
-                                        onChange={(e) => handleInputChange("experience", e.target.value)}
-                                        className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.experience ? "border-red-500" : ""}`}
-                                    />
+                                    <Label className="dark:text-slate-300">Experience *</Label>
+                                    <div className="flex gap-2">
+                                        <Select
+                                            value={formData.experienceYears}
+                                            onValueChange={(v) => handleInputChange("experienceYears", v)}
+                                        >
+                                            <SelectTrigger
+                                                className={`h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.experience ? "border-red-500" : ""}`}
+                                            >
+                                                <SelectValue placeholder="Years" />
+                                            </SelectTrigger>
+                                            <SelectContent className="dark:bg-slate-800 border-slate-700">
+                                                {[...Array(11)].map((_, i) => (
+                                                    <SelectItem key={i} value={String(i)}>{i} {i === 1 ? 'Year' : 'Years'}{i === 10 ? '+' : ''}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+
+                                        <Select
+                                            value={formData.experienceMonths}
+                                            onValueChange={(v) => handleInputChange("experienceMonths", v)}
+                                        >
+                                            <SelectTrigger
+                                                className={`h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.experience ? "border-red-500" : ""}`}
+                                            >
+                                                <SelectValue placeholder="Months" />
+                                            </SelectTrigger>
+                                            <SelectContent className="dark:bg-slate-800 border-slate-700">
+                                                {[...Array(12)].map((_, i) => (
+                                                    <SelectItem key={i} value={String(i)}>{i} {i === 1 ? 'Month' : 'Months'}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                     {fieldErrors.experience && (
                                         <p className="text-xs text-red-600 flex items-center gap-1">
                                             <AlertCircle className="w-3 h-3" />

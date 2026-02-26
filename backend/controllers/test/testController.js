@@ -9,7 +9,8 @@ exports.submitTest = async (req, res) => {
     const { candidateId, positionId, timeTakenInSeconds, timeTakenFormatted } = req.body;
     console.log('time taken in seconds:', timeTakenInSeconds)
     console.log('time taken formatted:', timeTakenFormatted)
-    const candidateRecording = req.file ? `${process.env.UploadLink}/candidateVideo/${req.file.filename}` : 'no video'
+    const candidateRecording = req.file ? req.file.path : 'no video'
+    console.log('candidateRecording:', candidateRecording)
     const lastAttempt = await TestResult.find({ candidateId, positionId })
       .sort({ attemptNumber: -1 })
       .limit(1);

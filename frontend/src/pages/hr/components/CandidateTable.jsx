@@ -420,7 +420,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                             <Button
                                                                 variant="destructive"
                                                                 size="sm"
-                                                                className="h-8 w-8 p-0 dark:bg-slate-800 dark:border-red-900/50"
+                                                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:bg-slate-800 dark:border-red-900/50"
                                                                 onClick={() => setDeleteId(candidate._id)}
                                                             >
                                                                 <Trash2 className="w-3 h-3" />
@@ -429,47 +429,47 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                     </TableCell>
                                                 </TableRow>
                                                 {expandedRows.has(candidate._id) && (
-                                                    <TableRow className="md:hidden bg-slate-50/50 dark:bg-slate-800/20 border-none hover:bg-transparent">
-                                                        <TableCell colSpan={2} className="border-none p-0 w-16"></TableCell> {/* Skip Chevron & Checkbox */}
-                                                        <TableCell className="border-none hidden sm:table-cell p-0"></TableCell>
-                                                        <TableCell className="p-2 pl-0 align-top border-none min-w-0">
-                                                            <div className="space-y-4 text-sm min-w-0">
-                                                                <div className="min-w-0">
-                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Contact</p>
-                                                                    <div className="mt-1.5 space-y-1.5 min-w-0">
-                                                                        <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 min-w-0">
-                                                                            <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                                                            <span className="break-all">{candidate.email || 'N/A'}</span>
+                                                    <TableRow className="md:hidden border-none overflow-hidden hover:bg-transparent">
+                                                        <TableCell colSpan={4} className="p-1 border-none pt-0">
+                                                            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] border border-slate-100 dark:border-slate-700/50 p-5 mx-2 backdrop-blur-sm mt-1 mb-4">
+                                                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                                                    <div className="space-y-4">
+                                                                        <div className="min-w-0">
+                                                                            <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Contact</p>
+                                                                            <div className="mt-1.5 space-y-1.5 min-w-0">
+                                                                                <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 min-w-0">
+                                                                                    <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                                                    <span className="break-all">{candidate.email || 'N/A'}</span>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                                                                                    <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                                                    <span>{candidate.phone || 'N/A'}</span>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
-                                                                            <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                                                            <span>{candidate.phone || 'N/A'}</span>
+                                                                        <div className="min-w-0">
+                                                                            <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Experience</p>
+                                                                            <p className="text-slate-800 dark:text-slate-200 font-medium">{getExperienceDisplayText(candidate.experience)}</p>
+                                                                        </div>
+                                                                        <div className="min-w-0">
+                                                                            <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Applied for Position</p>
+                                                                            <p className="text-slate-800 dark:text-slate-200 font-medium break-words">{candidate.positionName || positions.find(p => p._id === candidate.position)?.name || 'N/A'}</p>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                                <div className="min-w-0">
-                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Experience</p>
-                                                                    <p className="text-slate-800 dark:text-slate-200 mt-1 font-medium">{getExperienceDisplayText(candidate.experience)}</p>
-                                                                </div>
-                                                                <div className="min-w-0">
-                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Applied for Position</p>
-                                                                    <p className="text-slate-800 dark:text-slate-200 mt-1 break-words">{candidate.positionName || positions.find(p => p._id === candidate.position)?.name || 'N/A'}</p>
-                                                                </div>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="p-2 align-top text-right border-none pr-4 md:pr-6 min-w-0">
-                                                            <div className="space-y-4 text-sm">
-                                                                <div>
-                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Application Status</p>
-                                                                    <div className={`mt-1.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${getScheduleStatus(candidate.isSubmitted).bg} ${getScheduleStatus(candidate.isSubmitted).color}`}>
-                                                                        {getScheduleStatus(candidate.isSubmitted).status}
-                                                                    </div>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] uppercase tracking-wider">Test Duration</p>
-                                                                    <div className="mt-1.5 flex items-center justify-end gap-1.5 text-slate-800 dark:text-slate-200 font-medium">
-                                                                        <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                                                        <span>{candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time'}</span>
+                                                                    <div className="space-y-4">
+                                                                        <div>
+                                                                            <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Application Status</p>
+                                                                            <div className={`mt-1.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${getScheduleStatus(candidate.isSubmitted).bg} ${getScheduleStatus(candidate.isSubmitted).color}`}>
+                                                                                {getScheduleStatus(candidate.isSubmitted).status}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Test Duration</p>
+                                                                            <div className="mt-1.5 flex items-center gap-1.5 text-slate-800 dark:text-slate-200 font-medium">
+                                                                                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                                                                <span>{candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time'}</span>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>

@@ -11,8 +11,8 @@ import {
     CardHeader,
     CardTitle
 } from "@/components/ui/card";
-import { Key,  Shield, AlertCircle, CheckCircle2 } from "lucide-react";
-import { useNavigate,useParams } from "react-router-dom";
+import { Key, Shield, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
 const ForgotPassword = () => {
@@ -22,7 +22,7 @@ const ForgotPassword = () => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const navigate = useNavigate();
-    const{email} = useParams();
+    const { email } = useParams();
     const [show, setShow] = useState({
         password: false,
         confirmPassword: false,
@@ -60,11 +60,11 @@ const ForgotPassword = () => {
         }
 
         try {
-            await axiosInstance.post("/auth/reset-password", { email,password });
+            await axiosInstance.post("/auth/reset-password", { email, password });
             // navigate("/admin/login");
             setSuccess("Your password has been reset successfully");
         } catch (err) {
-            setError("Something went wrong. Please try again.");
+            setError(err.response?.data?.message || "Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }

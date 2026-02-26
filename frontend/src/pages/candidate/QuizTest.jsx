@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, Clock, CheckCircle, AlertCircle, Trophy, Target, XCircle } from "lucide-react";
@@ -29,6 +29,20 @@ export default function QuizTest({ streams }) {
       navigate("/thank-you", { replace: true }); // or TimesUpPage if you prefer
     }
   }, [navigate]);
+
+  // Block navigation while test is active
+  useBlocker(({ nextLocation }) => {
+    const isTestSubmitted = sessionStorage.getItem("testSubmitted");
+    // If test is not submitted and time is remaining, block navigation (return true)
+    // We only block if we are NOT navigating to thank-you or TimesUpPage
+    if (!isTestSubmitted && timeLeft > 0) {
+      const targetPath = nextLocation.pathname;
+      if (targetPath !== "/thank-you" && targetPath !== "/TimesUpPage") {
+        return true;
+      }
+    }
+    return false;
+  });
 
   useEffect(() => {
     if (candidateData) {
@@ -1000,7 +1014,6 @@ export default function QuizTest({ streams }) {
                     onClick={() =>
                       setCurrentQuestionIndex(currentQuestionIndex + 1)
                     }
-                    disabled={!answers[questions[currentQuestionIndex]._id]}
                     className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     Next →

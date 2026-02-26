@@ -231,7 +231,7 @@ export default function SelectForInterview() {
                                                 </TableRow>
                                                 {expandedRows.has(r._id) && (
                                                     <TableRow className="md:hidden bg-slate-50/50 dark:bg-slate-800/20 border-none hover:bg-transparent">
-                                                        <TableCell colSpan={2} className="border-none p-0 w-16"></TableCell> {/* Skip Chevron & Index */}
+                                                        <TableCell colSpan={1} className="border-none p-0 w-16"></TableCell> {/* Skip Chevron & Index */}
                                                         <TableCell colSpan={3} className="p-4 align-top border-none min-w-0">
                                                             <div className="grid grid-cols-1 gap-4 text-sm">
                                                                 <div>

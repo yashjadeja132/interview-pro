@@ -31,14 +31,28 @@ const path = require("path");
 connectDB();
 const app = express();
 app.use(express.json());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://192.168.1.27:5173",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://192.168.1.27:5173"
-    ],
-    credentials: true              // allow cookies, authorization headers
+    origin: (origin, callback) => {
+      // ✅ Allow all Cloudflare tunnel URLs and localhost origins
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        /\.trycloudflare\.com$/.test(origin)
+      ) {
+        callback(null, true);
+      } else {
+        console.log("❌ Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
   })
 );
 
@@ -68,17 +82,7 @@ app.use('/api/test-progress', TestProgressRoutes)
 app.use('/api/candidates/retest', candidateRetestRequestRoutes)
 app.use('/api/admin/retest-requests', adminRetestRequestRoutes)
 // app.use('/api/admin/change-password', passwordRoutes) - Removed duplicate
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://192.168.1.27:5173"
-    ],
-    credentials: true
-  }
-});
+
 const deleteOldProgress = require('./cronJobs/deleteOldProgress');
 deleteOldProgress.start();
 const Host = "0.0.0.0"

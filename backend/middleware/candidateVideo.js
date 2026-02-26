@@ -1,24 +1,14 @@
-// backend/middleware/candidateVideo.js
+const cloudinary = require("../config/config");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 
-// Ensure uploads/candidateVideo directory exists (inside backend folder)
-const uploadDir = path.join(__dirname, "../uploads/candidateVideo");
-if (!fs.existsSync(uploadDir)) {
-  console.log("uploads/candidateVideo directory does not exist, creating it");
-  fs.mkdirSync(uploadDir, { recursive: true });
-} else {
-  console.log("uploads/candidateVideo directory already exists");
-}
-
-// Storage setup
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "candidate_videos",
+    resource_type: "video",
+    allowed_formats: ["mp4", "webm", "ogg"],
+    public_id: (req, file) => Date.now() + "-" + file.originalname.split('.')[0],
   },
 });
 

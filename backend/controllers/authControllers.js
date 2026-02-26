@@ -75,6 +75,16 @@ exports.resetPassword = async (req, res) => {
     console.log('email in resetPassword',email)
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found" });
+
+    // ✅ Prevent using the same password again
+    const isSameAsOld = await bcrypt.compare(password, user.password);
+    if (isSameAsOld) {
+      console.log('password cannot be the same as the old password')
+      return res.status(400).json({
+        message: "Password cannot be the same as the old password",
+      });
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);  
     const updatedUser = await User.updateOne({ email }, { password: hashedPassword });

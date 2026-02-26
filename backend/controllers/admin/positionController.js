@@ -92,31 +92,21 @@ exports.getPositions = async (req, res) => {
 if (experience && experience !== 'all') {
   if (experience === "0-1 years") {
     filter.$or = [
-      { experience: { $regex: "0", $options: "i" } },
-      { experience: { $regex: "1", $options: "i" } },
+      { experience: { $regex: "^0\\s+year", $options: "i" } },
       { experience: { $regex: "fresher", $options: "i" } },
     ];
   } else if (experience === "1-3 years") {
     filter.$or = [
-      { experience: { $regex: "1", $options: "i" } },
-      { experience: { $regex: "2", $options: "i" } },
-      { experience: { $regex: "3", $options: "i" } },
+      { experience: { $regex: "^1\\s+year", $options: "i" } },
+      { experience: { $regex: "^2\\s+year", $options: "i" } },
     ];
   } else if (experience === "3-5 years") {
     filter.$or = [
-      { experience: { $regex: "3", $options: "i" } },
-      { experience: { $regex: "4", $options: "i" } },
-      { experience: { $regex: "5", $options: "i" } },
+      { experience: { $regex: "^3\\s+year", $options: "i" } },
+      { experience: { $regex: "^4\\s+year", $options: "i" } },
     ];
   } else if (experience === "5+ years") {
-    filter.$or = [
-      { experience: { $regex: "5", $options: "i" } },
-      { experience: { $regex: "6", $options: "i" } },
-      { experience: { $regex: "7", $options: "i" } },
-      { experience: { $regex: "8", $options: "i" } },
-      { experience: { $regex: "9", $options: "i" } },
-      { experience: { $regex: "10", $options: "i" } },
-    ];
+    filter.experience = { $regex: "^([5-9]|[1-9][0-9]+)\\s+year", $options: "i" };
   } else {
     // exact or partial match fallback
     filter.experience = { $regex: experience, $options: "i" };

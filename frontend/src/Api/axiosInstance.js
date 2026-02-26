@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BACKEND_URL || "http://localhost:5000/api", // use import.meta.env in Vite
+  baseURL: import.meta.env.VITE_API_BACKEND_URL || "https://instance-booking-pcs-markers.trycloudflare.com/api", // use import.meta.env in Vite
 });
 
 // Request interceptor to add token to all requests

@@ -124,7 +124,7 @@ console.log('testAttempt',testAttempt)
 exports.submitTestWithAttempt = async (req, res) => {
   try {
     const { candidateId, positionId, attemptId, timeTakenInSeconds, timeTakenFormatted } = req.body;
-    const candidateRecording = req.file ? `${process.env.UploadLink}/candidateVideo/${req.file.filename}` : 'no video';
+    const candidateRecording = req.file ? req.file.path : 'no video';
     const answers = JSON.parse(req.body.answers);
 
     // Validate attempt

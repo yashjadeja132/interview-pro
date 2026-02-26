@@ -103,7 +103,7 @@ export default function InterviewRules() {
                         </div>
                         <div>
                             <p className="font-semibold text-gray-900 dark:text-white">Login Time for Student</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Set duration in minutes (Max 120)</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Set duration in minutes</p>
                         </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">

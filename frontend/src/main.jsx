@@ -36,6 +36,8 @@ import ThemeProvider from "./context/ThemeContext";
 import TimesUpPage from "./pages/candidate/TimesUpPage.jsx";
 import ThemeApplier from "./components/ThemeApplier.jsx";
 
+import CandidateAuthGuard from "./components/CandidateAuthGuard.jsx";
+
 function Main() {
   const [streams, setStreams] = useState(null);
   const router = createBrowserRouter(
@@ -44,13 +46,64 @@ function Main() {
         {/* Public Routes - No Layout */}
         <Route path="/" element={<Homepage />} />
         <Route path="/candidate/login" element={<StudentLogin />} />
-        <Route path="/candidate/StartTest" element={<StartButton setStreams={setStreams} />} />
-        <Route path="/candidate/dashboard" element={<CandidateDashboardWithAttempts />} />
-        <Route path="/candidate/Quiztest" element={<QuizTest streams={streams} />} />
-        <Route path="/TimesUpPage" element={<TimesUpPage />} />
-        <Route path="/candidate/QuiztestWithAttempts" element={<QuizTestWithAttempts streams={streams} />} />
-        <Route path="/thank-you" element={<ThankYou />} />
-        <Route path="/thank-you-with-attempts" element={<ThankYouWithAttempts />} />
+
+        {/* Protected Candidate Routes */}
+        <Route
+          path="/candidate/StartTest"
+          element={
+            <CandidateAuthGuard>
+              <StartButton setStreams={setStreams} />
+            </CandidateAuthGuard>
+          }
+        />
+        <Route
+          path="/candidate/dashboard"
+          element={
+            <CandidateAuthGuard>
+              <CandidateDashboardWithAttempts />
+            </CandidateAuthGuard>
+          }
+        />
+        <Route
+          path="/candidate/Quiztest"
+          element={
+            <CandidateAuthGuard>
+              <QuizTest streams={streams} />
+            </CandidateAuthGuard>
+          }
+        />
+        <Route
+          path="/candidate/QuiztestWithAttempts"
+          element={
+            <CandidateAuthGuard>
+              <QuizTestWithAttempts streams={streams} />
+            </CandidateAuthGuard>
+          }
+        />
+        <Route
+          path="/thank-you"
+          element={
+            <CandidateAuthGuard>
+              <ThankYou />
+            </CandidateAuthGuard>
+          }
+        />
+        <Route
+          path="/thank-you-with-attempts"
+          element={
+            <CandidateAuthGuard>
+              <ThankYouWithAttempts />
+            </CandidateAuthGuard>
+          }
+        />
+        <Route
+          path="/TimesUpPage"
+          element={
+            <CandidateAuthGuard>
+              <TimesUpPage />
+            </CandidateAuthGuard>
+          }
+        />
         <Route path='/candidate/result/:candidateId' element={<CandidateResult />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/reset-password/:email" element={<ResetPassword />} />

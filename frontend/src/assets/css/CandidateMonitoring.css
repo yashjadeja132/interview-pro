@@ -126,31 +126,42 @@
     }
 }
 
-@media (max-width: 640px) {
-    .pm-table-wrapper th {
+@media (max-width: 767px) {
+    .pm-table-wrapper th, 
+    .pm-table-wrapper td {
         white-space: nowrap !important;
         word-break: normal !important;
-    }
-    .pm-table-wrapper td {
-        white-space: normal !important;
-        word-break: break-word !important;
+        text-overflow: clip !important;
     }
     .pm-table-wrapper table {
-        min-width: 0 !important;
+        min-width: max-content !important;
         width: 100% !important;
-        table-layout: fixed !important;
+        table-layout: auto !important;
+        border-collapse: collapse !important;
+    }
+    .pm-candidate-column {
+        min-width: 200px !important;
+    }
+    .pm-actions-column {
+        min-width: 120px !important;
     }
 }
 
 @media (max-width: 425px) {
     .pm-table-wrapper {
-        overflow-x: hidden !important;
+        overflow-x: auto !important;
         width: 100% !important;
+        display: block !important;
+        -webkit-overflow-scrolling: touch;
+        position: relative !important;
+    }
+    .pm-table-wrapper table {
+        min-width: 650px !important;
     }
     .pm-table-wrapper th, 
     .pm-table-wrapper td {
-        padding-left: 0.15rem !important;
-        padding-right: 0.15rem !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
     }
     .pm-candidate-icon {
         display: none !important;
@@ -172,3 +183,59 @@
         padding-left: 10px;
     }
 }
+
+.pm-results-count {
+    white-space: nowrap !important;
+}
+
+.pm-results-count-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+@media (max-width: 1023px) {
+    .pm-results-count-container {
+        align-items: flex-start;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Candidate row layout fix */
+.pm-candidate-column {
+  /* display: flex; */
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.pm-candidate-column span,
+.pm-candidate-column svg {
+  flex-shrink: 0;
+}
+
+/* Expanded row fix */
+.pm-expanded-row td {
+  background-color: transparent !important;
+  padding-top: 0.5rem !important;
+}
+
+.pm-expanded-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  word-wrap: break-word;
+  white-space: normal !important;
+}
+
+@media (max-width: 640px) {
+  .pm-candidate-column {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .pm-expanded-content {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
