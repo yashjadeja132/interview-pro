@@ -1,13 +1,13 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BACKEND_URL || "https://instance-booking-pcs-markers.trycloudflare.com/api", // use import.meta.env in Vite
+  baseURL: import.meta.env.VITE_API_BACKEND_URL || "https://phase-earned-characterized-travelling.trycloudflare.com/api", // use import.meta.env in Vite
 });
 
 // Request interceptor to add token to all requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -26,8 +26,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expired or invalid
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
       window.location.href = "/admin/login";
     }
     return Promise.reject(error);

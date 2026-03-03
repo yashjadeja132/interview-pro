@@ -267,27 +267,9 @@ export default function CandidateMonitoring() {
                     className="pl-10 h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full"
                   />
                 </div>
-                <Button
-                  variant="outline"
-                  className={`h-10 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700 w-full sm:w-auto ${showFilters ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' : ''}`}
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filter
-                </Button>
-                {(filters.position || filters.startDate || filters.endDate) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="h-10 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 w-full sm:w-auto"
-                  >
-                    Clear Filters
-                  </Button>
-                )}
               </div>
               <div className="pm-results-count-container">
-                <Button
+                {/* <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCheckBox(!showCheckBox)}
@@ -295,24 +277,16 @@ export default function CandidateMonitoring() {
                 >
                   <UserCheck className="w-4 h-4" />
                   {showCheckBox ? "Hide Selection" : "Shortlist Candidates"}
-                </Button>
+                </Button> */}
                 <div className="text-sm text-slate-500 dark:text-slate-400 pm-results-count">
                   Showing {results.length} of {totalResults} candidates
                 </div>
               </div>
             </div>
           </CardContent>
-        </Card>
-
-        {/* Filters */}
-        {showFilters && (
-          <Card className="border-0 shadow-sm dark:bg-slate-900">
-            <CardContent className="p-6">
+           <CardContent className="ps-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200">Filter Options</h3>
-                </div>
-
+                
                 <div className="pm-filter-grid">
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Position</label>
@@ -386,8 +360,88 @@ export default function CandidateMonitoring() {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        )}
+        </Card>
+
+        {/* Filters */}
+          {/* <Card className="border-0 shadow-sm dark:bg-slate-900">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                
+                <div className="pm-filter-grid">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Position</label>
+                    <Select
+                      value={filters.position || "all"}
+                      onValueChange={(value) => {
+                        setFilters(prev => ({ ...prev, position: value === "all" ? "" : value }));
+                        setPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                        <SelectValue placeholder="All Positions" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                        <SelectItem value="all" className="dark:text-white dark:focus:bg-slate-700">All Positions</SelectItem>
+                        {positions.map((pos) => (
+                          <SelectItem key={pos._id} value={pos.name} className="dark:text-white dark:focus:bg-slate-700">{pos.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Start Date</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="justify-start text-left font-normal w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {filters.startDate ? formatDate(filters.startDate) : "Select date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 dark:bg-slate-900 dark:border-slate-700">
+                        <Calendar
+                          mode="single"
+                          selected={filters.startDate}
+                          onSelect={(date) => {
+                            setFilters(prev => ({ ...prev, startDate: date }));
+                            setPage(1);
+                          }}
+                          initialFocus
+                          className="dark:bg-slate-900 dark:text-white"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">End Date</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="justify-start text-left font-normal w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {filters.endDate ? formatDate(filters.endDate) : "Select date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 dark:bg-slate-900 dark:border-slate-700">
+                        <Calendar
+                          mode="single"
+                          selected={filters.endDate}
+                          onSelect={(date) => {
+                            setFilters(prev => ({ ...prev, endDate: date }));
+                            setPage(1);
+                          }}
+                          initialFocus
+                          className="dark:bg-slate-900 dark:text-white"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card> */}
+        
 
         {/* Candidates Table */}
         <Card className="border-0 shadow-sm dark:bg-slate-900">
@@ -442,14 +496,14 @@ export default function CandidateMonitoring() {
                       <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
                         <TableHead className="w-8 md:hidden"></TableHead>
                         <TableHead className="w-8 px-0 text-center"></TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:table-cell w-12">#</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 pm-candidate-column">Candidate</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden md:table-cell">Position</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden lg:table-cell">Questions Asked</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-center hidden md:table-cell">Scheduled Time</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:table-cell">Score</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 hidden lg:table-cell">Time Taken</TableHead>
-                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right pr-2 md:pr-6 w-[110px] sm:w-auto pm-actions-column">Actions</TableHead>
+                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 hidden sm:table-cell w-12">#</TableHead>
+                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 pm-candidate-column">Candidate</TableHead>
+                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center hidden md:table-cell">Position</TableHead>
+                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center hidden lg:table-cell">Questions Asked</TableHead>
+                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center hidden md:table-cell">Scheduled Time</TableHead>
+                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 hidden sm:table-cell">Score</TableHead>
+                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 hidden lg:table-cell">Time Taken</TableHead>
+                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-right pr-2 md:pr-6 w-[110px] sm:w-auto pm-actions-column">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -467,13 +521,14 @@ export default function CandidateMonitoring() {
                               </Button>
                             </TableCell>
                             <TableCell className="w-10 px-0 text-center">
-                              {showCheckBox && (
+                              {/* {showCheckBox && ( */}
                                 <Checkbox
                                   checked={r.isSelectedForInterview}
                                   onCheckedChange={() => toggleSelection(r._id, r.isSelectedForInterview)}
                                   className="dark:border-slate-500 mx-auto"
+                                  title="Select for Interview"
                                 />
-                              )}
+                              {/* )} */}
                             </TableCell>
                             <TableCell className="font-medium text-slate-600 dark:text-slate-300 hidden sm:table-cell">
                               {(page - 1) * limit + idx + 1}
@@ -552,7 +607,7 @@ export default function CandidateMonitoring() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  title="View Details & Download PDF"
+                                  title="View Report & Download PDF"
                                   onClick={() => navigate(`/candidate-report/${r.candidateId}`)}
                                   className="h-8 w-8 p-0 text-slate-600 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
                                 >

@@ -85,12 +85,12 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
     const validateForm = () => {
         let errors = {};
         if (!form.subjectId) errors.subjectId = "Subject is required";
-        if (!form.questionText && !form.questionImage && !questionImagePreview) {
+        if (!form.questionText.trim() && !form.questionImage && !questionImagePreview) {
             errors.question = "Question text or image is required";
         }
 
         form.options.forEach((opt, idx) => {
-            if (!opt.optionText && !opt.optionImage && !optionImagePreviews[idx]) {
+            if (!opt.optionText.trim() && !opt.optionImage && !optionImagePreviews[idx]) {
                 errors[`option${idx}`] = `Option ${idx + 1} is required`;
             }
         });
@@ -127,6 +127,32 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
     const handleQuestionImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Validation: format
+            const allowedFormats = ["image/jpeg", "image/jpg", "image/png"];
+            if (!allowedFormats.includes(file.type)) {
+                setFieldErrors(prev => ({ ...prev, questionImage: "Format not supported. Only JPG, JPEG, and PNG are allowed." }));
+                e.target.value = "";
+                setQuestionImagePreview(null);
+                setForm((prev) => ({ ...prev, questionImage: null }));
+                return;
+            }
+
+            // Validation: size (500 KB = 512,000 bytes)
+            if (file.size > 500 * 1024) {
+                setFieldErrors(prev => ({ ...prev, questionImage: "File size exceeds 500 KB." }));
+                e.target.value = "";
+                setQuestionImagePreview(null);
+                setForm((prev) => ({ ...prev, questionImage: null }));
+                return;
+            }
+
+            // Clear image error if valid
+            setFieldErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors.questionImage;
+                return newErrors;
+            });
+
             setForm((prev) => ({ ...prev, questionImage: file }));
             setQuestionImagePreview(URL.createObjectURL(file));
         }
@@ -135,6 +161,46 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
     const handleOptionImageChange = (e, index) => {
         const file = e.target.files[0];
         if (file) {
+            // Validation: format
+            const allowedFormats = ["image/jpeg", "image/jpg", "image/png"];
+            if (!allowedFormats.includes(file.type)) {
+                setFieldErrors(prev => ({ ...prev, [`optionImage${index}`]: "Format not supported. Only JPG, JPEG, and PNG are allowed." }));
+                e.target.value = "";
+
+                const newOptions = [...form.options];
+                newOptions[index] = { ...newOptions[index], optionImage: null };
+                setForm((prev) => ({ ...prev, options: newOptions }));
+                setOptionImagePreviews(prev => {
+                    const newPreviews = { ...prev };
+                    delete newPreviews[index];
+                    return newPreviews;
+                });
+                return;
+            }
+
+            // Validation: size (500 KB)
+            if (file.size > 500 * 1024) {
+                setFieldErrors(prev => ({ ...prev, [`optionImage${index}`]: "File size exceeds 500 KB." }));
+                e.target.value = "";
+
+                const newOptions = [...form.options];
+                newOptions[index] = { ...newOptions[index], optionImage: null };
+                setForm((prev) => ({ ...prev, options: newOptions }));
+                setOptionImagePreviews(prev => {
+                    const newPreviews = { ...prev };
+                    delete newPreviews[index];
+                    return newPreviews;
+                });
+                return;
+            }
+
+            // Clear image error if valid
+            setFieldErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[`optionImage${index}`];
+                return newErrors;
+            });
+
             const newOptions = [...form.options];
             newOptions[index] = { ...newOptions[index], optionImage: file };
             setForm((prev) => ({ ...prev, options: newOptions }));
@@ -149,6 +215,11 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
     const removeQuestionImage = () => {
         setForm((prev) => ({ ...prev, questionImage: null }));
         setQuestionImagePreview(null);
+        setFieldErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors.questionImage;
+            return newErrors;
+        });
         if (questionImageRef.current) {
             questionImageRef.current.value = "";
         }
@@ -163,6 +234,12 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
             const newPreviews = { ...prev };
             delete newPreviews[index];
             return newPreviews;
+        });
+
+        setFieldErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[`optionImage${index}`];
+            return newErrors;
         });
 
         if (optionImageRefs.current[index]) {
@@ -206,7 +283,7 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
         const initialSubjectId = typeof initialData.subject === 'object' ? initialData.subject._id : initialData.subjectId;
 
         if (form.subjectId !== initialSubjectId) return true;
-        if (form.questionText !== (initialData.questionText || "")) return true;
+        if (form.questionText.trim() !== (initialData.questionText || "").trim()) return true;
         if (form.questionImage instanceof File) return true;
         if (initialData.questionImage && !questionImagePreview) return true;
         if (form.options.length !== (initialData.options?.length || 0)) return true;
@@ -216,7 +293,7 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
             const original = initialData.options[i];
 
             if (!original) return true;
-            if (current.optionText !== original.optionText) return true;
+            if (current.optionText.trim() !== (original.optionText || "").trim()) return true;
             if (current.isCorrect !== original.isCorrect) return true;
             if (current.optionImage instanceof File) return true;
             if (current.optionImage !== original.optionImage) return true;
@@ -297,33 +374,6 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
                 <div className="space-y-6 py-4">
                     {/* Subject Selection */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium dark:text-gray-300">Subject *</Label>
-                            <Select
-                                value={form.subjectId || ""}
-                                onValueChange={(value) => {
-                                    setForm((prev) => ({ ...prev, subjectId: value }));
-                                    validateField("subjectId", value);
-                                }}
-                            >
-                                <SelectTrigger className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.subjectId ? "border-red-500" : ""}`}>
-                                    <SelectValue placeholder="Select subject" />
-                                </SelectTrigger>
-                                <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                                    {subjects.map((sub) => (
-                                        <SelectItem key={sub._id} value={sub._id} className="dark:text-white dark:focus:bg-slate-700">
-                                            {sub.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {fieldErrors.subjectId && (
-                                <p className="text-sm text-red-600 flex items-center gap-1">
-                                    <AlertCircle className="w-4 h-4" />
-                                    {fieldErrors.subjectId}
-                                </p>
-                            )}
-                        </div>
                     </div>
 
                     {/* Question Text */}
@@ -355,19 +405,25 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
                             accept="image/*"
                             ref={questionImageRef}
                             onChange={handleQuestionImageChange}
-                            className="dark:bg-slate-800 dark:border-slate-700 dark:text-white file:dark:text-white"
+                            className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white file:dark:text-white ${fieldErrors.questionImage ? "border-red-500" : ""}`}
                         />
+                        {fieldErrors.questionImage && (
+                            <p className="text-sm text-red-600 flex items-center gap-1">
+                                <AlertCircle className="w-4 h-4" />
+                                {fieldErrors.questionImage}
+                            </p>
+                        )}
                         {questionImagePreview && (
-                            <div className="relative inline-block">
+                            <div className="relative inline-block mt-2">
                                 <img
                                     src={questionImagePreview}
                                     alt="preview"
-                                    className="w-450 h-40 object-cover rounded border dark:border-slate-700"
+                                    className="max-w-full max-h-64 object-contain rounded border dark:border-slate-700"
                                 />
                                 <button
                                     type="button"
                                     onClick={removeQuestionImage}
-                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 shadow-md"
                                 >
                                     ×
                                 </button>
@@ -435,19 +491,25 @@ export default function QuestionModal({ isOpen, onClose, initialData, subjects, 
                                                 accept="image/*"
                                                 ref={(el) => (optionImageRefs.current[index] = el)}
                                                 onChange={(e) => handleOptionImageChange(e, index)}
-                                                className="dark:bg-slate-800 dark:border-slate-700 dark:text-white file:dark:text-white"
+                                                className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white file:dark:text-white ${fieldErrors[`optionImage${index}`] ? "border-red-500" : ""}`}
                                             />
+                                            {fieldErrors[`optionImage${index}`] && (
+                                                <p className="text-sm text-red-600 flex items-center gap-1">
+                                                    <AlertCircle className="w-4 h-4" />
+                                                    {fieldErrors[`optionImage${index}`]}
+                                                </p>
+                                            )}
                                             {optionImagePreviews[index] && (
-                                                <div className="relative inline-block">
+                                                <div className="relative inline-block mt-2">
                                                     <img
                                                         src={optionImagePreviews[index]}
                                                         alt={`option ${index + 1} preview`}
-                                                        className="w-32 h-24 object-cover rounded border dark:border-slate-700"
+                                                        className="w-full max-w-[200px] h-32 object-contain rounded border dark:border-slate-700"
                                                     />
                                                     <button
                                                         type="button"
                                                         onClick={() => removeOptionImage(index)}
-                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 shadow-sm"
                                                     >
                                                         <X className="w-3 h-3" />
                                                     </button>

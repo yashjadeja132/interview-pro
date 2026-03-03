@@ -12,7 +12,7 @@ export default defineConfig({
   },
   server: {
     strictPort: false,
-    allowedHosts: ["barry-housewives-devices-voted.trycloudflare.com"], // ✅ allow ANY hostname (permanent fix)
+    allowedHosts: ["silk-alumni-angle-labour.trycloudflare.com"], // ✅ allow ANY hostname (permanent fix)
     host: "0.0.0.0",       // ✅ listen on all network interfaces
     cors: true,            // ✅ ensure cross-origin requests work
   },

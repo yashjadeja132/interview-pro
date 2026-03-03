@@ -5,6 +5,7 @@ import {
     Trash2,
     AlertCircle,
     Clock,
+    CalendarClock,
     Mail,
     Phone,
     XCircle,
@@ -46,7 +47,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import api from '../../../Api/axiosInstance';
 
-export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
+export default function CandidateTable({ positions, onEdit, onReschedule, refreshTrigger }) {
     const [candidates, setCandidates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -124,14 +125,20 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
         }
     };
 
-    const getExperienceDisplayText = (experience) => {
-        switch (experience) {
-            case 'fresher': return 'Fresher (0-1 years)';
-            case '1-2': return '1-2 Years';
-            case '3-5': return '3-5 Years';
-            case '5+': return '5+ Years';
-            default: return experience || 'N/A';
-        }
+    const getExperienceDisplayText = (exp) => {
+        if (!exp) return "N/A";
+        const matchYears = exp.match(/(\d+)\s*year/i);
+        const matchMonths = exp.match(/(\d+)\s*month/i);
+        const years = matchYears ? parseInt(matchYears[1]) : 0;
+        const months = matchMonths ? parseInt(matchMonths[1]) : 0;
+
+        const yearLabel = years === 1 ? "year" : "years";
+        const monthLabel = months === 1 ? "month" : "months";
+
+        if (years > 0 && months > 0) return `${years} ${yearLabel} ${months} ${monthLabel}`;
+        if (years > 0) return `${years} ${yearLabel}`;
+        if (months > 0) return `${months} ${monthLabel}`;
+        return "0 years";
     };
 
     const handleSelectCandidate = (candidateId) => {
@@ -334,7 +341,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                             </TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 hidden sm:table-cell">#</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center">Candidate</TableHead>
-                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center desktop-only">Contact</TableHead>
+                                            <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-left desktop-only w-40">Contact</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center desktop-only">Experience</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center desktop-only">Job Post</TableHead>
                                             <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-center desktop-only">Status</TableHead>
@@ -372,12 +379,12 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                         <p className="font-medium text-slate-900 dark:text-white break-words line-clamp-2">{candidate.name || 'N/A'}</p>
                                                     </TableCell>
                                                     <TableCell className="desktop-only ">
-                                                        <div className="flex flex-col items-center justify-center space-y-1">
-                                                            <div className="flex items-center gap-2">
+                                                        <div className="flex flex-col  space-y-1">
+                                                            <div className="flex  gap-2">
                                                                 <Mail className="w-3 h-3 text-slate-400" />
                                                                 <span className="text-sm text-slate-600 dark:text-slate-300">{candidate.email || 'N/A'}</span>
                                                             </div>
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex  gap-2">
                                                                 <Phone className="w-3 h-3 text-slate-400" />
                                                                 <span className="text-sm text-slate-600 dark:text-slate-300">{candidate.phone || 'N/A'}</span>
                                                             </div>
@@ -402,12 +409,12 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                         <div className="flex items-center justify-center gap-2">
                                                             <Clock className="w-3 h-3 text-slate-400" />
                                                             <span className="text-sm text-slate-600 dark:text-slate-300">
-                                                                {candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time'}
+                                                                {positions.find(p => p._id === candidate.position)?.testDuration ? `${positions.find(p => p._id === candidate.position).testDuration} min` : (candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time')}
                                                             </span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right pr-2 md:pr-6">
-                                                        <div className="flex items-center justify-end gap-2">
+                                                        <div className="flex items-center justify-end gap-1 sm:gap-2">
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
@@ -416,6 +423,16 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                                 onClick={() => onEdit(candidate)}
                                                             >
                                                                 <Edit2 className="w-3 h-3" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200 dark:bg-slate-800 dark:border-blue-900/50 dark:text-blue-400"
+                                                                disabled={candidate.isSubmitted === 1}
+                                                                onClick={() => onReschedule(candidate)}
+                                                                title="Reschedule Interview"
+                                                            >
+                                                                <CalendarClock className="w-3 h-3" />
                                                             </Button>
                                                             <Button
                                                                 variant="outline"
@@ -467,7 +484,7 @@ export default function CandidateTable({ positions, onEdit, refreshTrigger }) {
                                                                             <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Test Duration</p>
                                                                             <div className="mt-1.5 flex items-center gap-1.5 text-slate-800 dark:text-slate-200 font-medium">
                                                                                 <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                                                                <span>{candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time'}</span>
+                                                                                <span>{positions.find(p => p._id === candidate.position)?.testDuration ? `${positions.find(p => p._id === candidate.position).testDuration} min` : (candidate.timeforTest ? `${candidate.timeforTest} min` : 'No time')}</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import { useNavigate, useBlocker } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -7,6 +6,15 @@ import { Loader2, Clock, CheckCircle, AlertCircle, Trophy, Target, XCircle } fro
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import api from "../../Api/axiosInstance";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import sparrowLogo from "../../assets/sparrowlogo.svg";
 
 export default function QuizTest({ streams }) {
@@ -22,6 +30,7 @@ export default function QuizTest({ streams }) {
   const [totalDuration, setTotalDuration] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [visitedQuestions, setVisitedQuestions] = useState([]);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     const testSubmitted = sessionStorage.getItem("testSubmitted");
@@ -244,8 +253,8 @@ export default function QuizTest({ streams }) {
     try {
       setLoading(true);
       const candidateId = candidateData?.id || null;
-      const url = `http://localhost:5000/api/test/questions/random?positionId=${candidateData.positionId}${candidateId ? `&candidateId=${candidateId}` : ''}`;
-      const res = await axios.get(url);
+      const url = `/test/questions/random?positionId=${candidateData.positionId}${candidateId ? `&candidateId=${candidateId}` : ''}`;
+      const res = await api.get(url);
 
       if (res.data.questions) {
         setQuestions(res.data.questions);
@@ -411,8 +420,8 @@ export default function QuizTest({ streams }) {
           formdata.append("timeTakenFormatted", timeTakenFormatted);
 
           // Send to backend (may take 2-4 seconds with network latency)
-          const response = await axios.post(
-            `http://localhost:5000/api/test`,
+          const response = await api.post(
+            `/test`,
             formdata,
             {
               headers: { "Content-Type": "multipart/form-data" },
@@ -489,8 +498,8 @@ export default function QuizTest({ streams }) {
           }),
         },
       };
-      await axios.post(
-        "http://localhost:5000/api/test-progress/save",
+      await api.post(
+        "/test-progress/save",
         progressPayload
       );
       console.log("✅ Progress auto-saved to backend with text.");
@@ -574,8 +583,8 @@ export default function QuizTest({ streams }) {
 
     const fetchSavedProgress = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:5000/api/test-progress/get/${candidateData.id}/${candidateData.positionId}`
+        const res = await api.get(
+          `/test-progress/get/${candidateData.id}/${candidateData.positionId}`
         );
         if (res.status === 200 && res.data.data) {
           const savedData = res.data.data;
@@ -628,6 +637,10 @@ export default function QuizTest({ streams }) {
     const finalOrdered = [...ordered, ...extra];
     setQuestions(finalOrdered);
   }, [questions.length, savedProgress]);
+
+  const confirmSubmit = () => {
+    setShowConfirmDialog(true);
+  };
 
   if (!candidateData)
     return (
@@ -993,7 +1006,7 @@ export default function QuizTest({ streams }) {
 
                 {currentQuestionIndex === questions.length - 1 ? (
                   <Button
-                    onClick={() => handleSubmit(false)}
+                    onClick={confirmSubmit}
                     disabled={submitting}
                     className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                   >
@@ -1024,6 +1037,51 @@ export default function QuizTest({ streams }) {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-white">Submit Test</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to submit your test?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  You have attempted
+                </p>
+                <p className="text-4xl font-bold text-blue-600">
+                  {Object.keys(answers).length} / {questions.length}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  questions
+                </p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="flex sm:justify-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              className="flex-1"
+            >
+              No, Continue
+            </Button>
+            <Button
+              onClick={() => {
+                setShowConfirmDialog(false);
+                handleSubmit(false);
+              }}
+              className="flex-1 bg-green-600 hover:bg-green-700"
+            >
+              Yes, Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

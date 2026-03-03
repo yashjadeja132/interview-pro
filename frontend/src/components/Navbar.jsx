@@ -127,8 +127,8 @@ export default function Navbar() {
 
   const handleLogout = () => {
     // Clear any stored authentication data
-    localStorage.removeItem("token");
     sessionStorage.clear();
+    localStorage.clear(); // Clear legacy data
     // Navigate to login page
     navigate("/admin/login");
   };
@@ -137,23 +137,21 @@ export default function Navbar() {
     navigate("/");
   };
 
-  // Get user info from localStorage or sessionStorage
+  // Get user info from sessionStorage
   const getUserInfo = () => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const token = sessionStorage.getItem("token");
+    const userStr = sessionStorage.getItem("user");
+
+    if (token && userStr) {
       try {
-        // You can decode JWT token here if needed
+        const user = JSON.parse(userStr);
         return {
-          name: "Admin User",
-          email: "admin@interviewpro.com",
-          role: "Administrator"
+          name: user.name || "Admin User",
+          email: user.email || "admin@interviewpro.com",
+          role: user.role || "Administrator"
         };
       } catch (error) {
-        return {
-          name: "Admin User",
-          email: "admin@interviewpro.com",
-          role: "Administrator"
-        };
+        console.error("Error parsing user info:", error);
       }
     }
     return {

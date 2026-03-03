@@ -53,32 +53,40 @@ module.exports.loginCandidate = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const positionId = candidates[0].position?._id || candidates[0].position;
-    // return;
     // Iterate through all candidates with this email to find matching password
-   const submittedTest = await testResult.findOne({
-      candidateId: candidates[0]._id,
+    let candidate = null;
+    for (const c of candidates) {
+        const isMatch = await bcrypt.compare(password, c.password);
+        if (isMatch) {
+            candidate = c;
+            break;
+        }
+    }
+
+    if (!candidate) {
+        return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const positionId = candidate.position?._id || candidate.position;
+
+    // Check if THIS specific candidate record has already submitted the test
+    const submittedTest = await testResult.findOne({
+      candidateId: candidate._id,
       positionId: positionId,
       isSubmitted: 1,
     });
 
-    if (submittedTest) {
+    if (submittedTest || candidate.isSubmitted === 1) {
       console.log('test already submitted');
       return res.status(403).json({
         message: 'You have already submitted the test. You cannot login again.',
       });
     }
 
-    // ✅ Await bcrypt comparison
-    const isMatch = await bcrypt.compare(password, candidates[0].password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
     // Schedule-based login restrictions
     const now = new Date();
-    if (candidates[0].schedule) {
-      const scheduleTime = new Date(candidates[0].schedule);
+    if (candidate.schedule) {
+      const scheduleTime = new Date(candidate.schedule);
 
       const loginTimeSettings = await LoginTime.findOne();
       const allowedMinutes = loginTimeSettings?.timeDurationForTest || 30; // "Login Time for Student" in minutes
@@ -97,8 +105,8 @@ module.exports.loginCandidate = async (req, res) => {
 
       if (now > expirationTime) {
         // Mark as expired
-        candidates[0].isSubmitted = 2;
-        await candidates[0].save();
+        candidate.isSubmitted = 2;
+        await candidate.save();
         
         return res.status(403).json({
           message: `Your login window has expired. You could only login within ${allowedMinutes} minutes of your scheduled time.`,
@@ -108,7 +116,7 @@ module.exports.loginCandidate = async (req, res) => {
 
     // JWT
     const token = jwt.sign(
-      { id: candidates[0]._id, email: candidates[0].email },
+      { id: candidate._id, email: candidate.email },
       process.env.JWT_SECRET,
       { expiresIn: '2m' }
     );
@@ -117,12 +125,12 @@ module.exports.loginCandidate = async (req, res) => {
       message: 'Logged in successfully',
       token,
       candidate: {
-        id: candidates[0]._id,
-        name: candidates[0].name,
-        email: candidates[0].email,
-        position: candidates[0].position,
-        questionsAskedToCandidate: candidates[0].questionsAskedToCandidate,
-        timeforTest: candidates[0].timeforTest,
+        id: candidate._id,
+        name: candidate.name,
+        email: candidate.email,
+        position: candidate.position,
+        questionsAskedToCandidate: candidate.questionsAskedToCandidate,
+        timeforTest: candidate.timeforTest,
       },
     });
   } catch (error) {

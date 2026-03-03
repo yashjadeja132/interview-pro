@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import api from '../../../Api/axiosInstance';
-import { formatDateToIST } from "@/utils/dateHelper";
+import { formatDateToIST } from "@/utils/dateHelper";  
 export default function CandidateModal({ isOpen, onClose, initialData, positions, onSuccess }) {
     const [form, setForm] = useState({});
     const [fieldErrors, setFieldErrors] = useState({});
@@ -131,14 +131,15 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
+                console.log("initialData", initialData);
                 // Handle position - extract _id if it's an object
                 const positionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
                 // Extract years and months from "experience" string if available
                 let years = "";
                 let months = "";
                 if (initialData.experience) {
-                    const matchYears = initialData.experience.match(/(\d+)\s*year/);
-                    const matchMonths = initialData.experience.match(/(\d+)\s*month/);
+                    const matchYears = initialData.experience.match(/(\d+)\s*year/i);
+                    const matchMonths = initialData.experience.match(/(\d+)\s*month/i);
                     years = matchYears ? matchYears[1] : "0";
                     months = matchMonths ? matchMonths[1] : "0";
                 }
@@ -148,7 +149,9 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                     position: positionId,
                     timeDurationForTest: initialData.timeforTest || initialData.timeDurationForTest,
                     experienceYears: years,
-                    experienceMonths: months
+                    experienceMonths: months,
+                    isNagativeMarking: initialData.isNagativeMarking || false,
+                    negativeMarkingValue: initialData.negativeMarkingValue || ""
                 };
 
                 setForm(formData);
@@ -176,7 +179,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
 
     const validateField = (name, value) => {
         let message = "";
-        if (name === "name" && !value) message = "Name is required";
+        if (name === "name" && !value?.trim()) message = "Name is required";
         if (name === "email") {
             if (!value) message = "Email is required";
             else if (!/\S+@\S+\.\S+/.test(value)) message = "Enter a valid email";
@@ -192,7 +195,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             if (name === "experienceYears") years = parseInt(value || 0);
             if (name === "experienceMonths") months = parseInt(value || 0);
 
-            if (years === 0 && months === 0) message = "Experience cannot be 0";
+            // if (years === 0 && months === 0) message = "Experience cannot be 0";
 
             // Set error on 'experience' key and return since this handles its own state update
             setFieldErrors(prev => ({ ...prev, experience: message }));
@@ -229,9 +232,9 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             if (!value) message = "Value is required";
             else if (isNaN(value)) message = "Must be a number";
         }
-        if (name === "description" && !value) {
-            message = "Description is required";
-        }
+        // if (name === "description" && !value?.trim()) {
+        //     message = "Description is required";
+        // }
 
         setFieldErrors(prev => ({ ...prev, [name]: message }));
         return message;
@@ -240,9 +243,9 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
     const handleChange = (e) => {
         let { name, value } = e.target;
 
-        // Restriction: Full Name - only letters and spaces
+        // Restriction: Full Name - only letters, spaces and hyphens
         if (name === "name") {
-            value = value.replace(/[^a-zA-Z\s]/g, "");
+            value = value.replace(/[^a-zA-Z\s\-]/g, "");
         }
 
         // Restriction: Phone Number - only numbers, max 10 digits
@@ -254,7 +257,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
         if (["questionsAskedToCandidate", "technicalQuestions", "logicalQuestions", "timeDurationForTest"].includes(name)) {
             value = value.replace(/\D/g, "");
         }
-        if(name === "description"){
+        if (name === "description") {
             value = value.replace(/[^a-zA-Z\s]/g, "");
         }
         setForm(prev => ({ ...prev, [name]: value }));
@@ -339,9 +342,9 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
         const initialPositionId = typeof initialData.position === 'object' ? initialData.position._id : initialData.position;
         const initialTimeDuration = initialData.timeforTest || initialData.timeDurationForTest;
         return (
-            form.name !== initialData.name ||
-            form.email !== initialData.email ||
-            form.phone !== initialData.phone ||
+            form.name?.trim() !== (initialData.name || "").trim() ||
+            form.email?.trim() !== (initialData.email || "").trim() ||
+            form.phone?.trim() !== (initialData.phone || "").trim() ||
             form.experience !== initialData.experience ||
             form.position !== initialPositionId ||
             !areDatesEqual(form.schedule, initialData.schedule) ||
@@ -350,7 +353,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
             parseInt(form.timeDurationForTest || 0) !== parseInt(initialTimeDuration || 0) ||
             !!form.isNagativeMarking !== !!initialData.isNagativeMarking ||
             String(form.negativeMarkingValue || "") !== String(initialData.negativeMarkingValue || "") ||
-            String(form.description || "") !== String(initialData.description || "")
+            String(form.description || "")?.trim() !== String(initialData.description || "").trim()
         );
     };
 
@@ -447,8 +450,15 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                     return localDate.toISOString().slice(0, 16);
                                 })() : ""}
                                 onChange={handleChange}
-                                className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.schedule ? "border-red-500" : ""}`}
+                                disabled={!!initialData}
+                                className={`dark:bg-slate-800 dark:border-slate-700 dark:text-white ${fieldErrors.schedule ? "border-red-500" : ""} ${initialData ? "opacity-60 cursor-not-allowed" : ""}`}
                             />
+                            {initialData && (
+                                <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    Use the Reschedule button to change the interview time
+                                </p>
+                            )}
                             {fieldErrors.schedule && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{fieldErrors.schedule}</p>}
                         </div>
 
@@ -511,7 +521,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                         <SelectValue placeholder="Years" />
                                     </SelectTrigger>
                                     <SelectContent className="dark:bg-slate-800 border-slate-700">
-                                        <SelectItem value="0">0 Year</SelectItem>
+                                        <SelectItem value="0">0 Years</SelectItem>
                                         <SelectItem value="1">1 Year</SelectItem>
                                         <SelectItem value="2">2 Years</SelectItem>
                                         <SelectItem value="3">3 Years</SelectItem>
@@ -537,7 +547,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
                                         <SelectValue placeholder="Months" />
                                     </SelectTrigger>
                                     <SelectContent className="dark:bg-slate-800 border-slate-700">
-                                        <SelectItem value="0">0 Month</SelectItem>
+                                        <SelectItem value="0">0 Months</SelectItem>
                                         <SelectItem value="1">1 Month</SelectItem>
                                         <SelectItem value="2">2 Months</SelectItem>
                                         <SelectItem value="3">3 Months</SelectItem>
@@ -619,7 +629,7 @@ export default function CandidateModal({ isOpen, onClose, initialData, positions
 
                     {/* Description */}
                     <div className="space-y-2">
-                        <Label htmlFor="description" className="dark:text-slate-300">Description *</Label>
+                        <Label htmlFor="description" className="dark:text-slate-300">Description (Optional)</Label>
                         <textarea
                             id="description"
                             name="description"

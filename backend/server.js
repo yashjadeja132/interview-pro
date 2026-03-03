@@ -30,31 +30,14 @@ const path = require("path");
 // Connect Database
 connectDB();
 const app = express();
+app.use(cors());
 app.use(express.json());
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://192.168.1.27:5173",
-];
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // ✅ Allow all Cloudflare tunnel URLs and localhost origins
-      if (
-        !origin ||
-        allowedOrigins.includes(origin) ||
-        /\.trycloudflare\.com$/.test(origin)
-      ) {
-        callback(null, true);
-      } else {
-        console.log("❌ Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(express.urlencoded({ extended: true }));
+// const allowedOrigins = [
+//   "http://localhost:5173",
+//   "http://localhost:5174",
+//   "http://192.168.1.27:5173",
+// ];
 
 swaggerDocs(app);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

@@ -20,7 +20,9 @@ import {
   CheckCircle,
   XCircle,
   Edit2,
-  AlertTriangle
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import api from "../../Api/axiosInstance";
 import QuestionModal from "./components/QuestionModal";
@@ -38,12 +40,29 @@ export default function QuestionManagement() {
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   // Fetch positions on component mount
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
         const res = await api.get("/subject");
-        setSubjects(res.data.data);
+        const subjectsData = res.data.data;
+        setSubjects(subjectsData);
+
+        // Auto-select subject with max questions if none selected
+        if (subjectsData && subjectsData.length > 0 && !selectedSubject) {
+          const maxQuestionsSubject = subjectsData.reduce((prev, current) =>
+            (prev.questionCount || 0) > (current.questionCount || 0) ? prev : current
+          );
+          if (maxQuestionsSubject) {
+            setSelectedSubject(maxQuestionsSubject._id);
+          }
+        }
       } catch (err) {
         console.error("Failed to load positions", err);
         toast.error("Failed to load positions");
@@ -52,35 +71,43 @@ export default function QuestionManagement() {
     fetchSubjects();
   }, []);
 
-  // Fetch questions when position changes
+  // Fetch questions when position changes, page changes, or search term changes
   useEffect(() => {
     if (selectedSubject) {
-      fetchQuestionsBySubject(selectedSubject);
+      fetchQuestionsBySubject(selectedSubject, currentPage, searchTerm);
     } else {
       setQuestions([]);
       setFilteredQuestions([]);
     }
-  }, [selectedSubject]);
+  }, [selectedSubject, currentPage, searchTerm, rowsPerPage]);
 
-  // Filter questions based on search term
+  // Reset page when subject or search changes
   useEffect(() => {
-    if (!searchTerm) {
-      setFilteredQuestions(questions);
-    } else {
-      const filtered = questions.filter(q =>
-        q.questionText?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredQuestions(filtered);
-    }
-  }, [searchTerm, questions]);
+    setCurrentPage(1);
+  }, [selectedSubject, searchTerm]);
 
-  const fetchQuestionsBySubject = async (subjectId) => {
+  // (Removed local filtering in favor of server-side filtering)
+
+  const fetchQuestionsBySubject = async (subjectId, page = 1, search = "") => {
     setIsLoading(true);
     try {
-      const res = await api.get(`/question/subject/${subjectId}`);
-      console.log(res.data);
-      setQuestions(res.data);
-      setFilteredQuestions(res.data);
+      const res = await api.get(`/question/subject/${subjectId}`, {
+        params: {
+          page,
+          limit: rowsPerPage,
+          search
+        }
+      });
+      if (res.data.success) {
+        setQuestions(res.data.data);
+        setFilteredQuestions(res.data.data);
+        setTotalPages(res.data.pagination.totalPages);
+        setTotalQuestions(res.data.pagination.total);
+      } else {
+        // Fallback for older API or if format is different
+        setQuestions(res.data);
+        setFilteredQuestions(res.data);
+      }
     } catch (err) {
       console.error("Failed to load questions", err);
       toast.error("Failed to load questions");
@@ -125,121 +152,277 @@ export default function QuestionManagement() {
       fetchQuestionsBySubject(selectedSubject);
     }
   };
-   console.log(selectedSubject);
+  console.log(selectedSubject);
 
   return (
     <>
       <div className="flex-1 p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">Question Management</h1>
-          <div className="flex justify-between gap-5">
-            <p className="text-slate-600 dark:text-slate-400">Organize and manage questions by subject for your interviews</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">Question Management</h1>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base max-w-2xl">Organize and manage questions by subject for your interviews</p>
             <Button
               onClick={() => {
                 setSelectedQuestion(null);
                 setShowQuestionModal(true);
               }}
-              className="bg-primary hover:bg-primary/90 text-white px-6 py-2"
+              className="bg-primary hover:bg-primary/90 text-white px-6 py-2 w-full sm:w-auto mt-2 sm:mt-0"
             >
-              + Add Question
+              <Plus className="w-4 h-4 mr-2" /> Add Question
             </Button>
           </div>
         </div>
 
-        {/* Select Position & Search */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          <div>
-            <Label className="block text-sm font-medium text-slate-700 mb-3">
-              Select Subject
-            </Label>
-            <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-              <SelectTrigger className="h-11 border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-blue-500 focus:ring-blue-500">
-                <SelectValue placeholder="Choose a subject to view questions" />
-              </SelectTrigger>
-              <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                {subjects.map((subject) => (
-                  <SelectItem key={subject._id} value={subject._id} className="dark:text-gray-200 dark:focus:bg-slate-700">
-                    <div className="flex items-center gap-2">
-                      {subject.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="block text-sm font-medium text-slate-700 mb-3">
-              Search Questions
-            </Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
-              <Input
-                placeholder="Search questions by text..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-11 border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-blue-500 focus:ring-blue-500"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  <XCircle className="w-4 h-4" />
-                </button>
-              )}
+        {/* Filter Section */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="space-y-4">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <Filter className="w-4 h-4 text-primary" />
+                Select Subject
+              </label>
+              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-primary h-11">
+                  <SelectValue placeholder="Choose a subject to view questions" />
+                </SelectTrigger>
+                <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                  {subjects.map((subject) => (
+                    <SelectItem key={subject._id} value={subject._id} className="dark:text-gray-200 dark:focus:bg-slate-700">
+                      <div className="flex items-center justify-between w-[350px]">
+                        <span className="truncate">{subject.name}</span>
+                        <Badge variant="secondary" className="ml-2 text-[10px] px-1.5 py-0 h-4 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 shrink-0">
+                          {subject.questionCount || 0}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <Search className="w-4 h-4 text-primary" />
+                Search Questions
+              </label>
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors w-4 h-4" />
+                <Input
+                  placeholder="Search questions by text..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-11 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-primary"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Table Section */}
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="overflow-x-auto">
+        {/* Table/Card Section */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="overflow-hidden">
             {isLoading ? (
-              <div className="py-10 text-center text-slate-500 dark:text-slate-400">
-                Loading questions...
+              <div className="p-12 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+                <p className="mt-4 text-slate-500 font-medium italic">Loading questions...</p>
               </div>
             ) : filteredQuestions.length > 0 ? (
-              <Table>
-                <TableHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                  <TableRow>
-                    <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">#</TableHead>
-                    <TableHead className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Question</TableHead>
-                    <TableHead className="px-6 py-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
+              <div className="flex flex-col">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                      <TableRow>
+                        <TableHead className="w-16 px-6 py-4 text-left text-sm font-bold text-slate-700 dark:text-slate-300">#</TableHead>
+                        <TableHead className="px-6 py-4 text-left text-sm font-bold text-slate-700 dark:text-slate-300">Question Content</TableHead>
+                        <TableHead className="w-32 px-6 py-4 text-center text-sm font-bold text-slate-700 dark:text-slate-300">Options</TableHead>
+                        <TableHead className="w-40 px-6 py-4 text-right text-sm font-bold text-slate-700 dark:text-slate-300 pr-8">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
 
-                <TableBody>
+                    <TableBody>
+                      {filteredQuestions.map((question, index) => (
+                        <TableRow
+                          key={question._id}
+                          className="group border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                        >
+                          <TableCell className="px-6 py-5 font-medium text-slate-400">
+                            {(currentPage - 1) * rowsPerPage + index + 1}
+                          </TableCell>
+                          <TableCell className="px-6 py-5">
+                            <div className="flex flex-col gap-2 max-w-2xl">
+                              {question.questionText && (
+                                <p className="text-slate-900 dark:text-slate-100 font-medium leading-relaxed line-clamp-2">
+                                  {question.questionText}
+                                </p>
+                              )}
+                              {question.questionImage && (
+                                <div className="inline-flex items-center gap-2 text-[10px] text-primary font-bold bg-primary/5 px-2 py-1 rounded w-fit">
+                                  <ImageIcon className="w-3.5 h-3.5" /> IMAGE ATTACHED
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-6 py-5 text-center">
+                            <Badge variant="outline" className="bg-slate-50 dark:bg-slate-800 font-bold dark:text-white">
+                              {question.options?.length || 0}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="px-6 py-5 text-right pr-8">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-9 w-9 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                onClick={() => handleViewQuestion(question)}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-9 w-9 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                onClick={() => handleEditQuestion(question)}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-9 w-9 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                onClick={() => handleDeleteQuestion(question._id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredQuestions.map((question, index) => (
-                    <TableRow
-                      key={question._id}
-                      className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-                    >
-                      <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{index + 1}</TableCell>
-                      <TableCell className="px-6 py-4 text-slate-900 dark:text-slate-100">{question.questionText}</TableCell>
-                      <TableCell className="px-6 py-4 flex justify-center gap-2">
-                        <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => handleViewQuestion(question)}>
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="text-amber-600 hover:bg-amber-50" onClick={() => handleEditQuestion(question)}>
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteQuestion(question._id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                    <div key={question._id} className="p-4 bg-white dark:bg-slate-900/50 active:bg-slate-50 transition-colors">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="text-xs font-bold text-slate-400">
+                          #{(currentPage - 1) * rowsPerPage + index + 1}
+                        </span>
+                        <div className="flex gap-1">
+                          <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-600" onClick={() => handleViewQuestion(question)}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600" onClick={() => handleEditQuestion(question)}>
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600" onClick={() => handleDeleteQuestion(question._id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {question.questionText && (
+                          <p className="text-slate-900 dark:text-slate-100 text-sm font-medium leading-relaxed line-clamp-3">
+                            {question.questionText}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline" className="text-[10px] font-bold bg-slate-50 dark:bg-slate-800">
+                            {question.options?.length || 0} OPTIONS
+                          </Badge>
+                          {question.questionImage && (
+                            <div className="flex items-center gap-1.5 text-[10px] text-primary font-bold">
+                              <ImageIcon className="w-3.5 h-3.5" /> IMAGE
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              </div>
             ) : (
-              <div className="py-12 text-center text-slate-600 dark:text-slate-400">
-                {selectedSubject
-                  ? "No questions found for this subject."
-                  : "Please select a subject to view questions."}
+              <div className="py-16 text-center text-slate-500 dark:text-slate-400">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 text-slate-400">
+                  <FileText className="w-8 h-8" />
+                </div>
+                <p className="font-medium">
+                  {selectedSubject
+                    ? "No questions found for this subject."
+                    : "Please select a subject to view questions."}
+                </p>
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {filteredQuestions.length > 0 && (
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white dark:bg-slate-900">
+              <div className="text-sm text-slate-500 dark:text-slate-400">
+                Showing {Math.min((currentPage - 1) * rowsPerPage + 1, totalQuestions)} to {Math.min(currentPage * rowsPerPage, totalQuestions)} of {totalQuestions} questions
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-9 h-9 p-0 ${currentPage === pageNum ? "bg-primary text-white" : "dark:bg-slate-800 dark:text-white dark:border-slate-700"}`}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                >
+                  Next <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

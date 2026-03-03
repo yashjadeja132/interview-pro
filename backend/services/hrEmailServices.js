@@ -3,10 +3,9 @@ const fs = require("fs");
 const path = require("path");
 
 exports.sendCandidateMail = async (candidate, plainPassword) => {
-  const loginUrl = `${process.env.FrontendUrl}candidate/login`;
-    console.log(loginUrl)
-    console.log(plainPassword)
-  
+  const loginUrl = `${process.env.FrontendUrl}/candidate/login`;
+    console.log('loginUrl',loginUrl)
+    console.log('plainPassword',plainPassword)
 const InterviewTime = candidate.schedule 
   ? new Date(candidate.schedule).toLocaleString("en-IN", {
       dateStyle: "medium",
@@ -34,97 +33,191 @@ const InterviewTime = candidate.schedule
         </style>
       </head>
       <body>
-        <div class="container-fluid p-0">
-          <div class="email-container">
-            <!-- Header Section -->
-            <div class="header">
-             
-              <h1 class="company-name">SparrowSofttech</h1>
-              <p class="tagline">Innovation Through Technology</p>
-            </div>
+        <div class="email-container">
+          <div class="header">
+            <h1 class="company-name">SparrowSofttech</h1>
+            <p class="tagline">Success Through Collaboration</p>
+          </div>
+          
+          <div class="content">
+            <div class="greeting">Hello ${candidate.name},</div>
             
-            <!-- Main Content -->
-            <div class="content">
-              <div class="greeting">Hello ${candidate.name}! 👋</div>
-              
-              <p style="margin-bottom: 1.5rem;">Welcome to <strong>SparrowSofttech</strong>! We're excited to have you join our interview process for the <strong>${candidate.position.name}</strong> position.</p>
-              
-              <!-- Login Credentials Section -->
-              <div class="credentials-section">
-                <div class="credentials-title">🔐 Your Login Credentials</div>
-                <div style="display: flex; flex-wrap: wrap; margin: 0 -0.75rem;">
-                  <div style="flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem;">
-                    <div class="credential-item">
-                      📧 <strong>Email:</strong> ${candidate.email}
-                    </div>
-                  </div>
-                  <div style="flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem;">
-                    <div class="credential-item">
-                      🔒 <strong>Password:</strong> ${plainPassword}
-                    </div>
-                  </div>
-                </div>
+            <p class="main-text">Welcome to <strong>SparrowSofttech</strong>. We are pleased to invite you to participate in the interview process for the <strong>${candidate.position.name}</strong> position.</p>
+            
+            <div class="credentials-section">
+              <div class="credentials-title">Your Access Credentials</div>
+              <div class="credential-item">
+                <span class="credential-label">Email:</span> ${candidate.email}
               </div>
-              
-              <!-- Login Button -->
-              <div style="text-align: center; margin: 1.5rem 0;">
-                <a href="${loginUrl}" class="login-button" style="color: white !important; text-decoration: none;">
-                  🚀 Access Interview Portal
-                </a>
-              </div>
-              
-              <!-- Interview Details -->
-              <div class="info-card">
-                <h5 style="margin-bottom: 1rem;">ℹ️ Interview Details</h5>
-                <div style="display: flex; flex-wrap: wrap; margin: 0 -0.75rem;">
-                  <div style="flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem;">
-                    <div class="info-item">
-                      <span class="info-label">📋 Position:</span>
-                      <span class="info-value">${candidate.position.name}</span>
-                    </div>
-                  </div>
-                  <div style="flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem;">
-                    <div class="info-item">
-                      <span class="info-label">📅 Interview Date:</span>
-                      <span class="info-value">${InterviewTime}</span>
-                    </div>
-                  </div>
-                  <div style="flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem;">
-                    <div class="info-item">
-                      <span class="info-label">💼 Experience:</span>
-                      <span class="info-value">${candidate.experience} years</span>
-                    </div>
-                  </div>
-                  <div style="flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem;">
-                    <div class="info-item">
-                      <span class="info-label">⏱️ Test Duration:</span>
-                      <span class="info-value">${candidate.timeforTest ? candidate.timeforTest + ' minutes' : 'N/A'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Important Notes -->
-              <div class="notes-section">
-                <div class="notes-title">📝 Important Notes</div>
-                <ul class="notes-list">
-                  <li>🛡️ Keep your login credentials secure and don't share them with anyone</li>
-                  <li>📶 Complete the assessment in a quiet environment with stable internet</li>
-                  <li>📹 Ensure your device has a working camera and microphone</li>
-                  <li>🎧 Contact us immediately if you face any technical issues</li>
-                  <li>⏰ Complete your assessment before the scheduled interview time</li>
-                </ul>
+              <div class="credential-item">
+                <span class="credential-label">Password:</span> ${plainPassword}
               </div>
             </div>
             
-            <!-- Footer -->
-            <div class="footer">
-              <p class="footer-text">
-                Best regards,<br>
-                <strong>HR Team - SparrowSofttech</strong><br>
-                <em>Building Tomorrow's Technology Today</em>
-              </p>
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${loginUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff !important; padding: 14px 32px; text-decoration: none !important; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                Access Interview Portal
+              </a>
             </div>
+            
+            <div class="info-card">
+              <div class="info-item">
+                <span class="info-label">Position:</span>
+                <span class="info-value">${candidate.position.name}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Schedule:</span>
+                <span class="info-value">${InterviewTime}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Experience:</span>
+                <span class="info-value">${candidate.experience} years</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Duration:</span>
+                <span class="info-value">${candidate.timeforTest ? candidate.timeforTest + ' minutes' : 'N/A'}</span>
+              </div>
+            </div>
+            
+            <div class="notes-section">
+              <div class="notes-title">Important Instructions</div>
+              <ul class="notes-list">
+                <li>Please ensure a stable internet connection before starting.</li>
+                <li>The assessment should be completed in a quiet environment.</li>
+                <li>Your device must have a working camera and microphone.</li>
+                <li>Complete the assessment before your scheduled interview time.</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p class="footer-text">
+              Regards,<br>
+              <strong>HR Team • SparrowSofttech</strong><br>
+              sparrowsofttech.com
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  });
+};
+
+exports.sendRescheduleMail = async (candidate, oldSchedule) => {
+  const loginUrl = `${process.env.FrontendUrl}/candidate/login`;
+
+  const formatTime = (date) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  };
+
+  const oldTime = formatTime(oldSchedule);
+  const newTime = formatTime(candidate.schedule);
+
+  const cssPath = path.join(__dirname, "emailStyles.css");
+  const emailStyles = fs.readFileSync(cssPath, "utf8");
+
+  await sendEmail({
+    to: candidate.email,
+    subject: "Interview Rescheduled - SparrowSofttech",
+    html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Interview Rescheduled</title>
+        <style>
+          ${emailStyles}
+          .reschedule-alert {
+            background-color: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+          }
+          .time-label {
+            font-size: 13px;
+            color: #9a3412;
+            font-weight: 600;
+            margin-bottom: 4px;
+          }
+          .old-time {
+            text-decoration: line-through;
+            color: #94a3b8;
+            font-size: 15px;
+          }
+          .new-time {
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 4px;
+          }
+          .arrow {
+            color: #fdba74;
+            margin: 8px 0;
+            font-size: 20px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-container">
+          <div class="header">
+            <h1 class="company-name">SparrowSofttech</h1>
+            <p class="tagline">Success Through Collaboration</p>
+          </div>
+          
+          <div class="content">
+            <div class="greeting">Hello ${candidate.name},</div>
+            
+            <p class="main-text">Your interview for the <strong>${candidate.position.name}</strong> position has been rescheduled. Please find the updated schedule below.</p>
+            
+            <div class="reschedule-alert">
+              <div class="time-label">PREVIOUS SCHEDULE</div>
+              <div class="old-time">${oldTime}</div>
+              <div class="arrow">↓</div>
+              <div class="time-label">NEW SCHEDULE</div>
+              <div class="new-time">${newTime}</div>
+            </div>
+            
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${loginUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff !important; padding: 14px 32px; text-decoration: none !important; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                Access Interview Portal
+              </a>
+            </div>
+            
+            <div class="info-card">
+              <div class="info-item">
+                <span class="info-label">Position:</span>
+                <span class="info-value">${candidate.position.name}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Duration:</span>
+                <span class="info-value">${candidate.timeforTest ? candidate.timeforTest + ' minutes' : 'N/A'}</span>
+              </div>
+            </div>
+            
+            <div class="notes-section">
+              <div class="notes-title">Important Notes</div>
+              <ul class="notes-list">
+                <li>Your previous login credentials remain valid.</li>
+                <li>Please ensure you are ready at the new scheduled time.</li>
+                <li>Technical requirements (camera, microphone) remain the same.</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p class="footer-text">
+              Regards,<br>
+              <strong>HR Team • SparrowSofttech</strong><br>
+              sparrowsofttech.com
+            </p>
           </div>
         </div>
       </body>

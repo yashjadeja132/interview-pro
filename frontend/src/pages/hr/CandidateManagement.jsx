@@ -3,6 +3,7 @@ import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CandidateTable from "./components/CandidateTable";
 import CandidateModal from "./components/CandidateModal";
+import RescheduleModal from "./components/RescheduleModal";
 import api from "../../Api/axiosInstance";
 import "@/assets/css/candidateManagement.css";
 
@@ -11,6 +12,8 @@ export default function CandidateManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCandidate, setEditingCandidate] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [rescheduleCandidate, setRescheduleCandidate] = useState(null);
 
   // Fetch positions once
   useEffect(() => {
@@ -33,6 +36,11 @@ export default function CandidateManagement() {
   const handleOpenEditModal = (candidate) => {
     setEditingCandidate(candidate);
     setIsModalOpen(true);
+  };
+
+  const handleOpenRescheduleModal = (candidate) => {
+    setRescheduleCandidate(candidate);
+    setIsRescheduleOpen(true);
   };
 
   const handleSuccess = () => {
@@ -68,6 +76,7 @@ export default function CandidateManagement() {
         <CandidateTable
           positions={positions}
           onEdit={handleOpenEditModal}
+          onReschedule={handleOpenRescheduleModal}
           refreshTrigger={refreshTrigger}
         />
       </div>
@@ -80,6 +89,15 @@ export default function CandidateManagement() {
         positions={positions}
         onSuccess={handleSuccess}
       />
+
+      {/* Reschedule Modal */}
+      <RescheduleModal
+        isOpen={isRescheduleOpen}
+        onClose={() => setIsRescheduleOpen(false)}
+        candidate={rescheduleCandidate}
+        onSuccess={handleSuccess}
+      />
     </div>
   );
 }
+

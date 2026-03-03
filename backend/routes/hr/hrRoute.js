@@ -15,6 +15,7 @@ router.get("/verify", verifySchedule, (req, res) => {
 router.get("/", candidateController.getCandidates);
 router.delete("/bulk", candidateController.bulkDeleteCandidates);
 router.get("/:id", candidateController.getCandidateById);
+router.put("/:id/reschedule", candidateController.rescheduleCandidate);
 router.put("/:id", uploadResume.single("resume"), candidateController.updateCandidate);
 router.delete("/:id", candidateController.deleteCandidate);
 

@@ -41,7 +41,7 @@ const AttemptManagementTest = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Attempt Management API Test</h1>
-      
+
       <div className="space-y-4">
         <div className="flex gap-4">
           <button
@@ -51,7 +51,7 @@ const AttemptManagementTest = () => {
           >
             {loading ? 'Testing...' : 'Test Get Attempts API'}
           </button>
-          
+
           <button
             onClick={testAnalytics}
             disabled={loading}
@@ -80,8 +80,8 @@ const AttemptManagementTest = () => {
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2">Debug Information:</h3>
           <div className="text-sm space-y-1">
-            <p><strong>Token:</strong> {localStorage.getItem('token') ? 'Present' : 'Missing'}</p>
-            <p><strong>User:</strong> {localStorage.getItem('user') || 'Not found'}</p>
+            <p><strong>Token:</strong> {sessionStorage.getItem('token') ? 'Present' : 'Missing'}</p>
+            <p><strong>User:</strong> {sessionStorage.getItem('user') || 'Not found'}</p>
             <p><strong>API Base URL:</strong> {import.meta.env.VITE_API_BACKEND_URL || 'http://localhost:5000/api'}</p>
           </div>
         </div>

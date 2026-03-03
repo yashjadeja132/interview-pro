@@ -107,7 +107,7 @@ export function Homepage() {
                 style={{ imageRendering: "high-quality" }}
               />
               <span className="text-xl md:text-2xl font-semibold text-slate-900">
-                InterviewPro
+                Interview Pro
               </span>
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
@@ -258,15 +258,20 @@ export function Homepage() {
 
       {/* Footer */}
       <footer className="bg-slate-900 px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center">
-                <Shield className="w-5 h-5 text-slate-900" />
+                <img
+                  src={sparrowLogo}
+                  alt="Sparrow Softtech Innovation Unlimited"
+                  className="h-8 md:h-10 w-auto"
+                  style={{ imageRendering: "high-quality" }}
+                />
               </div>
               <span className="text-xl font-semibold text-white">
-                InterviewPro
+                Interview Pro
               </span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed">
@@ -276,7 +281,6 @@ export function Homepage() {
             </p>
           </div>
 
-
           {/* Support */}
           <div>
             <h4 className="text-white font-semibold mb-4">Support</h4>
@@ -285,6 +289,59 @@ export function Homepage() {
               <li>Enterprise SLA</li>
               <li>Data Privacy & Compliance</li>
               <li>Uptime Guarantee: 99.9%</li>
+            </ul>
+          </div>
+
+          {/* Visit Our Site */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Visit Our Site</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a
+                  href="https://sparrowsofttech.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-white transition-colors duration-200"
+                >
+                  sparrowsofttech.com
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Contact</h4>
+            <ul className="space-y-3 text-slate-400 text-sm leading-relaxed">
+              <li>
+                MIG 51, 52, Bhavnagar - Near Jain derasar, Shastrinagar,
+                Bhavnagar, Gujarat – 364001, India.
+              </li>
+              <li>
+                <a
+                  href="tel:+919409354326"
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  +91 9409354326
+                </a>
+              </li>
+              <li>
+                HR:{" "}
+                <a
+                  href="mailto:hr@sparrowsofttech.com"
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  hr@sparrowsofttech.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:contact@sparrowsofttech.com"
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  contact@sparrowsofttech.com
+                </a>
+              </li>
             </ul>
           </div>
         </div>

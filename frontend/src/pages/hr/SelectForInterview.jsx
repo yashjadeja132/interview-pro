@@ -70,12 +70,17 @@ export default function SelectForInterview() {
     };
 
     const getExperienceDisplayText = (experience) => {
-        switch (experience) {
+        if (!experience) return 'N/A';
+        switch (experience.toLowerCase()) {
             case 'fresher': return 'Fresher';
             case '1-2': return '1-2 Years';
             case '3-5': return '3-5 Years';
             case '5+': return '5+ Years';
-            default: return experience || 'N/A';
+            default:
+                // Handle singular year/month if they come from the backend incorrectly
+                return experience
+                    .replace(/(\d+)\s*year\b/gi, (match, p1) => parseInt(p1) === 1 ? `${p1} Year` : `${p1} Years`)
+                    .replace(/(\d+)\s*month\b/gi, (match, p1) => parseInt(p1) === 1 ? `${p1} Month` : `${p1} Months`);
         }
     };
 

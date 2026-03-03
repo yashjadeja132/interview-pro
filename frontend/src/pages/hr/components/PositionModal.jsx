@@ -58,8 +58,8 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
           name: initialData.name || "",
           salary: initialData.salary || "",
           jobType: initialData.jobType || "",
-          experienceYears: initialData.experience?.match(/(\d+)\s*year/)?.[1] || "0",
-          experienceMonths: initialData.experience?.match(/(\d+)\s*month/)?.[1] || "0",
+          experienceYears: initialData.experience?.match(/(\d+)\s*year/i)?.[1] || "0",
+          experienceMonths: initialData.experience?.match(/(\d+)\s*month/i)?.[1] || "0",
           vacancies: initialData.vacancies || "",
           shift: initialData.shift || "Day Shift",
           testDuration: initialData.testDuration || "",
@@ -207,7 +207,7 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
     if ((name === "experienceYears" || name === "experienceMonths")) {
       const years = parseInt(form.experienceYears || (name === "experienceYears" ? value : 0));
       const months = parseInt(form.experienceMonths || (name === "experienceMonths" ? value : 0));
-      if (years === 0 && months === 0) message = "Experience cannot be 0";
+      // if (years === 0 && months === 0) message = "Experience cannot be 0";
 
       setFieldErrors((prev) => ({ ...prev, experience: message }));
       return message;
@@ -232,9 +232,9 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
   const handleChange = (e) => {
     let { name, value } = e.target;
 
-    // Restriction: Position Name - no numbers allowed
+    // Restriction: Position Name - no numbers and special characters (except spaces and hyphens)
     if (name === "name") {
-      value = value.replace(/[^a-zA-Z0-9\-]/g, "");
+      value = value.replace(/[^a-zA-Z\s\-]/g, "");
     }
 
     // Restriction: Salary and Vacancies - only numbers
@@ -316,7 +316,7 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
       onClose();
     } catch (err) {
       //   setGeneralError(err.response?.data?.message || "Failed to save position");
-      toast.error("Failed to save position");
+      setGeneralError(err.response?.data?.message || "Failed to save position");
     } finally {
       setIsSubmitting(false);
     }
@@ -330,11 +330,11 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
     const currentSubjectIds = [...form.subjects].sort();
 
     return (
-      form.name !== (initialData.name || "") ||
+      form.name.trim() !== (initialData.name || "").trim() ||
       String(form.salary) !== String(initialData.salary || "") ||
       form.jobType !== (initialData.jobType || "") ||
-      form.experienceYears !== (initialData.experience?.match(/(\d+)\s*year/)?.[1] || "0") ||
-      form.experienceMonths !== (initialData.experience?.match(/(\d+)\s*month/)?.[1] || "0") ||
+      form.experienceYears !== (initialData.experience?.match(/(\d+)\s*year/i)?.[1] || "0") ||
+      form.experienceMonths !== (initialData.experience?.match(/(\d+)\s*month/i)?.[1] || "0") ||
       String(form.vacancies) !== String(initialData.vacancies || "") ||
       form.shift !== (initialData.shift || "Day Shift") ||
       String(form.testDuration) !== String(initialData.testDuration || "") ||
@@ -527,7 +527,7 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
 
             <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Duration (min) *
+               Test Duration (min) *
               </label>
               <Input
                 name="testDuration"
@@ -636,13 +636,6 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
               })}
             </div>
           </div>
-          {/* General Error */}
-          {generalError && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400">{generalError}</p>
-            </div>
-          )}
-
           {/* Question Counts with Live Validation */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
@@ -785,7 +778,12 @@ export default function PositionModal({ isOpen, onClose, initialData, onSuccess 
             )}
           </div>
 
-
+ {/* General Error */}
+          {generalError && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400">{generalError}</p>
+            </div>
+          )}
           {/* Subjects Selection */}
           {/* <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">

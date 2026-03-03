@@ -6,13 +6,20 @@ import { useEffect } from "react";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   useEffect(() => {
+    // If no session token, check if there's a legacy localStorage token and migrate/clear it
+    const legacyToken = localStorage.getItem("token");
+    if (legacyToken) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
+
     if (!token) {
       navigate("/admin/login", { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, token]);
 
   return (
     <SidebarProvider>

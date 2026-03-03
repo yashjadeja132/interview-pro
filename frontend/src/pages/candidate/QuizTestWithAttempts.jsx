@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import api from '../../Api/axiosInstance';
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, Clock, CheckCircle, Circle, AlertCircle, Trophy, Target, Award, XCircle } from "lucide-react"
@@ -101,9 +102,14 @@ export default function QuizTestWithAttempts({ streams }) {
             setLoading(true);
             const candidateId = candidateData?.id || storedData?.id || null;
             const positionId = candidateData?.positionId || storedData?.positionId;
-            const url = `http://localhost:5000/api/test/questions/random?positionId=${positionId}${candidateId ? `&candidateId=${candidateId}` : ''}`;
-            const response = await fetch(url);
-            const data = await response.json();
+
+            const response = await api.get('/test/questions/random', {
+                params: {
+                    positionId,
+                    candidateId
+                }
+            });
+            const data = response.data;
 
             if (data.questions) {
                 setQuestions(data.questions);

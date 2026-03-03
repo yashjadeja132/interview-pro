@@ -83,7 +83,7 @@ export default function PositionViewModal({ isOpen, onClose, data }) {
                                 </div>
                                 <div className="flex items-baseline gap-2">
                                     <p className="text-2xl font-bold text-slate-800 dark:text-white">{data.techQuestionCount || 0}</p>
-                                    <span className="text-[10px] text-slate-400 font-medium">/ {data.technicalQuestionCount || 0} Avail.</span>
+                                    <span className="text-[19px] text-slate-400 font-medium">/ {data.technicalQuestionCount || 0} Avail.</span>
                                 </div>
                                 <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Questions to be Asked</p>
                             </div>
@@ -97,7 +97,7 @@ export default function PositionViewModal({ isOpen, onClose, data }) {
                                 </div>
                                 <div className="flex items-baseline gap-2">
                                     <p className="text-2xl font-bold text-slate-800 dark:text-white">{data.nonTechQuestionCount || 0}</p>
-                                    <span className="text-[10px] text-slate-400 font-medium">/ {data.nonTechnicalQuestionCount || 0} Avail.</span>
+                                    <span className="text-[21px] text-slate-400 font-medium">/ {data.nonTechnicalQuestionCount || 0} Avail.</span>
                                 </div>
                                 <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Questions to be Asked</p>
                             </div>
@@ -107,7 +107,7 @@ export default function PositionViewModal({ isOpen, onClose, data }) {
                                     <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                                         <Layout className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                     </div>
-                                    <span className="text-xs font-semibold text-indigo-800 dark:text-indigo-300">Total Target</span>
+                                    <span className="text-xs font-semibold text-indigo-800 dark:text-indigo-300">Total Questions</span>
                                 </div>
                                 <p className="text-2xl font-bold text-slate-800 dark:text-white">{totalQuestions || 0}</p>
                                 <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Total to be Asked</p>

@@ -243,7 +243,7 @@ export default function AdminDashboard() {
                           <span className="text-sm font-medium text-slate-700">{position}</span>
                         </div>
                         <Badge variant="outline" className="bg-orange-100 text-orange-700">
-                          {count} Vacancies
+                          {count} {Number(count) === 1 ? "Vacancy" : "Vacancies"}
                         </Badge>
                       </button>
                     ))
@@ -305,7 +305,7 @@ export default function AdminDashboard() {
                           <span className="text-sm font-medium text-slate-700 dark:text-black">{position}</span>
                         </div>
                         <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-100">
-                          {count} candidates
+                          {count} {Number(count) === 1 ? "candidate" : "candidates"}
                         </Badge>
                       </button>
                     ))

@@ -5,8 +5,14 @@ const Candidate = require('../../models/Candidate')
 // Add a new position
 exports.addPosition = async (req, res) => {
   try {
-    const { name, salary, experienceYears, experienceMonths, vacancies, shift, jobType, testDuration, subjects, techQuestionCount, nonTechQuestionCount } = req.body;
-    const existing = await Position.findOne({ name });
+    const { salary, experienceYears, experienceMonths, vacancies, shift, jobType, testDuration, subjects, techQuestionCount, nonTechQuestionCount } = req.body;
+    
+    const name = req.body.name.trim();
+
+    const existing = await Position.findOne({ 
+      name: { $regex: `^${name}$`, $options: 'i' }
+    });
+
     if (existing) {
       return res.status(400).json({ success: false, message: "Position already exists" });
     }
@@ -15,7 +21,19 @@ exports.addPosition = async (req, res) => {
     if (experienceYears !== undefined || experienceMonths !== undefined) {
       const years = parseInt(experienceYears || 0);
       const months = parseInt(experienceMonths || 0);
-      finalExperience = `${years} year ${months} month`;
+      
+      const yearText = years === 1 ? "year" : "years";
+      const monthText = months === 1 ? "month" : "months";
+
+      if (years > 0 && months > 0) {
+        finalExperience = `${years} ${yearText} ${months} ${monthText}`;
+      } else if (years > 0) {
+        finalExperience = `${years} ${yearText}`;
+      } else if (months > 0) {
+        finalExperience = `${months} ${monthText}`;
+      } else {
+        finalExperience = "0 years";
+      }
     }
 
       const position = new Position({
@@ -214,7 +232,11 @@ exports.getPositionById = async (req, res) => {
 // Update position
 exports.updatePosition = async (req, res) => {
   try {
-    const { name, salary, experienceYears, experienceMonths, vacancies, shift, jobType, testDuration, subjects, techQuestionCount, nonTechQuestionCount } = req.body;
+    let { name, salary, experienceYears, experienceMonths, vacancies, shift, jobType, testDuration, subjects, techQuestionCount, nonTechQuestionCount } = req.body;
+
+    if (name) {
+      name = name.trim();
+    }
     
     // Check if position exists and has candidates
     const position = await Position.findById(req.params.id);
@@ -229,11 +251,33 @@ exports.updatePosition = async (req, res) => {
       }
     }
 
+    if (name) {
+      const existing = await Position.findOne({ 
+        name: { $regex: `^${name}$`, $options: 'i' },
+        _id: { $ne: req.params.id }
+      });
+      if (existing) {
+        return res.status(400).json({ success: false, message: "Position already exists" });
+      }
+    }
+
     let finalExperience;
     if (experienceYears !== undefined || experienceMonths !== undefined) {
       const years = parseInt(experienceYears || 0);
       const months = parseInt(experienceMonths || 0);
-      finalExperience = `${years} year ${months} month`;
+      
+      const yearText = years === 1 ? "year" : "years";
+      const monthText = months === 1 ? "month" : "months";
+
+      if (years > 0 && months > 0) {
+        finalExperience = `${years} ${yearText} ${months} ${monthText}`;
+      } else if (years > 0) {
+        finalExperience = `${years} ${yearText}`;
+      } else if (months > 0) {
+        finalExperience = `${months} ${monthText}`;
+      } else {
+        finalExperience = "0 years";
+      }
     }
 
     const updateData = {
@@ -262,6 +306,7 @@ exports.updatePosition = async (req, res) => {
     }
     res.json({ success: true, data: updated });
   } catch (err) {
+    console.log(err.name);
     res.status(500).json({ success: false, error: err.message });
   }
 };

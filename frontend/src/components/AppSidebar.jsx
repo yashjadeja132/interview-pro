@@ -1,11 +1,13 @@
 import {
   Home,
+  Users,
   UserCheck,
   Monitor,
   FileText,
   Building2,
   Shield,
   BarChart3,
+  BookOpen,
   Settings,
   LogOut,
   Database,
@@ -37,17 +39,10 @@ const navigationItems = [
     icon: Building2,
     description: "Job positions and roles",
   },
-
-  {
-    title: "Subject Management",
-    url: "/subjectManagement",
-    icon: Building2,
-    description: "Subjects For Positions",
-  },
   {
     title: "Candidate Management",
     url: "/candidateManagement",
-    icon: UserCheck,
+    icon: Users,
     description: "Manage candidates",
   },
   {
@@ -63,7 +58,12 @@ const navigationItems = [
     description: "Candidates for interview",
   },
 
-
+  {
+    title: "Subject Management",
+    url: "/subjectManagement",
+    icon: BookOpen,
+    description: "Subjects For Job Posts",
+  },
   {
     title: "Question Management",
     url: "/questionManagement",
@@ -85,8 +85,8 @@ export default function AppSidebar() {
 
   // ✅ LOGOUT HANDLER (FIXED)
   const handleLogout = () => {
-    localStorage.removeItem("token");
     sessionStorage.clear();
+    localStorage.clear(); // Clear legacy data as well
 
     // replace: true = back button disable
     navigate("/admin/login", { replace: true });

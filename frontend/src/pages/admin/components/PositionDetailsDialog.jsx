@@ -22,6 +22,14 @@ import { formatDateToIST } from "@/utils/dateHelper";
 import axiosInstance from "@/Api/axiosInstance";
 import { toast } from "sonner";
 
+// Experience pluralization helper
+const formatExperience = (exp) => {
+    if (!exp) return 'N/A';
+    return exp
+        .replace(/(\d+)\s*year\b/gi, (match, p1) => parseInt(p1) === 1 ? `${p1} year` : `${p1} years`)
+        .replace(/(\d+)\s*month\b/gi, (match, p1) => parseInt(p1) === 1 ? `${p1} month` : `${p1} months`);
+};
+
 export default function PositionDetailsDialog({ open, onOpenChange, position, onUpdate }) {
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -83,9 +91,9 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
     const handleInputChange = (field, value) => {
         let sanitizedValue = value;
 
-        // Restriction: Position Name - no numbers allowed
+        // Restriction: Position Name - letters, spaces and hyphens
         if (field === "name") {
-            sanitizedValue = value.replace(/[^a-zA-Z\s]/g, "");
+            sanitizedValue = value.replace(/[^a-zA-Z\s\-]/g, "");
         }
 
         // Restriction: Salary and Vacancies - only numbers
@@ -102,10 +110,10 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
     const hasChanges = () => {
         if (!position) return false;
         return (
-            formData.name !== (position.name || "") ||
+            formData.name.trim() !== (position.name || "").trim() ||
             formData.salary.toString() !== (position.salary || "").toString() ||
-            formData.experienceYears !== (position.experience?.match(/(\d+)\s*year/)?.[1] || "0") ||
-            formData.experienceMonths !== (position.experience?.match(/(\d+)\s*month/)?.[1] || "0") ||
+            formData.experienceYears !== (position.experience?.match(/(\d+)\s*year/i)?.[1] || "0") ||
+            formData.experienceMonths !== (position.experience?.match(/(\d+)\s*month/i)?.[1] || "0") ||
             formData.vacancies.toString() !== (position.vacancies || "").toString() ||
             formData.jobType !== (position.jobType || "Full-time") ||
             formData.shift !== (position.shift || "Day Shift")
@@ -345,14 +353,14 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                             <div className="space-y-1">
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Salary</p>
                                 <p className="text-base font-semibold text-slate-900 dark:text-white">
-                                    {position.salary ? `$${position.salary}` : "N/A"}
+                                    {position.salary ? `₹${position.salary}` : "N/A"}
                                 </p>
                             </div>
 
                             <div className="space-y-1">
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Experience</p>
                                 <p className="text-base font-semibold text-slate-900 dark:text-white">
-                                    {position.experience || "N/A"}
+                                    {formatExperience(position.experience)}
                                 </p>
                             </div>
 
@@ -380,7 +388,7 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                 </div>
                             </div>
 
-                            <div className="space-y-1">
+                            {/* <div className="space-y-1">
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Created On</p>
                                 <div className="flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-slate-400" />
@@ -388,7 +396,7 @@ export default function PositionDetailsDialog({ open, onOpenChange, position, on
                                         {position.createdAt ? formatDateToIST(position.createdAt) : "N/A"}
                                     </span>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     )}
                 </div>

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "../../Api/axiosInstance";
 import { AlertCircle, Shield, Users, Settings, ArrowLeft, Building2, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,19 @@ export function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
+
+  // ✅ Auto-redirect if already logged in
+  useEffect(() => {
+    if (token) {
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      if (user?.role === "Admin") {
+        navigate("/admin/dashboard", { replace: true });
+      } else if (user?.role === "HR") {
+        navigate("/candidateManagement", { replace: true });
+      }
+    }
+  }, [token, navigate]);
 
   // Field-level errors
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
@@ -72,9 +85,13 @@ export function AdminLogin() {
       console.log("Login successful:", response.data);
       setSuccess("Login successful!");
 
-      // Store token and user data
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      // Store token and user data in sessionStorage for session-based expiration
+      sessionStorage.setItem("token", response.data.token);
+      sessionStorage.setItem("user", JSON.stringify(response.data.user));
+
+      // Clear legacy localStorage data if exists
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
 
       // Navigate to dashboard based on user role with a small delay
       setTimeout(() => {

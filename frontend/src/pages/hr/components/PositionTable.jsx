@@ -66,6 +66,14 @@ const formatDateForAPI = (date) => {
     return `${year}-${month}-${day}`;
 };
 
+// Experience pluralization helper
+const formatExperience = (exp) => {
+    if (!exp) return 'N/A';
+    return exp
+        .replace(/(\d+)\s*year\b/gi, (match, p1) => parseInt(p1) === 1 ? `${p1} year` : `${p1} years`)
+        .replace(/(\d+)\s*month\b/gi, (match, p1) => parseInt(p1) === 1 ? `${p1} month` : `${p1} months`);
+};
+
 export default function PositionTable({ onEdit, onView, refreshTrigger }) {
     const [positions, setPositions] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -173,7 +181,7 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                     className="pl-10 h-10 w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                 />
                             </div>
-                            <div className="flex items-center gap-2">
+                            {/* <div className="flex items-center gap-2">
                                 <Button
                                     variant="outline"
                                     onClick={() => setShowFilters(!showFilters)}
@@ -192,106 +200,106 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                         Clear
                                     </Button>
                                 )}
-                            </div>
+                            </div> */}
                         </div>
                         <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
                             Showing {positions.length} of {totalPositions}
                         </div>
                     </div>
 
-                    {showFilters && (
-                        <div className="pm-filter-grid">
-                            <div>
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Job Type</label>
-                                <Select value={filters.jobType} onValueChange={(v) => setFilters({ ...filters, jobType: v })}>
-                                    <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                                        <SelectValue placeholder="All" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All</SelectItem>
-                                        <SelectItem value="Full-time">Full-time</SelectItem>
-                                        <SelectItem value="Part-time">Part-time</SelectItem>
-                                        <SelectItem value="Freelancer">Freelancer</SelectItem>
-                                        <SelectItem value="Contract">Contract</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Experience</label>
-                                <Select value={filters.experience} onValueChange={(v) => setFilters({ ...filters, experience: v })}>
-                                    <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                                        <SelectValue placeholder="All" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All</SelectItem>
-                                        <SelectItem value="0-1 years">0-1 years</SelectItem>
-                                        <SelectItem value="1-3 years">1-3 years</SelectItem>
-                                        <SelectItem value="3-5 years">3-5 years</SelectItem>
-                                        <SelectItem value="5+ years">5+ years</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Shift</label>
-                                <Select value={filters.shift} onValueChange={(v) => setFilters({ ...filters, shift: v })}>
-                                    <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                                        <SelectValue placeholder="All" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All</SelectItem>
-                                        <SelectItem value="Day Shift">Day Shift</SelectItem>
-                                        <SelectItem value="Night Shift">Night Shift</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Start Date</Label>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="outline" className="justify-start text-left font-normal w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700">
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {filters.startDate ? formatDate(filters.startDate) : "Select date"}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 dark:bg-slate-900 dark:border-slate-700">
-                                        <Calendar
-                                            mode="single"
-                                            selected={filters.startDate}
-                                            onSelect={(date) => {
-                                                setFilters(prev => ({ ...prev, startDate: date }));
-                                                setCurrentPage(1);
-                                            }}
-                                            initialFocus
-                                            className="dark:bg-slate-900 dark:text-white"
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-                            <div>
-                                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">End Date</Label>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="outline" className="justify-start text-left font-normal w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700">
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {filters.endDate ? formatDate(filters.endDate) : "Select date"}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 dark:bg-slate-900 dark:border-slate-700">
-                                        <Calendar
-                                            mode="single"
-                                            selected={filters.endDate}
-                                            onSelect={(date) => {
-                                                setFilters(prev => ({ ...prev, endDate: date }));
-                                                setCurrentPage(1);
-                                            }}
-                                            initialFocus
-                                            className="dark:bg-slate-900 dark:text-white"
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
+
+                    <div className="pm-filter-grid">
+                        <div>
+                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Job Type</label>
+                            <Select value={filters.jobType} onValueChange={(v) => setFilters({ ...filters, jobType: v })}>
+                                <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                    <SelectValue placeholder="All" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All</SelectItem>
+                                    <SelectItem value="Full-time">Full-time</SelectItem>
+                                    <SelectItem value="Part-time">Part-time</SelectItem>
+                                    <SelectItem value="Freelancer">Freelancer</SelectItem>
+                                    <SelectItem value="Contract">Contract</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                    )}
+                        <div>
+                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Experience</label>
+                            <Select value={filters.experience} onValueChange={(v) => setFilters({ ...filters, experience: v })}>
+                                <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                    <SelectValue placeholder="All" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All</SelectItem>
+                                    <SelectItem value="0-1 years">0-1 years</SelectItem>
+                                    <SelectItem value="1-3 years">1-3 years</SelectItem>
+                                    <SelectItem value="3-5 years">3-5 years</SelectItem>
+                                    <SelectItem value="5+ years">5+ years</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Shift</label>
+                            <Select value={filters.shift} onValueChange={(v) => setFilters({ ...filters, shift: v })}>
+                                <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                    <SelectValue placeholder="All" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All</SelectItem>
+                                    <SelectItem value="Day Shift">Day Shift</SelectItem>
+                                    <SelectItem value="Night Shift">Night Shift</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Start Date</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" className="justify-start text-left font-normal w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700">
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {filters.startDate ? formatDate(filters.startDate) : "Select date"}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 dark:bg-slate-900 dark:border-slate-700">
+                                    <Calendar
+                                        mode="single"
+                                        selected={filters.startDate}
+                                        onSelect={(date) => {
+                                            setFilters(prev => ({ ...prev, startDate: date }));
+                                            setCurrentPage(1);
+                                        }}
+                                        initialFocus
+                                        className="dark:bg-slate-900 dark:text-white"
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <div>
+                            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">End Date</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" className="justify-start text-left font-normal w-full dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700">
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {filters.endDate ? formatDate(filters.endDate) : "Select date"}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 dark:bg-slate-900 dark:border-slate-700">
+                                    <Calendar
+                                        mode="single"
+                                        selected={filters.endDate}
+                                        onSelect={(date) => {
+                                            setFilters(prev => ({ ...prev, endDate: date }));
+                                            setCurrentPage(1);
+                                        }}
+                                        initialFocus
+                                        className="dark:bg-slate-900 dark:text-white"
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </div>
+
                 </CardContent>
             </Card>
 
@@ -345,15 +353,15 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                 <TableHeader>
                                     <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent pm-table-header-row">
                                         <TableHead className="w-8 md:hidden px-2"></TableHead>
-                                        <TableHead className="w-8 font-semibold text-slate-700 dark:text-slate-300 px-2 text-center">#</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 ">Position Name</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Salary</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Experience</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Vacancies</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Shift</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Job Type</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 desktop-only text-center">Created</TableHead>
-                                        <TableHead className="font-semibold text-slate-700 dark:text-slate-300 text-right pr-6">Actions</TableHead>
+                                        <TableHead className="w-8 font-bold text-slate-700 dark:text-slate-300 px-2 text-center">#</TableHead>
+                                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 ">Position Name</TableHead>
+                                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only text-center">Salary</TableHead>
+                                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only text-center">Experience</TableHead>
+                                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only text-center">Vacancies</TableHead>
+                                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only text-center">Shift</TableHead>
+                                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only text-center">Job Type</TableHead>
+                                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 desktop-only text-center">Created</TableHead>
+                                        <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-right pr-6">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -384,7 +392,7 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="desktop-only text-center">{pos.salary || 0}</TableCell>
-                                                <TableCell className="desktop-only text-center">{pos.experience || 'N/A'}</TableCell>
+                                                <TableCell className="desktop-only text-center">{formatExperience(pos.experience)}</TableCell>
                                                 <TableCell className="desktop-only text-center">{pos.vacancies || 0}</TableCell>
                                                 <TableCell className="desktop-only text-center">{pos.shift}</TableCell>
                                                 <TableCell className="desktop-only text-center">{pos.jobType}</TableCell>
@@ -445,7 +453,7 @@ export default function PositionTable({ onEdit, onView, refreshTrigger }) {
                                                                 <div className="space-y-4">
                                                                     <div>
                                                                         <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Experience</p>
-                                                                        <p className="text-slate-800 dark:text-slate-200 font-medium">{pos.experience || 'N/A'}</p>
+                                                                        <p className="text-slate-800 dark:text-slate-200 font-medium">{formatExperience(pos.experience)}</p>
                                                                     </div>
                                                                     <div>
                                                                         <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-1">Shift</p>

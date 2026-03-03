@@ -3,7 +3,7 @@ const Question = require("../../models/Question");
 const Position = require("../../models/Position");
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
-const {sendCandidateMail} = require('../../services/hrEmailServices')
+const {sendCandidateMail, sendRescheduleMail} = require('../../services/hrEmailServices')
 const TestResult = require("../../models/Test");
 
 // Get all candidates with pagination, search, and filtering
@@ -83,10 +83,11 @@ exports.getCandidates = async (req, res) => {
       questionsAskedToCandidate: c.questionsAskedToCandidate, // Include questionsAskedToCandidate
       technicalQuestions: c.technicalQuestions,
       logicalQuestions: c.logicalQuestions,
+      isNagativeMarking: c.isNagativeMarking || false,
+      negativeMarkingValue: c.negativeMarkingValue || "",
       description: c.description, // Include description
       isSubmitted: c.isSubmitted || 0 // Include isSubmitted field
     }));
-
     // Calculate pagination info
     const totalPages = Math.ceil(total / limit);
 
@@ -130,7 +131,19 @@ exports.updateCandidate = async (req, res) => {
     if (experienceYears !== undefined || experienceMonths !== undefined) {
       const years = parseInt(experienceYears || 0);
       const months = parseInt(experienceMonths || 0);
-      finalExperience = `${years} year ${months} month`;
+      
+      const yearText = years === 1 ? "year" : "years";
+      const monthText = months === 1 ? "month" : "months";
+
+      if (years > 0 && months > 0) {
+        finalExperience = `${years} ${yearText} ${months} ${monthText}`;
+      } else if (years > 0) {
+        finalExperience = `${years} ${yearText}`;
+      } else if (months > 0) {
+        finalExperience = `${months} ${monthText}`;
+      } else {
+        finalExperience = "0 years";
+      }
     }
 
     const updateData = { 
@@ -300,7 +313,21 @@ exports.createCandidate=async(req,res)=>{
    try {
        const { email,name, phone, position, experienceYears, experienceMonths, timeDurationForTest,technicalQuestions,logicalQuestions, isNagativeMarking, negativeMarkingValue, description} = req.body;
        const {allowDuplicate} = req.body; 
-       const experience = experienceYears + " year " + experienceMonths + " month";
+       const years = parseInt(experienceYears || 0);
+       const months = parseInt(experienceMonths || 0);
+       const yearText = years === 1 ? "year" : "years";
+       const monthText = months === 1 ? "month" : "months";
+
+       let experience = "";
+       if (years > 0 && months > 0) {
+         experience = `${years} ${yearText} ${months} ${monthText}`;
+       } else if (years > 0) {
+         experience = `${years} ${yearText}`;
+       } else if (months > 0) {
+         experience = `${months} ${monthText}`;
+       } else {
+         experience = "0 years";
+       }
        console.log('experience',experience)
        const timeforTest = parseInt(timeDurationForTest); 
           // Check if position is provided
@@ -389,3 +416,56 @@ exports.createCandidate=async(req,res)=>{
           return res.status(500).json({ message: "Internal Server Error" })
       }
 }
+
+// Reschedule candidate interview
+exports.rescheduleCandidate = async (req, res) => {
+  try {
+    const { newSchedule } = req.body;
+
+    if (!newSchedule) {
+      return res.status(400).json({ message: "New schedule time is required" });
+    }
+
+    const newDate = new Date(newSchedule);
+    if (isNaN(newDate.getTime())) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    if (newDate < new Date()) {
+      return res.status(400).json({ message: "New schedule cannot be in the past" });
+    }
+
+    const candidate = await Candidate.findById(req.params.id);
+    if (!candidate) {
+      return res.status(404).json({ message: "Candidate not found" });
+    }
+
+    const oldSchedule = candidate.schedule;
+    candidate.schedule = newDate;
+
+    // Reset expired status so they can login at new time
+    if (candidate.isSubmitted === 2) {
+      candidate.isSubmitted = 0;
+    }
+
+    await candidate.save();
+    await candidate.populate("position");
+
+    // Send reschedule email
+    await sendRescheduleMail(candidate, oldSchedule);
+
+    res.status(200).json({
+      message: "Interview rescheduled successfully",
+      candidate: {
+        _id: candidate._id,
+        name: candidate.name,
+        email: candidate.email,
+        schedule: candidate.schedule,
+        positionName: candidate.position?.name,
+      },
+    });
+  } catch (error) {
+    console.error("Error rescheduling candidate:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

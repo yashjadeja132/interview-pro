@@ -22,10 +22,11 @@ const getPublicId = (url) => {
 
 // Create a new question
 exports.createQuestion = async (req, res) => {
+  console.log('req.files is ',req.files)
   try {
     const { subjectId, questionText, options } = req.body;
     let parsedOptions = typeof options === "string" ? JSON.parse(options) : options;
-    
+    console.log('options is ',options)
     let questionImageUrl = null;
     if (req.files && req.files['questionImage']) {
       questionImageUrl = req.files['questionImage'][0].path;
@@ -65,11 +66,11 @@ exports.createQuestion = async (req, res) => {
     console.log('question is saved')
     res.status(201).json({ message: "Question created successfully", question });
   } catch (err) {
-    console.log(err.message)
-    if (err.code === 11000) {
-      return res.status(400).json({ message: "This question already exists for this subject." });
-    }
-    res.status(500).json({ message: err.message });
+    console.log('error is ',err.message)
+    // if (err.code === 11000) {
+    //   return res.status(400).json({ message: "This question already exists for this subject." });
+    // }
+    res.status(500).json({ message: err });
   }
 };
 
@@ -203,15 +204,41 @@ exports.deleteQuestion = async (req, res) => {
   }
 };
 
-// Get questions by subject
+// Get questions by subject with pagination and search
 exports.getQuestionsBySubject = async (req, res) => {
   try {
     const { subjectId } = req.params;
-    const questions = await Question.find({ subject: subjectId })
-      .populate("subject", "name description")
-      .sort({ createdAt: -1 });
+    const { search } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    res.status(200).json(questions);
+    let filter = { subject: subjectId };
+    if (search) {
+      filter.questionText = { $regex: search, $options: 'i' };
+    }
+
+    const total = await Question.countDocuments(filter);
+    const questions = await Question.find(filter)
+      .populate("subject", "name description")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).json({
+      success: true,
+      data: questions,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        total,
+        limit,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

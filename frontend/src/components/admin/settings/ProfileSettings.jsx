@@ -26,7 +26,7 @@ export default function ProfileSettings() {
     const [message, setMessage] = useState({ type: '', text: '' });
 
     useEffect(() => {
-        const userStr = localStorage.getItem('user');
+        const userStr = sessionStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
             const data = {
@@ -115,11 +115,11 @@ export default function ProfileSettings() {
             const response = await axiosInstance.put('/admin/update-profile', trimmedData);
 
             if (response.data.user) {
-                const userStr = localStorage.getItem('user');
+                const userStr = sessionStorage.getItem('user');
                 if (userStr) {
                     const user = JSON.parse(userStr);
                     const updatedUser = { ...user, ...response.data.user };
-                    localStorage.setItem('user', JSON.stringify(updatedUser));
+                    sessionStorage.setItem('user', JSON.stringify(updatedUser));
                 }
                 setInitialData(trimmedData);
                 setFormData(trimmedData);

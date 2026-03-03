@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import api from "../../Api/axiosInstance";
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     // Fetch user profile on mount
-    const userStr = localStorage.getItem("user");
+    const userStr = sessionStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
       setProfile({
@@ -62,29 +63,18 @@ export default function ProfilePage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/admin/update-profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(profile),
-      });
+      const res = await api.put("/admin/update-profile", profile);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to update profile");
-      }
+      const data = res.data;
 
       setSuccess("Profile updated successfully");
 
-      // Update local storage
-      const userStr = localStorage.getItem("user");
+      // Update session storage
+      const userStr = sessionStorage.getItem("user");
       if (userStr) {
         const user = JSON.parse(userStr);
         const updatedUser = { ...user, ...data.user };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+        sessionStorage.setItem("user", JSON.stringify(updatedUser));
       }
 
       // Update initial profile to match new details (disable button)
@@ -123,25 +113,13 @@ export default function ProfilePage() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/admin/change-password", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          currentPassword: passwords.current,
-          newPassword: passwords.newPass,
-          confirmPassword: passwords.confirm,
-        }),
+      const res = await api.put("/admin/change-password", {
+        currentPassword: passwords.current,
+        newPassword: passwords.newPass,
+        confirmPassword: passwords.confirm,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Something went wrong");
-        return;
-      }
+      const data = res.data;
 
       setSuccess(data.message);
       setPasswords({

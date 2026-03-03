@@ -38,7 +38,7 @@ exports.loginUser = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
     const token = jwt.sign(
-      { id: user._id, role: user.role },process.env.JWT_SECRET, { expiresIn: "1d" });
+      { id: user._id, role: user.role },process.env.JWT_SECRET, { expiresIn: "4h" });
     res.json({ token, user: {
         id: user._id,name: user.name,email: user.email,phone: user.phone,role: user.role},
     });
@@ -57,7 +57,7 @@ exports.forgotPassword = async (req, res) => {
     passwordEmail.forgotPasswordEmail(email)
     if (!user || !user.email || user===null) return res.status(400).json({ message: "User not found" });
     const token = jwt.sign(
-      { id: user._id, role: user.role },process.env.JWT_SECRET, { expiresIn: "1d" });
+      { id: user._id, role: user.role },process.env.JWT_SECRET, { expiresIn: "4h" });
     res.json({ token, user: {
         id: user._id,name: user.name,email: user.email,phone: user.phone,role: user.role},
     });

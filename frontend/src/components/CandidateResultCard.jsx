@@ -54,8 +54,7 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
           <Trophy className="w-10 h-10 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Interview Assessment Report</h1>
-        <p className="text-gray-600">Generated on {formatDateToIST(candidateData.createdAt)}
-                   {new Date().toLocaleDateString()}        </p>
+        <p className="text-gray-600">Generated on {formatDateToIST(candidateData.createdAt)}</p>
       </div>
 
       {/* Candidate Information */}
@@ -115,27 +114,6 @@ const CandidateResultCard = ({ candidateData, testResults, onDownloadPDF, onView
         </CardHeader>
         <CardContent className="p-6">
           <div className={`grid grid-cols-2 ${candidateData.isNagativeMarking ? 'md:grid-cols-4 lg:grid-cols-8' : 'md:grid-cols-4 lg:grid-cols-7'} gap-6 mb-6`}>
-            {/* <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
-                <Hash className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{totalQuestions}</h3>
-              <p className="text-sm text-gray-600 dark:text-white">Total Questions</p>
-            </div> */}
-            {/* <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-3">
-                <Trophy className="w-8 h-8 text-indigo-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white text-xl">{correctAnswers}/{totalQuestions}</h3>
-              <p className="text-sm text-gray-600 dark:text-white">Marks</p>
-            </div> */}
-            {/* <div className="text-center">
-              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-3 ${getScoreColor(candidateData.score)}`}>
-                <span className="text-2xl font-bold ">{Math.round(candidateData.score)}%</span>
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Score</h3>
-              <p className="text-sm text-gray-600 dark:text-white">{getScoreStatus(candidateData.score)}</p>
-            </div> */}
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-3">
                 <CheckCircle className="w-8 h-8 text-green-600" />

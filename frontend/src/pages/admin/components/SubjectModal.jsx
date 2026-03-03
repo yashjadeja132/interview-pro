@@ -51,7 +51,7 @@ export default function SubjectModal({ isOpen, onClose, initialData, onSuccess }
             sanitizedValue = sanitizedValue.replace(/[^a-zA-Z\s]/g, "");
             setForm(prev => ({ ...prev, name: sanitizedValue }));
         }
-    validateField(name, sanitizedValue);
+        validateField(name, sanitizedValue);
     };
 
     const handleTypeChange = (value) => {
@@ -82,7 +82,7 @@ export default function SubjectModal({ isOpen, onClose, initialData, onSuccess }
     const hasChanges = () => {
         if (!initialData) return true;
         return (
-            form.name !== initialData.name ||
+            form.name.trim() !== (initialData.name || "").trim() ||
             form.type !== initialData.type
         );
     };
